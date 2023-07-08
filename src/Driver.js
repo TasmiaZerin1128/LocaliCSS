@@ -23,10 +23,6 @@ driver.start = async function start() {
 driver.createPage = async function createPage() {
   // Create a new page
   driver.page = await driver.browser.newPage();
-  driver.page.setViewport({ width: 1380,
-    height: settings.testingHeight,
-    deviceScaleFactor: 1,
-  });
   return driver.page;
 };
 
@@ -42,8 +38,18 @@ driver.getTagName = async function getTagName(element) {
   return tagName;
 };
 
+driver.setViewport = async function setViewport(width, height) {
+  let options  = { width: width || settings.testWidthMin,
+    height: height || settings.testingHeight,
+    deviceScaleFactor: 1,
+  };
+
+  await driver.page.setViewport(options);
+}
+
 driver.goto = async function goto(uri) {
   // Navigate to the webpage URI
+  this.setViewport();
   const gotoUri = await driver.page.goto(uri);
   return gotoUri;
 };

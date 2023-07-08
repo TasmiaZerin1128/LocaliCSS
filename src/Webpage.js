@@ -65,6 +65,7 @@ class Webpage {
         for(let width = testRange.min; width <= testRange.max; width++) {
             testCounter++;
             bar.update(testCounter);
+            await this.driver.setViewport(width, this.testHeight);
             let newDom = new DOM(this.driver, width);
             await newDom.captureDOM();
             newDom.saveRBushData(this.domOutputPath);
