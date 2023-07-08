@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "file-saver": "^2.0.5",
+    "path": "^0.12.7",
+    "puppeteer": "^20.7.3",
+    "rbush": "^2.0.2"
+  },
+  "name": "mr.refix",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "eslint": "^8.44.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.5"
+  }
+}
