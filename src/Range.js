@@ -5,4 +5,10 @@ class Range {
     }
 }
 
-module.exports = Range;
+class Ranges {
+    constructor() {
+        this.list = [];
+    }
+}
+
+module.exports = { Range, Ranges };

@@ -4,6 +4,7 @@ const Rectangle = require('./Rectangle');
 const Driver = require('./Driver');
 const fs = require('fs');
 const path = require('path');
+const settings = require('../settings');
 
 class DOM {
   constructor(driver, viewport) {
@@ -31,7 +32,7 @@ class DOM {
         domNode.visible = false;
       }
 
-      if (domNode.visible && domNode.addDescendantsToRLG && domNode.rectangle.validSize && domNode.rectangle.positiveCoordinates) {
+      if (domNode.visible && domNode.addDescendantsToRLG && domNode.rectangle.validSize && domNode.rectangle.positiveCoordinates && !settings.excludeElementsWithDisplayValue.includes(domNode.display)) {  //height and width of inline elements have no effect
         this.rbush.insert(domNode.rectangle);
       }
 

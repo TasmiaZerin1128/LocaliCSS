@@ -62,13 +62,13 @@ class Webpage {
             format: 'Capturing DOM Progress |' + '{bar}' + '| {percentage}% || {value}/{total} Viewports Completed\n',
         }, cliProgress.Presets.shades_classic);
         bar.start(totalTestViewports, testCounter);
-        for(let width = testRange.min; width <= testRange.max; width++) {
+        for(let width = testRange.max; width >= testRange.min; width--) {
             testCounter++;
-            bar.update(testCounter);
             await this.driver.setViewport(width, this.testHeight);
             let newDom = new DOM(this.driver, width);
             await newDom.captureDOM();
             newDom.saveRBushData(this.domOutputPath);
+            bar.update(testCounter);
         }
     }
 }

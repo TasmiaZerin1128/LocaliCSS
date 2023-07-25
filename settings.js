@@ -24,7 +24,7 @@ function getDateTime() {
 
 const settings = {
   testWidthMin: 320, //320
-  testWidthMax: 350, //1400
+  testWidthMax: 1400, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
@@ -32,7 +32,9 @@ const settings = {
   loadDirectory: 'saved-doms-headless',
   webpagesDirectory: 'subjects',
   mainOutputFile: 'output',
+  tolerance: { collision: 2, equivalentParent: 1, protrusion: 1, smallrange: 1, ignoreFractions: false }, //Collision allows 1px border over === 1.
   runOutputFile: path.join('output', getDateTime()),
+  excludeElementsWithDisplayValue: ['inline'], //excluded from the RLG
 };
 
 module.exports = settings;
