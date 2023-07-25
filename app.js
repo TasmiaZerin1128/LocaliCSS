@@ -3,7 +3,7 @@ const driver = require('./src/Driver');
 const Webpage = require('./src/Webpage');
 const settings = require('./settings');
 const path = require('path');
-const Range = require('./src/Range');
+const { Range } = require('./src/Range');
 
 const startTool = async () => {
   let webpages = [];

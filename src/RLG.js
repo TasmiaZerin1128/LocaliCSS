@@ -55,6 +55,46 @@ class RLG {
             rlgNode.addViewport(viewport);
             let intersectingRectangles = dom.rbush.search(rect);
             let intersectionTypes = this.findIntersectionTypes(intersectingRectangles, rect);
+
+            let parent = undefined;
+            if (intersectionTypes.containers.length > 0) {
+                let candidateParents = this.findCandidateContainers(intersectionTypes.containers, rect);
+                parent = this.findParent(candidateParents, rect);
+            }
+
+            if (parent !== undefined) {  //if has parent
+                if (parent.children === undefined) {
+                    parent.children = [];
+                }
+                //Prevent circular PC edges
+                let circular = false;
+                let traversalStack = [];
+                traversalStack.push(rect);
+                while (traversalStack.length > 0) {
+                    let tempRect = traversalStack.shift();
+                    if (tempRect.xpath === parent.xpath) {
+                        circular = true;
+                        // Circular avoided
+                        break;
+                    }
+                    if (tempRect.children !== undefined) {
+                        for (let child of tempRect.children)
+                            traversalStack.push(child);
+                    }
+                }
+                if (!circular)
+                    parent.children.push(rect);
+            }
+        }
+        //set overlap between siblings(between the contained nodes)
+        for (let rect of domRectangles) {
+            let parentRectangle = rect;
+            let parentNode = this.getRLGNode(parentRectangle.xpath);
+            let siblingsRBush = new RBush();
+            if (parentRectangle.children !== undefined) {
+                siblingsRBush.load(parentRectangle.children);
+                
+            }
         }
     }
 
