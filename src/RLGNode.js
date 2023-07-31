@@ -1,4 +1,5 @@
 const { Ranges } = require("./Range");
+const RepairStatistics = require('./RepairStatistics.js');
 
 class RLGNode {
      /**
@@ -41,6 +42,46 @@ class RLGNode {
     //Adds a viewport where this node is observed
     addViewport(viewport) {
         this.ranges.addValue(viewport);
+    }
+
+    /**
+     * Adds a width/viewport to RLGEdge or creates an RLGEdge between the two RLGNodes. 
+     * @param {RLGNode} child The contained node to add.
+     * @param {Number} viewport The viewport where the edge relationship is observed.
+     */
+    addChild(child, viewport) {
+        let edge = this.updateEdge(child, this.childrenEdges, viewport, false, true);
+        if (edge === undefined) {
+            edge = new PCEdge(this, child);
+            edge.addViewport(viewport);
+            this.childrenEdges.push(edge);
+            child.parentEdges.push(edge);
+        }
+        return edge;
+    }
+
+    updateEdge(node, edges, viewport, twoWay = true, thisFirst = true) {
+        for (let edge of edges) {
+            if (twoWay === true) {
+                if ((edge.node1.xpath === node.xpath && edge.node2.xpath === this.xpath)
+                    || (edge.node1.xpath === this.xpath && edge.node2.xpath === node.xpath)) {
+                    edge.addViewport(viewport);
+                    return edge;
+                }
+            } else if (thisFirst === true) {
+                if (edge.node1.xpath === this.xpath && edge.node2.xpath === node.xpath) {
+                    edge.addViewport(viewport);
+                    return edge;
+                }
+            } else if (thisFirst === false) {
+                if (edge.node1.xpath === node.xpath && edge.node2.xpath === this.xpath) {
+                    edge.addViewport(viewport);
+                    return edge;
+                }
+            }
+
+        }
+        return undefined;
     }
 }
 

@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const DOM = require('./DOM');
 const cliProgress = require('cli-progress');
+const RLG = require('./RLG');
 
 
 class Webpage {
@@ -51,25 +52,33 @@ class Webpage {
         await this.driver.goto(this.uri);
     }
 
-    async testWebpage() {
+    async testWebpage(navigate = true) {
         this.durationDOM = new Date();
         console.log('Testing---> ');
         this.setRunOutputPath();
         let testRange = this.testRange;
         let totalTestViewports = testRange.max - testRange.min + 1;
         let testCounter = 0;
+        this.rlg = new RLG(this.pageRunOutputPath, this.name, this.runCounter);
+        if (this.runCounter === 1 && navigate) {
+            await this.navigateToPage();
+        }
+        // progress bar
         const bar = new cliProgress.SingleBar({
             format: 'Capturing DOM Progress |' + '{bar}' + '| {percentage}% || {value}/{total} Viewports Completed\n',
         }, cliProgress.Presets.shades_classic);
         bar.start(totalTestViewports, testCounter);
+
         for(let width = testRange.max; width >= testRange.min; width--) {
             testCounter++;
             await this.driver.setViewport(width, this.testHeight);
             let newDom = new DOM(this.driver, width);
             await newDom.captureDOM();
             newDom.saveRBushData(this.domOutputPath);
+            this.rlg.extractRLG(newDom, width);
             bar.update(testCounter);
         }
+        bar.stop();
     }
 }
 

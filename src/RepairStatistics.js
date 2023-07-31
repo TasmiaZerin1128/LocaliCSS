@@ -8,3 +8,5 @@ class RepairStatistics {
         this.oracleApplied = 0;
     }
 }
+
+module.exports = RepairStatistics;

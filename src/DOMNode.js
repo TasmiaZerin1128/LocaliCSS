@@ -7,7 +7,7 @@ class DOMNode {
     this.children = [];
 
     this.containedBy = [];
-    this.contains = [];
+    this.containerOf = [];
 
     this.xpath = undefined;
     this.tagName = undefined;
@@ -34,7 +34,11 @@ class DOMNode {
 
     if (this.parent === undefined) {
       this.xptagName = tagName;
-      if (addHTML) { this.xpath = `/HTML/${this.xptagName}`; } else { this.xpath = `/${this.xptagName}`; }
+      if (addHTML) { 
+        this.xpath = `/HTML/${this.xptagName}`; 
+      } else { 
+        this.xpath = `/${this.xptagName}`; 
+      }
     } else {
       let isSVG = false;
       if (tagName === 'svg' || this.parent.xpath.includes('*' + '[name()=\'' + 'svg' + '\']' )) {
@@ -73,6 +77,10 @@ class DOMNode {
       }
       return true;
     });
+  }
+
+  setComputedStyle(computedStyles) {
+    this.computedStyles = computedStyles;
   }
 
   setCSSVisibilityProperties(properties) {

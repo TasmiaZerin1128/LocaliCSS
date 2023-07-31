@@ -1,7 +1,6 @@
 const RBush = require('rbush');
 const DOMNode = require('./DOMNode');
 const Rectangle = require('./Rectangle');
-const Driver = require('./Driver');
 const fs = require('fs');
 const path = require('path');
 const settings = require('../settings');
@@ -16,16 +15,37 @@ class DOM {
     this.map = new Map();
   }
 
-  async captureDOM(rootElement = undefined, xpath = undefined) {
-    this.root = new DOMNode(await this.driver.getBodyElement());
-    this.root.setXPath(await this.driver.getTagName(this.root.element));
+  getDOMNode(xpath) {
+    return this.map.get(xpath);
+}
+
+  async captureDOM(rootElement = undefined, getComputedStyle = false, pseudoElements = [], xpath = undefined) {
+    if (rootElement !== undefined) {
+      this.root = new DOMNode(rootElement);
+      if (xpath === undefined)
+        this.root.setXPath(await this.driver.getTagName(this.root.element), false);
+      else
+        this.root.xpath = xpath;
+    } 
+    else {
+      this.root = new DOMNode(await this.driver.getBodyElement());
+      this.root.setXPath(await this.driver.getTagName(this.root.element));
+    }
+
+    console.log(this.root);
 
     const traversalStackDOM = [];
     traversalStackDOM.push(this.root);
     while (traversalStackDOM.length > 0) {
-      const domNode = traversalStackDOM.shift();
-      domNode.rectangle = new Rectangle(await Driver.getRectangle(domNode.element));
+      let domNode = traversalStackDOM.shift();
+      domNode.rectangle = new Rectangle(await this.driver.getRectangle(domNode.element));
       domNode.rectangle.xpath = domNode.xpath;
+      if (getComputedStyle) {
+        domNode.setComputedStyle(await this.driver.getComputedStyle(domNode.element));
+        for (let pseudoElement of pseudoElements) {
+          domNode[pseudoElement] = await this.driver.getComputedStyle(domNode.element, pseudoElement)
+        }
+      }
 
       domNode.setCSSVisibilityProperties(await this.driver.getVisibilityProperties(domNode.element));
       if (domNode.rectangle.visible === false) {//puppeteer determined not visible (Rectangle == null)
@@ -48,6 +68,7 @@ class DOM {
   }
 
   saveRBushData(writeDirectory) {
+    console.log(this.rbush.toJSON());
     const fileName = 'viewport-' + this.viewport + '-rbush.json';
     try{ 
       fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(this.rbush.toJSON(), null, 2));

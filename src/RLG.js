@@ -3,6 +3,7 @@ const { Range } = require('./Range.js');
 const RLGNode = require('./RLGNode.js');
 const Rectangle = require('./Rectangle.js');
 const settings = require('../settings.js');
+const RepairStatistics = require('./RepairStatistics.js');
 
 const tolerance = settings.tolerance;
 
@@ -33,7 +34,7 @@ class RLG {
      */
 
     extractRLG(dom, viewport) {
-        // let rlg = this;
+        let rlg = this;
         let domRectangles = dom.rbush.all();
         for(let rect of domRectangles){
             if(rect.xpath === '/HTML/BODY'){
@@ -47,14 +48,19 @@ class RLG {
         dom.rbush.load(domRectangles); // reload the rbush with the new rectangles
         //set Parent
         for(let rect of domRectangles){
-            let rlgNode = this.getRLGNode(rect.xpath);
+            let rlgNode = rlg.getRLGNode(rect.xpath);
             if(rlgNode === undefined){
                 rlgNode = new RLGNode(rect, this, this.outputDirectory, this.webpage, this.run);
                 this.map.set(rlgNode.xpath, rlgNode);
             }
             rlgNode.addViewport(viewport);
+            console.log(JSON.stringify(rlgNode));
             let intersectingRectangles = dom.rbush.search(rect);
-            let intersectionTypes = this.findIntersectionTypes(intersectingRectangles, rect);
+            for(let r of intersectingRectangles){
+                console.log(JSON.parse(JSON.stringify(r)));
+            }
+            let intersectionTypes = rlg.findIntersectionTypes(intersectingRectangles, rect);
+            console.log(JSON.stringify(intersectionTypes) + '\n');
 
             let parent = undefined;
             if (intersectionTypes.containers.length > 0) {
@@ -70,6 +76,7 @@ class RLG {
                 let circular = false;
                 let traversalStack = [];
                 traversalStack.push(rect);
+                console.log(JSON.stringify(parent) + '\n\n');
                 while (traversalStack.length > 0) {
                     let tempRect = traversalStack.shift();
                     if (tempRect.xpath === parent.xpath) {
@@ -87,15 +94,20 @@ class RLG {
             }
         }
         //set overlap between siblings(between the contained nodes)
-        for (let rect of domRectangles) {
-            let parentRectangle = rect;
-            let parentNode = this.getRLGNode(parentRectangle.xpath);
-            let siblingsRBush = new RBush();
-            if (parentRectangle.children !== undefined) {
-                siblingsRBush.load(parentRectangle.children);
+        // for (let rect of domRectangles) {
+        //     let parentRectangle = rect;
+        //     let parentNode = this.getRLGNode(parentRectangle.xpath);
+        //     let siblingsRBush = new RBush();
+        //     if (parentRectangle.children !== undefined) {
+        //         siblingsRBush.load(parentRectangle.children); //bulk insert all children (rectangles)
+        //         for (let childRect of parentRectangle.children) {
+        //             let childNode = this.getRLGNode(childRect.xpath);
+        //             // get Parent - child edge
+        //             let pcEdge = parentNode.addChild(childNode, viewport);
+        //         }
                 
-            }
-        }
+        //     }
+        // }
     }
 
     /**
@@ -112,12 +124,12 @@ class RLG {
         }
         if (rect.xpath === '/HTML/BODY') { //ignore bottom
             if (rect.minX - tol <= otherRect.minX
-                && rect.maxX + tol >= otherRect.minX
+                && rect.maxX + tol >= otherRect.maxX
                 && rect.minY - tol <= otherRect.minY)
                 return true;
         } else {
             if (rect.minX - tol <= otherRect.minX
-                && rect.maxX + tol >= otherRect.minX
+                && rect.maxX + tol >= otherRect.maxX
                 && rect.minY - tol <= otherRect.minY
                 && rect.maxY + tol >= otherRect.maxY)
                 return true;
@@ -137,7 +149,7 @@ class RLG {
         if (tolerance.protrusion != undefined && tolerance.protrusion > 0)
             tol = tolerance.protrusion;
         if (rect.xpath === "/HTML/BODY") { //ignore bottom area
-            if ((rect.minX - tol) <= otherRect.minX && (recte.minX + tol) >= otherRect.minX &&
+            if ((rect.minX - tol) <= otherRect.minX && (rect.minX + tol) >= otherRect.minX &&
                 (rect.maxX - tol) <= otherRect.maxX && (rect.maxX + tol) >= otherRect.maxX &&
                 (rect.minY - tol) <= otherRect.minY && (rect.minY + tol) >= otherRect.minY)
                 return true;
@@ -202,6 +214,103 @@ class RLG {
             throw new Error('The list of rectangles does not have the DOMnode as part of it');
         }
         return result;
+    }
+
+    findCandidateContainers(containers, rectangle) {
+        console.log(JSON.stringify(containers));
+        // Find height and width of the tightest container
+        let smallest = undefined;
+        let smallestArea = undefined;
+        for (let container of containers) {
+            if (container.xpath === rectangle.xpath) {
+                continue;
+            }
+            let area = container.width * container.height;
+            if (smallest === undefined || smallestArea > area) {
+                smallest = container;
+                smallestArea = area;
+            }
+        }
+        //Find other containers with tolerance applied.
+        let parentTolerance = tolerance.equivalentParent;
+        let candidateContainers = [smallest];
+        for (let container of containers) {
+
+            if (container.xpath === smallest.xpath || container.xpath == rectangle.xpath)
+                continue;
+
+            let parentWidth = container.width - (parentTolerance * 2) //trim from both sides
+            let parentHeight = container.height - (parentTolerance * 2) //trim from both sides
+
+            let area = parentWidth * parentHeight;
+            if (area <= smallestArea)
+                candidateContainers.push(container);
+        }
+        console.log("Candidate containers -----");
+        console.log(JSON.stringify(candidateContainers) + '\n');
+        return candidateContainers;
+    }
+
+    compare(a, b) {
+        let comparison = 0;
+        if (a.xpath > b.xpath) {
+            comparison = 1;
+        } else if (a.xpath < b.xpath) {
+            comparison = -1;
+        }
+        return comparison;
+    }
+
+    /**
+     * Given a set of equivalent parents, heuristics are applied to determine the parent.
+     * @param {[Rectangles]} containers An array of possible container rectangle objects.
+     * @param {Rectangle} rectangle The contained rectangle.
+     */
+    findParent(containers, rectangle) {
+        let ancestorWithLongestXPath = undefined;
+        let descendants = [];
+        let family = [];
+        containers.sort(this.compare); //More deterministic/stable.
+        for (let container of containers) {
+            if (rectangle.xpath.includes(container.xpath + '/')) { //container is a subxpath.
+                if (ancestorWithLongestXPath === undefined)
+                    ancestorWithLongestXPath = container;
+                else if (ancestorWithLongestXPath.xpath.length < container.xpath.length) //longer subxpath wins.
+                    ancestorWithLongestXPath = container;
+            } else if (container.xpath.includes(rectangle.xpath + '/')) { //child is a subxpath of container.
+                descendants.push(container)
+            } else {
+                family.push(container);
+            }
+        }
+        if (ancestorWithLongestXPath !== undefined)
+            return ancestorWithLongestXPath;
+
+        let closestFamily = undefined;
+        let closestFamilyScore = undefined;
+        for (let container of family) { //Use the first container with closest ancestor.
+            let maxLength = Math.min(container.xpath.length, rectangle.xpath.length)
+            let score = 0;
+            for (let i = 0; i < maxLength; i++) {
+                if (container.xpath.charAt(i) !== rectangle.xpath.charAt(i))
+                    break;
+                score++;
+            }
+            if (closestFamily === undefined || closestFamilyScore < score) {
+                closestFamily = container;
+                closestFamilyScore = score;
+            }
+        }
+        if (closestFamily !== undefined)
+            return closestFamily;
+
+        let shortestDescendantXPath = undefined;
+        for (let container of descendants) {
+            if (shortestDescendantXPath === undefined ||   //first shortest subxpath wins.
+                shortestDescendantXPath.xpath.length > container.xpath.length)
+                shortestDescendantXPath = container;
+        }
+        return shortestDescendantXPath;
     }
 
 }

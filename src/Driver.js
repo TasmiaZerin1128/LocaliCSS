@@ -7,7 +7,6 @@ driver.start = async function start() {
   // Start the browser
   if (settings.browserMode === 'headless') {
     driver.browser = await puppeteer.launch({
-      headless: true,
       defaultViewport: null,
       ignoreDefaultArgs: ['--enable-automation'],
     });
@@ -34,9 +33,14 @@ driver.getBodyElement = async function getBodyElement() {
 
 driver.getTagName = async function getTagName(element) {
   // Get the tagname of an element
-  const tagName = await element.evaluate((el) => el.tagName);
+  const tagName = await element.evaluate((element) => element.tagName);
   return tagName;
 };
+
+driver.getHTMLElement = async function getHTMLElement() {
+  let htmlElement = await driver.page.$('html');
+  return htmlElement;
+}
 
 driver.setViewport = async function setViewport(width, height) {
   let options  = { width: width || settings.testWidthMin,
@@ -58,13 +62,28 @@ driver.getRectangle = async function getRectangle(element, traverseUP = false) {
   let rect = await element.boundingBox();
   if (traverseUP && rect === null) {
     while (rect === null) {
-      rect = await element.getProperty('parentNode');
-      if (rect === undefined || rect === null) { throw new Error('No more elements in the DOM'); }
-      rect = await rect.boundingBox();
+      element = await element.getProperty('parentNode');
+      if (element === undefined || element === null) { throw new Error('No more elements in the DOM'); }
+      rect = await element.boundingBox();
     }
   }
   return rect;
 };
+
+driver.getComputedStyle = async function getComputedStyle(element, pseudoElement = undefined) {
+  let styles = await element.evaluate(
+    (element, pseudoElement) => {
+        let style = undefined;
+        if (pseudoElement !== undefined) {
+            let pe = ':' + pseudoElement;
+            style = window.getComputedStyle(element, pe);
+        } else {
+            style = window.getComputedStyle(element);
+        }
+        return [...style].reduce((elementStyles, property) => ({ ...elementStyles, [property]: style.getPropertyValue(property) }), {})
+    }, element, pseudoElement)
+  return styles;
+}
 
 driver.getVisibilityProperties = async function (element) {
   let properties = await element.evaluate((element) => {
@@ -92,7 +111,7 @@ driver.getVisibilityProperties = async function (element) {
 };
 
 driver.getChildren = async function getChildren(element) {
-  const listHandle = await driver.page.evaluateHandle((el) => el.children, element);
+  const listHandle = await driver.page.evaluateHandle((element) => element.children, element);
   const properties = await listHandle.getProperties();
   const children = [];
   for (const property of properties.values()) {
