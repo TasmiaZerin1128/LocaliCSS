@@ -23,7 +23,7 @@ function getDateTime() {
 }
 
 const settings = {
-  testWidthMin: 1400, //320
+  testWidthMin: 320, //320
   testWidthMax: 1400, //1400
   testingHeight: 1000,
   repeat: 1,
@@ -35,6 +35,23 @@ const settings = {
   tolerance: { collision: 2, equivalentParent: 1, protrusion: 1, smallrange: 1, ignoreFractions: false }, //Collision allows 1px border over === 1.
   runOutputFile: path.join('output', getDateTime()),
   excludeElementsWithDisplayValue: ['inline'], //excluded from the RLG
+  capturePCAlignments: true, //top right left bottom aligned, center justified vertical and horizontal
+  capturePCVerticalAlignments: false, //top aligned, bottom aligned, vertically center justified.
+  captureSiblingAlignments: true, //above below right left
+  smallrangeThreshold: 5,
+  detectElementCollision: true,
+  detectElementProtrusion: true,
+  detectViewportProtrusion: true,
+  detectWrapping: true,
+  detectSmallrange: true,
+  screenshotNarrower: false,
+  screenshotMin: true,
+  screenshotMid: false,
+  screenshotMax: false,
+  screenshotWider: true,
+  screenshotFullpage: true,
+  screenshotFailingRepairs: true,
+  screenshotHighlights: true,
 };
 
 module.exports = settings;

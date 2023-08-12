@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const DOM = require('./DOM');
 const cliProgress = require('cli-progress');
+const ProgressBar = require('progress');
 const RLG = require('./RLG');
 
 
@@ -64,10 +65,7 @@ class Webpage {
             await this.navigateToPage();
         }
         // progress bar
-        const bar = new cliProgress.SingleBar({
-            format: 'Capturing DOM Progress |' + '{bar}' + '| {percentage}% || {value}/{total} Viewports Completed\n',
-        }, cliProgress.Presets.shades_classic);
-        bar.start(totalTestViewports, testCounter);
+        const bar = new ProgressBar('Extract RLG by capturing DOM  | [:bar] | :percent :etas | Viewports Completed :token1/' + totalTestViewports, { complete: '█', incomplete: '░', total: totalTestViewports, width: 25});
 
         for(let width = testRange.max; width >= testRange.min; width--) {
             testCounter++;
@@ -76,9 +74,11 @@ class Webpage {
             await newDom.captureDOM();
             newDom.saveRBushData(this.domOutputPath);
             this.rlg.extractRLG(newDom, width);
-            bar.update(testCounter);
+            bar.tick({'token1': testCounter})
         }
-        bar.stop();
+        this.durationDOM = new Date() - this.durationDOM;
+        this.durationDetection = new Date();
+        this.rlg.detectFailures();
     }
 }
 

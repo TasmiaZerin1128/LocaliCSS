@@ -4,6 +4,7 @@ const RLGNode = require('./RLGNode.js');
 const Rectangle = require('./Rectangle.js');
 const settings = require('../settings.js');
 const RepairStatistics = require('./RepairStatistics.js');
+const cliProgress = require('cli-progress');
 
 const tolerance = settings.tolerance;
 
@@ -54,13 +55,8 @@ class RLG {
                 this.map.set(rlgNode.xpath, rlgNode);
             }
             rlgNode.addViewport(viewport);
-            console.log(JSON.stringify(rlgNode));
             let intersectingRectangles = dom.rbush.search(rect);
-            for(let r of intersectingRectangles){
-                console.log(JSON.parse(JSON.stringify(r)));
-            }
             let intersectionTypes = rlg.findIntersectionTypes(intersectingRectangles, rect);
-            console.log(JSON.stringify(intersectionTypes) + '\n');
 
             let parent = undefined;
             if (intersectionTypes.containers.length > 0) {
@@ -76,7 +72,6 @@ class RLG {
                 let circular = false;
                 let traversalStack = [];
                 traversalStack.push(rect);
-                console.log(JSON.stringify(parent) + '\n\n');
                 while (traversalStack.length > 0) {
                     let tempRect = traversalStack.shift();
                     if (tempRect.xpath === parent.xpath) {
@@ -94,20 +89,121 @@ class RLG {
             }
         }
         //set overlap between siblings(between the contained nodes)
-        // for (let rect of domRectangles) {
-        //     let parentRectangle = rect;
-        //     let parentNode = this.getRLGNode(parentRectangle.xpath);
-        //     let siblingsRBush = new RBush();
-        //     if (parentRectangle.children !== undefined) {
-        //         siblingsRBush.load(parentRectangle.children); //bulk insert all children (rectangles)
-        //         for (let childRect of parentRectangle.children) {
-        //             let childNode = this.getRLGNode(childRect.xpath);
-        //             // get Parent - child edge
-        //             let pcEdge = parentNode.addChild(childNode, viewport);
-        //         }
+        for (let rect of domRectangles) {
+            let parentRectangle = rect;
+            let parentNode = this.getRLGNode(parentRectangle.xpath);
+            let siblingsRBush = new RBush();
+            if (parentRectangle.children !== undefined) {
+                siblingsRBush.load(parentRectangle.children); //bulk insert all children (rectangles)
+                for (let childRect of parentRectangle.children) {
+                    let childNode = this.getRLGNode(childRect.xpath);
+                    // get Parent - child edge
+                    let pcEdge = parentNode.addChild(childNode, viewport);
+                    if (settings.capturePCAlignments === true) {
+                        this.addPCEdgeAttributes(parentRectangle, childRect, pcEdge, viewport);
+                    }
+                    let collisionRBush = new RBush();
+
+                    let newTargetRect = {
+                        minX: childRect.minX + tolerance.collision,
+                        maxX: childRect.maxX - tolerance.collision,
+                        minY: childRect.minY + tolerance.collision,
+                        maxY: childRect.maxY - tolerance.collision,
+                        xpath: childRect.xpath
+                    }
+
+                    collisionRBush.insert(newTargetRect);
+                    for (let rect of parentRectangle.children) {
+                        if (rect.xpath !== childRect.xpath) {
+                            collisionRBush.insert(rect);
+                        }
+                    }
+                    let overlappingRectangles = collisionRBush.search(newTargetRect);
+                    for (let overlappingRect of overlappingRectangles) {
+                        if (childRect.xpath === overlappingRect.xpath)
+                            continue;
+                        let overlappingSiblingNode = rlg.getRLGNode(overlappingRect.xpath);
+                        console.log(JSON.stringify(overlappingRectangles));
+                        childNode.addOverlap(overlappingSiblingNode, viewport);
+                    }
+                    if (settings.captureSiblingAlignments === true) {
+                        //Capture above relationship
+                        let aboveArea = this.getAboveArea(parentRectangle, childRect);
+                        overlappingRectangles = siblingsRBush.search(aboveArea);
+                        for (let overlappingRect of overlappingRectangles) {
+                            if (childRect.xpath === overlappingRect.xpath)
+                                continue;
+                            if (overlappingRect.maxY - tolerance.smallrange <= aboveArea.maxY) {
+                                let siblingNode = rlg.getRLGNode(overlappingRect.xpath);
+                                childNode.addToAbove(siblingNode, viewport);
+                            }
+                        }
+                        //Capture below relationship.
+                        let belowArea = this.getBelowArea(parentRectangle, childRect);
+                        overlappingRectangles = siblingsRBush.search(belowArea);
+                        for (let overlapRect of overlappingRectangles) {
+                            if (childRect.xpath === overlapRect.xpath)
+                                continue;
+                            if (overlapRect.minY + tolerance.smallrange >= belowArea.minY) {
+                                let siblingNode = rlg.getRLGNode(overlapRect.xpath);
+                                childNode.addToBelow(siblingNode, viewport);
+                            }
+                        }
+                        //Capture to the right relationship.
+                        let rightArea = this.getRightArea(parentRectangle, childRect);
+                        overlappingRectangles = siblingsRBush.search(rightArea);
+                        for (let overlapRect of overlappingRectangles) {
+                            if (childRect.xpath === overlapRect.xpath)
+                                continue;
+                            if (overlapRect.minX + tolerance.smallrange >= rightArea.minX) {
+                                let siblingNode = rlg.getRLGNode(overlapRect.xpath);
+                                childNode.addToRight(siblingNode, viewport);
+                            }
+                        }
+                        //Capture to the left relationship.
+                        let leftArea = this.getLeftArea(parentRectangle, childRect);
+                        overlappingRectangles = siblingsRBush.search(leftArea);
+                        for (let overlapRect of overlappingRectangles) {
+                            if (childRect.xpath === overlapRect.xpath)
+                                continue;
+                            if (overlapRect.maxX - tolerance.smallrange <= leftArea.maxX) {
+                                let siblingNode = rlg.getRLGNode(overlapRect.xpath);
+                                childNode.addToLeft(siblingNode, viewport);
+                            }
+                        }
+                    }
+                }
                 
-        //     }
-        // }
+            }
+        }
+        domRectangles = dom.rbush.all();
+        for (let rect of domRectangles) {
+            let rlgNode = rlg.getRLGNode(rect.xpath);
+
+            let intersectingRectangles = dom.rbush.search(rect);
+            //set edge for containers (To remove FP prtotrusion)
+            let allContainers = rlg.findAllContainers(intersectingRectangles, rect);
+            for (let container of allContainers) {
+                let containerNode = rlg.getRLGNode(container.xpath);
+                rlgNode.addContainer(containerNode, viewport);
+            }
+        }
+    }
+
+    findAllContainers(overlappingRectangles, targetRect) {
+        let containers = [];
+        let tol = 0;
+        if (tolerance.protrusion !== undefined && tolerance.protrusion > 0)
+            tol = tolerance.protrusion;
+        for (let overlapRect of overlappingRectangles) {
+            if (overlapRect.minX - tol <= targetRect.minX
+                && overlapRect.maxX + tol >= targetRect.maxX
+                && overlapRect.minY - tol <= targetRect.minY
+                && overlapRect.maxY + tol >= targetRect.maxY) {
+                containers.push(overlapRect);
+            }
+        }
+        return containers;
     }
 
     /**
@@ -217,7 +313,7 @@ class RLG {
     }
 
     findCandidateContainers(containers, rectangle) {
-        console.log(JSON.stringify(containers));
+        // console.log(JSON.stringify(containers));
         // Find height and width of the tightest container
         let smallest = undefined;
         let smallestArea = undefined;
@@ -246,8 +342,8 @@ class RLG {
             if (area <= smallestArea)
                 candidateContainers.push(container);
         }
-        console.log("Candidate containers -----");
-        console.log(JSON.stringify(candidateContainers) + '\n');
+        // console.log("Candidate containers -----");
+        // console.log(JSON.stringify(candidateContainers) + '\n');
         return candidateContainers;
     }
 
@@ -311,6 +407,116 @@ class RLG {
                 shortestDescendantXPath = container;
         }
         return shortestDescendantXPath;
+    }
+
+    addPCEdgeAttributes(parentRect, childRect, pcEdge, viewport) {
+        if (settings.capturePCVerticalAlignments === true) {
+            if (this.isVerticallyCenterJustified(parentRect, childRect))
+                pcEdge.verticallyCenterJustifiedRanges.addValue(viewport);
+            if (this.isTopJustified(parentRect, childRect))
+                pcEdge.topJustifiedRanges.addValue(viewport);
+            if (this.isBottomJustified(parentRect, childRect))
+                pcEdge.bottomJustifiedRanges.addValue(viewport);
+        }
+        if (this.isHorizontallyCenterJustified(parentRect, childRect))
+            pcEdge.horizontallyCenterJustifiedRanges.addValue(viewport);
+        if (this.isLeftJustified(parentRect, childRect))
+            pcEdge.leftJustifiedRanges.addValue(viewport);
+        if (this.isRightJustified(parentRect, childRect))
+            pcEdge.rightJustifiedRanges.addValue(viewport);
+    }
+
+    //Returns rectangle area above the child within the parent.
+    getAboveArea(parentRect, childRect) {
+        return {
+            minX: parentRect.minX,
+            maxX: parentRect.maxX,
+            minY: parentRect.minY,
+            maxY: childRect.minY
+        };
+    }
+    
+    //Returns rectangle area below the child within the parent.
+    getBelowArea(parentRect, childRect) {
+        return {
+            minX: parentRect.minX,
+            maxX: parentRect.maxX,
+            minY: childRect.maxY,
+            maxY: parentRect.maxY
+        };
+    }
+    
+    //Returns rectangle area right of the child within the parent.
+    getRightArea(parentRect, childRect) {
+        return {
+            minX: childRect.maxX,
+            maxX: parentRect.maxX,
+            minY: parentRect.minY,
+            maxY: parentRect.maxY
+        };
+    }
+
+    //Returns rectangle area left of the child within the parent.
+    getLeftArea(parentRect, childRect) {
+        return {
+            minX: parentRect.minX,
+            maxX: childRect.minX,
+            minY: parentRect.minY,
+            maxY: parentRect.maxY
+        };
+    }
+    
+    // Returns true if the child is top justified.
+    isTopJustified(parentRect, childRect) {
+        return (parentRect.minY === childRect.minY);
+    }
+    
+    // Returns true if the child is bottom justified.
+    isBottomJustified(parentRect, childRect) {
+        return (parentRect.maxY === childRect.maxY);
+    }
+
+    // Returns true if the child is left justified.
+    isLeftJustified(parentRect, childRect) {
+        return (parentRect.minX === childRect.minX);
+    }
+
+    // Returns true if the child is right justified.
+    isRightJustified(parentRect, childRect) {
+        return (parentRect.maxX === childRect.maxX);
+    }
+    
+    // Returns true if the child is horizontally center justified.
+    isHorizontallyCenterJustified(parentRect, childRect) {
+        return (childRect.minX - parentRect.minX === parentRect.maxX - childRect.maxX);
+    }
+
+    // Returns true if the child is vertically center justified.
+    isVerticallyCenterJustified(parentRect, childRect) {
+        return (childRect.minY - parentRect.minY === parentRect.maxY - childRect.maxY);
+    }
+
+    detectFailures(progress = true) {
+        let testCounter = 0;
+        let bar = new cliProgress.SingleBar({
+            format: 'Find RLFs  |' + '{bar}' + '| {percentage}% || {value}/{total} Viewports Completed\n',
+        }, cliProgress.Presets.shades_classic);
+        bar.start(this.map.size, testCounter);
+        let bodyNode = this.map.get('/HTML/BODY');
+        let nodesWithFailures = [];
+        this.map.forEach((node) => {
+            node.detectFailures(bodyNode);
+            if (node.hasFailures()) {
+                nodesWithFailures.push(node);
+            }
+            if (progress) {
+                testCounter++;
+                bar.update(testCounter);
+                // bar.tick();
+            }
+        });
+        this.nodeWithFailures = nodesWithFailures;
+        bar.stop();
     }
 
 }

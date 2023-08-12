@@ -32,8 +32,6 @@ class DOM {
       this.root.setXPath(await this.driver.getTagName(this.root.element));
     }
 
-    console.log(this.root);
-
     const traversalStackDOM = [];
     traversalStackDOM.push(this.root);
     while (traversalStackDOM.length > 0) {
@@ -68,7 +66,6 @@ class DOM {
   }
 
   saveRBushData(writeDirectory) {
-    console.log(this.rbush.toJSON());
     const fileName = 'viewport-' + this.viewport + '-rbush.json';
     try{ 
       fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(this.rbush.toJSON(), null, 2));
