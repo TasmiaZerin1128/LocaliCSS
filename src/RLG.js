@@ -512,7 +512,7 @@ class RLG {
             if (progress) {
                 testCounter++;
                 bar.update(testCounter);
-                // bar.tick();
+                bar.tick();
             }
         });
         this.nodeWithFailures = nodesWithFailures;
