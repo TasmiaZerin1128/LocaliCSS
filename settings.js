@@ -23,7 +23,7 @@ function getDateTime() {
 }
 
 const settings = {
-  testWidthMin: 320, //320
+  testWidthMin: 1390, //320
   testWidthMax: 1400, //1400
   testingHeight: 1000,
   repeat: 1,
@@ -52,6 +52,7 @@ const settings = {
   screenshotFullpage: true,
   screenshotFailingRepairs: true,
   screenshotHighlights: true,
+  humanStudy: false,
 };
 
 module.exports = settings;

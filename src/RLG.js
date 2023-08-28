@@ -123,7 +123,6 @@ class RLG {
                         if (childRect.xpath === overlappingRect.xpath)
                             continue;
                         let overlappingSiblingNode = rlg.getRLGNode(overlappingRect.xpath);
-                        console.log(JSON.stringify(overlappingRectangles));
                         childNode.addOverlap(overlappingSiblingNode, viewport);
                     }
                     if (settings.captureSiblingAlignments === true) {
@@ -512,7 +511,6 @@ class RLG {
             if (progress) {
                 testCounter++;
                 bar.update(testCounter);
-                bar.tick();
             }
         });
         this.nodeWithFailures = nodesWithFailures;

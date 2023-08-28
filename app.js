@@ -10,7 +10,7 @@ const startTool = async () => {
   await driver.start();
   const page = await driver.createPage();
 
-  let url = 'https://thebiguglywebsite.com/';
+  let url = 'https://holycrossgirlshighschool.com/';
   let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
   // await driver.goto(url);
 
