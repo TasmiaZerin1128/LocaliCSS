@@ -67,6 +67,22 @@ class utils {
                 if (err) throw err;
             });
     }
+
+    static setDifference(allInSet, notInSet) { //TODO: test.
+        let difference = [];
+        for (let e of allInSet)
+            if (!notInSet.includes(e))
+                difference.push(e);
+        return difference;
+    }
+
+    static isObjectsXPathInArrayOfObjects(object, arrayOfObjects) {
+        for (let obj of arrayOfObjects) {
+            if (object.xpath === obj.xpath)
+                return true;
+        }
+        return false;
+    }
 }
 
 module.exports = utils;

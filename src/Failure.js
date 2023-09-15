@@ -25,6 +25,31 @@ class Failure {
         this.durationWiderConfirmRepair = undefined;
         this.durationNarrowerConfirmRepair = undefined;
     }
+
+    setupHumanStudyData() {
+        this.hsData = { //will carry anonymous data only.
+            ID: this.ID,
+            type: this.type,
+            rangeMin: this.range.min,
+            rangeMax: this.range.max,
+            rectangles: []
+        };
+        if (this.outputDirectory === undefined)
+            throw "\nError - " + this.type + " has no output directory - ID:" + this.ID + "\n";
+        this.hsKey = {
+            humanStudyDirectory: path.join(this.outputDirectory, 'human-study', 'screenshots'),
+            ID: this.ID,
+            type: this.type,
+            rangeMin: this.range.min,
+            rangeMax: this.range.max,
+            repairName: [],
+            anonymizedImageNames: [],
+            viewports: [],
+            randomIDsUsed: [],
+            rectangles: [],
+            scrollY: []
+        }
+    }
 }
 
 module.exports = Failure;

@@ -8,6 +8,8 @@ const ContainerEdge = require("./ContainerEdge");
 const ViewportFailure = require("./ViewportFailure");
 const settings = require("../settings.js");
 const ProtrusionFailure = require("./ProtrusionFailure");
+const utils = require("./utils");
+const SmallRangeFailure = require("./SmallRangeFailure");
 
 class RLGNode {
      /**
@@ -209,6 +211,31 @@ class RLGNode {
         }
     }
 
+    getRowNodesAtViewport(viewport) {
+        let aboveXPaths = [];
+        let belowXPaths = [];
+        let rowNodes = [];
+        for (let aboveEdge of this.aboveMeEdges) {
+            if (aboveEdge.ranges.inRanges(viewport))
+                aboveXPaths.push(aboveEdge.above.xpath);
+        }
+        for (let belowEdge of this.belowMeEdges) {
+            if (belowEdge.ranges.inRanges(viewport))
+                belowXPaths.push(belowEdge.below.xpath);
+        }
+        for (let rightEdge of this.toMyRightEdges) {
+            if (rightEdge.ranges.inRanges(viewport))
+                if (!aboveXPaths.includes(rightEdge.right.xpath) && !belowXPaths.includes(rightEdge.right.xpath))
+                    rowNodes.push(rightEdge.right);
+        }
+        for (let leftEdge of this.toMyLeftEdges) {
+            if (leftEdge.ranges.inRanges(viewport))
+                if (!aboveXPaths.includes(leftEdge.left.xpath) && !belowXPaths.includes(leftEdge.left.xpath))
+                    rowNodes.push(leftEdge.left);
+        }
+        return rowNodes;
+    }
+
     // Detect Viewport Protrusion of this node
     detectViewportProtrusion(bodyNode) {
         if (this.xpath === bodyNode.xpath) {
@@ -302,6 +329,171 @@ class RLGNode {
         }
     }
 
+    // Detect collision in the passed in range
+    detectCollision(firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, overlapEdge, range) {
+        if (firstNodeParentAtWider.xpath === firstNodeParentAtMax.xpath
+            && secondNodeParentAtWider.xpath === secondNodeParentAtMax.xpath) {
+                if (this.xpath === overlapEdge.sibling1.xpath) {
+                    let alsoProtuding = false;
+                    for (let protrusion of this.elementProtrusions) {
+                        if (protrusion.node.xpath === this.xpath ||
+                            protrusion.node.xpath === overlapEdge.sibling2.xpath) {
+                                if (protrusion.range.isContaining(range)) {
+                                    alsoProtuding = true;
+                                    break;
+                                }
+                        }
+                    }
+                    if (!alsoProtuding) {
+                        let failure = new CollisionFailure(this, overlapEdge.sibling2, firstNodeParentAtMax, range, this.outputDirectory, this.webpage, this.run);
+                        this.elementCollisions.push(failure);
+                    }
+                }
+            }
+
+    }
+
+    detectSmallRange() {
+        const alignment = utils.alignment;
+
+        let siblingAlignments = [this.aboveMeEdges, this.belowMeEdges, this.toMyLeftEdges, this.toMyRightEdges, this.overlapEdges];
+        let names = [alignment.ABOVE, alignment.BELOW, alignment.LEFT, alignment.RIGHT, alignment.OVERLAP];
+
+        for (let i = 0; i < siblingAlignments.length; i++) {
+            let checkingAlignment = siblingAlignments[i];
+            let name = names[i];
+            let otherAlignments = [];
+            let otherNames = [];
+
+            for (let x = 0; x < siblingAlignments.length; x++) {
+                if (x !== i) {
+                    otherAlignments.push(siblingAlignments[x]);
+                    otherNames.push(names[x]);
+                }
+            }
+
+            for (let edge of checkingAlignment) {
+                if (edge.node1.xpath === this.xpath) {
+                    for (let range of edge.ranges.list) {
+                        let set = [];
+                        let setWider = [];
+                        let setNarrower = [];
+                        let possibleFailureRange = undefined;
+                        if (range.length() <= settings.smallrangeThreshold) {
+                            possibleFailureRange = range;
+                            set.push(name);
+                            for (let x = 0; x < otherAlignments.length; x++) {
+                                let otherAlignment = otherAlignments[x];
+                                let otherName = otherNames[x];
+                                for (let otherEdge of otherAlignment)
+                                    if (edge.hasTheSameNodes(otherEdge)) {
+                                        for (let otherEdgeRange of otherEdge.ranges.list) {
+                                            if (otherEdgeRange.isOverlappingWith(possibleFailureRange))
+                                                set.push(otherName);
+                                            if (otherEdgeRange.inRange(possibleFailureRange.min - 1))  //alignment exists at narrower viewport
+                                                setNarrower.push(otherName);
+                                            if (otherEdgeRange.inRange(possibleFailureRange.max + 1))   //alignment exists at wider viewport
+                                                setWider.push(otherName);
+                                        }
+                                    }
+                            }
+                        }
+                        if (setWider.length > 0 && setNarrower.length > 0) {
+                            let prevDiff = utils.setDifference(setNarrower, set);
+                            let diffPrev = utils.setDifference(set, setNarrower);
+                            let nextDiff = utils.setDifference(setWider, set);
+                            let diffNext = utils.setDifference(set, setWider);
+
+                            if ((prevDiff.length + diffPrev.length) >= 2 && (nextDiff.length + diffNext.length) >= 2) {
+                                if (!this.isSmallRangeReported(edge.node1, edge.node2, possibleFailureRange)) {
+                                    let failure = undefined;
+                                    if (edge.node1.xpath === this.xpath)
+                                        failure = new SmallRangeFailure(edge.node1, edge.node2, possibleFailureRange, set, setNarrower, setWider, this.outputDirectory, this.webpage, this.run);
+                                    else
+                                        failure = new SmallRangeFailure(edge.node2, edge.node1, possibleFailureRange, set, setNarrower, setWider, this.outputDirectory, this.webpage, this.run);
+                                    this.smallranges.push(failure);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    isSmallRangeReported(node, otherNode, range) {
+        for (let sr of this.smallranges) {
+            if (sr.range.getMinimum() == range.getMinimum() && sr.range.getMaximum() == range.getMaximum() &&
+             ((sr.node.xpath === node.xpath && sr.sibling.xpath === otherNode.xpath) ||
+             (sr.node.xpath === otherNode.xpath && sr.sibling.xpath === node.xpath))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    detectWrapping(edges, direction) {
+        let viewportInspected = [];
+        for (let edge of edges) {
+            for (let range of edge.ranges.list) {
+                if (viewportInspected.includes(range.getMaximum())) {
+                    continue;
+                }
+                let row = this.getRowNodesAtViewport(range.getWider());
+                if (utils.isObjectsXPathInArrayOfObjects(edge[direction], row))
+                    viewportInspected.push(range.getMaximum());
+                else
+                    continue;
+                if (row.length >= settings.rowThreshold) {
+                    let rowAfterWrapping = row[0].getRowNodesAtViewport(range.getMaximum());
+                    rowAfterWrapping.unshift(row[0]);
+
+                    if (rowAfterWrapping.length === row.length) {
+                        let rowIntactPostWrapping = true;
+                        for (let node of row) {
+                            if (!utils.isObjectsXPathInArrayOfObjects(node, rowAfterWrapping)) {
+                                rowIntactPostWrapping = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (rowIntactPostWrapping) {
+                        let possibleRanges = [];
+                        for (let edgeB of edges)
+                            if (utils.isObjectsXPathInArrayOfObjects(edgeB[direction], row))
+                                for (let possibleRange of edgeB.ranges.list)
+                                    if (range.getMaximum() === possibleRange.getMaximum())
+                                        possibleRanges.push(possibleRange);
+                        if (possibleRanges.length === row.length) {
+                            let failureRange = undefined;
+                            for (let fRange of possibleRanges)
+                                if (failureRange === undefined || failureRange.getMinimum() < fRange.getMinimum())
+                                    failureRange = fRange;
+
+                            let rowAtMinimum = row[0].getRowNodesAtViewport(range.getMinimum());
+                            rowAtMinimum.unshift(row[0]);
+
+                            if (row.length === rowAtMinimum.length) {
+                                let rowIntactPostWrappingAtMinimum = true;
+                                for (let node of row) {
+                                    if (!utils.isObjectsXPathInArrayOfObjects(node, rowAtMinimum)) {
+                                        rowIntactPostWrappingAtMinimum = false;
+                                        break;
+                                    }
+                                }
+                                if (rowIntactPostWrappingAtMinimum) {
+                                    let wrapping = new WrappingFailure(this, row, failureRange, this.outputDirectory, this.webpage, this.run)
+                                    this.wrappings.push(wrapping);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
     hasFailures() {
         if (this.smallranges.length === 0 && this.elementCollisions.length === 0 && this.elementProtrusions.length === 0 && this.wrappings.length === 0 && this.viewportProtrusions.length === 0) {
             return false;
@@ -317,10 +509,10 @@ class RLGNode {
             this.detectViewportProtrusion(bodyNode);
         if (settings.detectElementCollision || settings.detectElementProtrusion)
             this.detectOverlapBasedFailures();
-        // if (settings.detectSmallRange)
-        //     this.detectSmallRange();
-        // if (settings.detectWrapping)
-        //     this.detectWrapping(this.aboveMeEdges, 'above');
+        if (settings.detectSmallRange)
+            this.detectSmallRange();
+        if (settings.detectWrapping)
+            this.detectWrapping(this.aboveMeEdges, 'above');
         console.log("Detection done");
     }
 }

@@ -33,6 +33,7 @@ const settings = {
   webpagesDirectory: 'subjects',
   mainOutputFile: 'output',
   tolerance: { collision: 2, equivalentParent: 1, protrusion: 1, smallrange: 1, ignoreFractions: false }, //Collision allows 1px border over === 1.
+  rowThreshold: 2,
   runOutputFile: path.join('output', getDateTime()),
   excludeElementsWithDisplayValue: ['inline'], //excluded from the RLG
   capturePCAlignments: true, //top right left bottom aligned, center justified vertical and horizontal
