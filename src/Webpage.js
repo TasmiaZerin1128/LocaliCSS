@@ -80,6 +80,16 @@ class Webpage {
         this.durationDetection = new Date();
         this.rlg.detectFailures();
     }
+
+    // Classify and Screenshot the failures
+    async classifyFailures() {
+        this.durationClassify = new Date();
+        await this.rlg.classifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Classifications.txt', this.snapshotOutputPath);
+        this.durationClassify = new Date() - this.durationClassify;
+    }
+    async screenshotFailures() {
+        await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);
+    }
 }
 
 module.exports = Webpage;

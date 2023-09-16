@@ -5,6 +5,7 @@ const Rectangle = require('./Rectangle.js');
 const settings = require('../settings.js');
 const RepairStatistics = require('./RepairStatistics.js');
 const cliProgress = require('cli-progress');
+const utils = require('./utils.js');
 
 const tolerance = settings.tolerance;
 
@@ -515,6 +516,21 @@ class RLG {
         });
         this.nodeWithFailures = nodesWithFailures;
         bar.stop();
+    }
+
+    // Classify the failure of all nodes with failures
+    async classifyFailures(driver, classificationFile, snapshotDirectory) {
+        let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :token1/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        for (const node of this.nodesWithFailures) {
+            await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar);
+        }
+    }
+
+    async screenshotFailures(driver, directory) {
+        let bar = new ProgressBar('Screenshot RLFs  | [:bar] | :percent :etas | Screenshot Completed :token1/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        for (const node of this.nodesWithFailures) {
+            await node.screenshotFailures(driver, directory, bar);
+        } 
     }
 
 }

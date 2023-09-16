@@ -494,6 +494,24 @@ class RLGNode {
         }
     }
 
+    async classifyFailures(driver, classificationFile, snapshotDirectory, bar) {
+        for (let viewportProtrusion of this.viewportProtrusions) {
+            await viewportProtrusion.classify(driver, classificationFile, snapshotDirectory, bar);
+        }
+        for (let protrusion of this.elementProtrusions) {
+            await protrusion.classify(driver, classificationFile, snapshotDirectory, bar);
+        }
+        for (let collision of this.elementCollisions) {
+            await collision.classify(driver, classificationFile, snapshotDirectory, bar);
+        }
+        for (let wrapping of this.wrappings) {
+            await wrapping.classify(driver, classificationFile, snapshotDirectory, bar);
+        }
+        for (let smallrange of this.smallranges) {
+            await smallrange.classify(driver, classificationFile, snapshotDirectory, bar);
+        }
+    }
+
     hasFailures() {
         if (this.smallranges.length === 0 && this.elementCollisions.length === 0 && this.elementProtrusions.length === 0 && this.wrappings.length === 0 && this.viewportProtrusions.length === 0) {
             return false;
@@ -513,7 +531,6 @@ class RLGNode {
             this.detectSmallRange();
         if (settings.detectWrapping)
             this.detectWrapping(this.aboveMeEdges, 'above');
-        console.log("Detection done");
     }
 }
 
