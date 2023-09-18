@@ -1,4 +1,5 @@
 const settings = require("../settings");
+const DOM = require("./DOM");
 const Rectangle = require("./Rectangle");
 const RepairStatistics = require("./RepairStatistics");
 const utils = require("./utils");
@@ -51,6 +52,105 @@ class Failure {
             rectangles: [],
             scrollY: []
         }
+    }
+
+    // Get parent width or viewport width and height from wider viewport.
+    async getDOMFrom(driver, viewport, pseudoElements = [], root = undefined, xpath = undefined) {
+        if (viewport === undefined)
+            viewport = this.range.getWider();
+        if (driver.currentViewport !== viewport)
+            await driver.setViewport(viewport, settings.testingHeight);
+        let dom = new DOM(driver, viewport);
+        await dom.captureDOM(true, true, pseudoElements, root, xpath);
+        return dom;
+    }
+    
+    getDOMStylesCSS(dom) {
+        if (this.repairCSS === undefined)
+            this.repairCSS = '';
+        let traversalStackDOM = [];
+        traversalStackDOM.push(dom.root);
+        while (traversalStackDOM.length > 0) {
+            let domNode = traversalStackDOM.shift();
+            let css = this.getRepairCSSFromComputedStyle(domNode.getComputedStyle(), undefined, undefined, false);
+            if (css !== '') {
+                this.repairCSS +=
+                    "   " + domNode.getSelector() + " {\n" +
+                    css +
+                    "   " + "}\n";
+            }
+            for (let child of domNode.children) {
+                traversalStackDOM.push(child);
+            }
+        }
+        return this.repairCSS;
+    }
+
+    getRepairCSSFromComputedStyle(computedStyle, oracleViewport, cushion = 1, scale = true) {
+        let css = '';
+        for (let property in computedStyle) {
+            if (settings.skipCopyingCSSProperties.includes(property))
+                continue;
+            let widerValues = [];
+            let partsWithPX = [];
+            if (scale === true &&
+                computedStyle[property].includes('px') &&
+                !settings.NoScalingCSSProperties.includes(property)) { //Avoid scaling some properties
+                let parts = computedStyle[property].split(" ");
+
+                for (let part of parts) {
+                    if (part.includes('px')) {
+                        let hasComma = false;
+                        if (part.includes(',')) {
+                            hasComma = true
+                            part = part.trim().replace(',', '');
+                        }
+                        let num = Number(part.trim().replace('px', ''));
+                        if (num === undefined || Number.isNaN(num)) {
+                            let message = "Error - PX to Number: " + num + "\n" +
+                                "Original: " + part + "\n";
+                            throw message;
+                        }
+                        widerValues.push(num);
+                        partsWithPX.push(true);
+                        if (hasComma) {
+                            widerValues.push(',');
+                            partsWithPX.push(false);
+                        }
+                    }
+                    else {
+                        widerValues.push(part.trim());
+                        partsWithPX.push(false);
+                    }
+                }
+            }
+            if (widerValues.length > 0 && scale) {
+                let values = '';
+                for (let i = 0; i < widerValues.length; i++) {
+                    let figure = widerValues[i];
+                    let withPX = partsWithPX[i];
+                    if (withPX === true) {
+                        if (figure === 0) {
+                            values += '0px ';
+                        } else {
+                            values += "calc((100vw/" + (oracleViewport + cushion) + ")*" + figure + ") ";
+                        }
+                    } else {
+                        values += figure + ' ';
+                    }
+
+                }
+                if (values !== '') {
+                    css +=
+                        "      " + property + ": " + values + "!important; \n";
+                }
+            }
+            else {
+                css +=
+                    "      " + property + ": " + computedStyle[property] + " !important; \n";
+            }
+        }
+        return css;
     }
 
     async setViewportHeightBeforeSnapshot(viewport = driver.currentViewport, ruleMin = undefined, ruleMax = undefined) {
