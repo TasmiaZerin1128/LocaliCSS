@@ -53,6 +53,34 @@ class Failure {
         }
     }
 
+    async setViewportHeightBeforeSnapshot(viewport = driver.currentViewport, ruleMin = undefined, ruleMax = undefined) {
+        if (settings.browserMode === utils.Mode.HEADLESS) {
+            let css = undefined;
+            if (this.repairElementHandle === undefined) {
+                let htmlElement = await driver.getHTMLElement();
+                let dom = await this.getDOMFrom(driver, viewport, [], htmlElement);
+                css = this.getDOMStylesCSS(dom);
+            }
+
+            let pageHeight = await driver.getPageHeightUsingHTMLElement();
+            if (settings.screenshotSpecial !== undefined && settings.screenshotSpecial.length > 0) {
+                for (let name of settings.screenshotSpecial) {
+                    if (this.webpage.toLocaleLowerCase().includes(name.toLocaleLowerCase())) {
+                        pageHeight = await driver.getMaxElementHeight();
+                    }
+                }
+            }
+            pageHeight = Math.max(pageHeight, settings.testingHeight);
+            await driver.setViewport(viewport, pageHeight);
+            if (this.repairElementHandle === undefined) {
+                this.snapshotCSSElementHandle = await driver.addRepair(css);
+            } else {
+                await driver.setViewport(viewport, settings.testingHeight);
+            }
+        }
+
+    }
+
     async snapshotViewport(driver, viewport, directory, includeClassification = false, clip = true) {
         await this.setViewportHeightBeforeSnapshot(viewport);
         let fullPage = true;
