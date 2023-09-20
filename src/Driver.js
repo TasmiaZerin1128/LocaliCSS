@@ -25,6 +25,150 @@ driver.createPage = async function createPage() {
   return driver.page;
 };
 
+driver.screenshot = async function (savePath, fullPage = false, encoding64 = true) {
+    let options = {
+        path: savePath,
+        fullPage: fullPage
+    }
+    if (encoding64)
+      options.encoding = "base64";
+    let screenshotPromise = await driver.page.screenshot(options);
+    return screenshotPromise;
+}
+
+driver.highlight = async function (rectangles, screenshot, drawViewportWidthLine = false) {
+        let screenshotHighlighted = await driver.page.evaluate(async function (rectangles, screenshot, colors, viewport, drawViewportWidthLine) {
+            let canvas = document.createElement("CANVAS");
+            let context = canvas.getContext("2d");
+            let image = new Image();
+            let imgLoadPromise = async function () {
+                return new Promise((resolve, reject) => {
+                    image.onload = () => { return resolve };
+                    image.onerror = reject;
+                });
+            }
+            image.src = 'data:image/png;base64,' + screenshot;
+            await imgLoadPromise;
+            canvas.width = image.naturalWidth;
+            canvas.height = image.naturalHeight;
+            context.drawImage(image, 0, 0);
+
+            //Stroke rectangles...
+            context.lineWidth = 2;
+            for (let i = 0; i < rectangles.length; i++) {
+                let rectangle = rectangles[i];
+                if (rectangle === undefined || rectangle === null)
+                    continue;
+                context.strokeStyle = "black";
+                context.strokeRect(rectangle.minX, rectangle.minY, rectangle.width, rectangle.height);
+            }
+            for (let i = 0; i < rectangles.length; i++) {
+                let rectangle = rectangles[i];
+                if (rectangle === undefined)
+                    continue;
+                context.setLineDash([20 - i - 2, 8]);
+                colorIndex = Math.min(i, colors.length - 1);
+                context.strokeStyle = colors[colorIndex];
+                context.strokeRect(rectangle.minX, rectangle.minY, rectangle.width, rectangle.height);
+                context.setLineDash([]);
+            }
+            //Stroke viewport width line...
+            if (drawViewportWidthLine) {
+                context.beginPath();
+                context.moveTo(viewport, 0);
+                context.lineTo(viewport, canvas.height);
+                context.setLineDash([4, 4]);
+                context.strokeStyle = "black";
+                context.stroke();
+                context.setLineDash([2, 6]);
+                context.strokeStyle = "white";
+                context.beginPath();
+                context.moveTo(viewport, 0);
+                context.lineTo(viewport, canvas.height);
+                context.stroke();
+
+                context.setLineDash([]);
+            }
+
+            return canvas.toDataURL();
+        }, rectangles, screenshot, HighlightColors, this.currentViewport, drawViewportWidthLine);
+        return screenshotHighlighted;
+};
+
+driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = false, viewportWidth = Infinity) {
+        let clippedScreenshot = await driver.page.evaluate(async function (rectangle, screenshot, fullViewportWidth, viewportWidth) {
+            let canvas = document.createElement("CANVAS");
+            let context = canvas.getContext("2d");
+            let image = new Image();
+            let imgLoadPromise = async function () {
+                return new Promise((resolve, reject) => {
+                    image.onload = () => { return resolve };
+                    image.onerror = reject;
+                });
+            }
+            image.src = 'data:image/png;base64,' + screenshot;
+            await imgLoadPromise;
+            let originalAreaRequested = "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height;
+            if (fullViewportWidth) {
+                rectangle.minX = 0;
+                if (viewportWidth !== undefined)
+                    rectangle.maxX = viewportWidth;
+                else
+                    rectangle.maxX = image.naturalWidth
+            } else {
+                rectangle.minX = Math.max(0, rectangle.minX);
+                rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
+            }
+
+            rectangle.minY = Math.max(0, rectangle.minY);
+            rectangle.maxY = Math.min(image.naturalHeight, rectangle.maxY);
+            rectangle.width = rectangle.maxX - rectangle.minX;
+            rectangle.height = rectangle.maxY - rectangle.minY;
+            if (rectangle.width <= 0 || rectangle.height <= 0) {
+                throw "\nError cannot clip canvas with width: \n" +
+                "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height +
+                "\n image-natural-width: " + image.naturalWidth +
+                " image-natural-height: " + image.naturalHeight + "\n" +
+                "Originally Requested Clipping:\n " + originalAreaRequested;
+            }
+            canvas.width = rectangle.width;
+            canvas.height = rectangle.height;
+            context.drawImage(image, rectangle.minX, rectangle.minY, rectangle.width, rectangle.height, 0, 0, rectangle.width, rectangle.height);
+
+            return canvas.toDataURL();
+        }, rectangle, screenshot, fullViewportWidth, viewportWidth);
+        return clippedScreenshot;
+};
+
+driver.cropImage = async function (screenshot, top = 0, bottom = 0, left = 0, right = 0) {
+        let croppedScreenshot = await driver.page.evaluate(async function (screenshot, top, bottom, left, right) {
+            let canvas = document.createElement("CANVAS");
+            let context = canvas.getContext("2d");
+            let image = new Image();
+            let imgLoadPromise = async function () {
+                return new Promise((resolve, reject) => {
+                    image.onload = () => { return resolve };
+                    image.onerror = reject;
+                });
+            }
+            image.src = 'data:image/png;base64,' + screenshot;
+            await imgLoadPromise;
+
+            if (image.naturalWidth <= (left + right) || image.naturalHeight <= (top + bottom)) {
+                throw "\nError cropping canvas with...\n" +
+                "\nimage-natural-width: " + image.naturalWidth +
+                " image-natural-height: " + image.naturalHeight + "\n" +
+                "Cropping Values...\nTop: " + top + "   Bottom: " + bottom + "   Left: " + left + "   Right: " + right;
+            }
+            canvas.width = image.naturalWidth - left - right;
+            canvas.height = image.naturalHeight - top - bottom;
+            context.drawImage(image, left, top, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+
+            return canvas.toDataURL();
+        }, screenshot, top, bottom, left, right);
+        return croppedScreenshot;
+};
+
 driver.getBodyElement = async function getBodyElement() {
   // Get the body element from the page
   const body = await driver.page.$('body');
@@ -121,6 +265,28 @@ driver.getChildren = async function getChildren(element) {
     }
   }
   return children;
+};
+
+driver.getPageHeightUsingHTMLElement = async function () {
+    let htmlElement = await driver.getHTMLElement();
+    let rect = await driver.getRectangle(htmlElement);
+    return Math.ceil(rect.y + rect.height);
+};
+
+// Adds CSS repair using style tag and returns an element handle.
+driver.addRepair = async function (repairCode) {
+    let elementHandle = await driver.page.addStyleTag({ content: repairCode });
+    if (settings.repairDelay != undefined && settings.repairDelay > 0) {
+      await assist.resolveAfterSeconds(settings.repairDelay);
+    }
+    return elementHandle;
+};
+
+driver.removeRepair = async function (element) {
+    if (element === undefined) {
+        throw "Error: no elementHandle passed in (removeRepair)";
+    }
+    await this.page.evaluate((element) => { element.parentNode.removeChild(element); }, element);
 };
 
 driver.close = async function close() {

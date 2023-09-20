@@ -1,8 +1,10 @@
 const settings = require("../settings");
 const DOM = require("./DOM");
+const driver = require("./Driver");
 const Rectangle = require("./Rectangle");
 const RepairStatistics = require("./RepairStatistics");
 const utils = require("./utils");
+const fs = require('fs');
 
 class Failure {
     constructor(webpage, run) {
@@ -52,6 +54,81 @@ class Failure {
             rectangles: [],
             scrollY: []
         }
+    }
+
+    getClippingCoordinates(rectangles, extra = 0, maxHeight = 8000) {
+        let problemArea = new Rectangle();
+        for (let rect of rectangles) {
+            if (rect.isMissingValues()) {
+                assist.log(this.ID + " " + this.type + " " + this.range.toString());
+                assist.log("Warning: cannot use rectangle for cutting screenshot...");
+                assist.log(rect.toString(true));
+                continue;
+            }
+            if (rect.height > maxHeight) { //max element height to support.
+                assist.log(this.ID + " " + this.type + " " + this.range.toString());
+                assist.log("Warning: Human Study - rectangle height exceeds maximum height: " + maxHeight);
+                assist.log(rect.toString(true));
+                continue;
+            }
+            if (problemArea.minX === undefined || rect.minX < problemArea.minX)
+                problemArea.minX = rect.minX;
+            if (problemArea.maxX === undefined || rect.maxX > problemArea.maxX)
+                problemArea.maxX = rect.maxX;
+            if (problemArea.minY === undefined || Math.max(rect.minY - extra, 0) < problemArea.minY)
+                problemArea.minY = Math.max(rect.minY - extra, 0);
+            if (problemArea.maxY === undefined || (rect.maxY + extra) > problemArea.maxY)
+                problemArea.maxY = (rect.maxY + extra);
+        }
+        if (problemArea.isMissingValues()) { //use first in the worst case
+            assist.log(this.ID + " " + this.type + " " + this.range.toString());
+            assist.log("Warning: Human Study - Had to use first rectangle for cutting.");
+            let rect = rectangles[0];
+            assist.log(rect.toString(true));
+            problemArea.minX = rect.minX;
+            problemArea.maxX = rect.maxX;
+            problemArea.minY = Math.max(rect.minY - extra, 0);
+            problemArea.maxY = (rect.maxY + extra);
+        }
+        problemArea.width = problemArea.maxX - problemArea.minX;
+        problemArea.height = problemArea.maxY - problemArea.minY;
+        return problemArea;
+    }
+
+
+    async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
+        try {
+            if (problemArea === undefined)
+                problemArea = this.getClippingCoordinates(rectangles);
+            if (problemArea.isMissingValues())
+                throw "== Begin Problem Area ==\n" +
+                "Missing size for cutting screenshot\n" +
+                problemArea + "\n" +
+                "== End  Problem  Area ==\n" +
+                "==  Begin Rectangles  ==\n" +
+                + rectangles + "\n" +
+                "==   End  Rectangles  ==\n"
+            screenshot = await driver.clipImage(screenshot, problemArea, fullViewportWidthClipping, viewport);
+        } catch (passedInErrorMessage) {
+            let newErrorMessage = this.ID + ' ' + this.type + ' ' + this.range.toString() + '\n';
+            for (let rect of rectangles) {
+                newErrorMessage += rect.toString(true) + '\n';
+            }
+            newErrorMessage += '\n' + passedInErrorMessage;
+            throw newErrorMessage;
+        }
+        return screenshot;
+    }
+
+    saveScreenshot(file, screenshot, removeHeader = true) {
+        if (removeHeader)
+            screenshot = screenshot.split(',')[1];
+        fs.writeFile(file, screenshot, 'base64', function (err) {
+            if (err) {
+                console.log('ERROR IN SAVING IMAGE');
+                console.log(err);
+            }
+        });
     }
 
     // Get parent width or viewport width and height from wider viewport.
@@ -153,7 +230,7 @@ class Failure {
         return css;
     }
 
-    async setViewportHeightBeforeSnapshot(viewport = driver.currentViewport, ruleMin = undefined, ruleMax = undefined) {
+    async setViewportHeightBeforeSnapshot(viewport) {
         if (settings.browserMode === utils.Mode.HEADLESS) {
             let css = undefined;
             if (this.repairElementHandle === undefined) {
@@ -163,13 +240,6 @@ class Failure {
             }
 
             let pageHeight = await driver.getPageHeightUsingHTMLElement();
-            if (settings.screenshotSpecial !== undefined && settings.screenshotSpecial.length > 0) {
-                for (let name of settings.screenshotSpecial) {
-                    if (this.webpage.toLocaleLowerCase().includes(name.toLocaleLowerCase())) {
-                        pageHeight = await driver.getMaxElementHeight();
-                    }
-                }
-            }
             pageHeight = Math.max(pageHeight, settings.testingHeight);
             await driver.setViewport(viewport, pageHeight);
             if (this.repairElementHandle === undefined) {
@@ -217,9 +287,9 @@ class Failure {
                 screenshot = await driver.highlight(rectangles, screenshot);
                 removeHeader = true;
             }
-            if (!settings.screenshotFullpage) {
-                screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
-            }
+            // if (!settings.screenshotFullpage) {
+            //     screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+            // }
             let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + viewport;
             let classification = this.range.getClassificationOfViewport(viewport);
             if (includeClassification && classification !== '-')
@@ -235,6 +305,15 @@ class Failure {
         }
     }
 
+    async resetViewportHeightAfterSnapshots(viewport) {
+        if (this.repairElementHandle === undefined && this.snapshotCSSElementHandle !== undefined) {
+            await driver.removeRepair(this.snapshotCSSElementHandle);
+            await this.snapshotCSSElementHandle.dispose();
+        }
+        if (settings.browserMode === assist.Mode.HEADLESS)
+            await driver.setViewport(viewport, settings.testingHeight);
+    }
+
     // DOM level verification of the reported failures
     async classify(driver, classificationFile, snapshotDirectory, bar) {
         this.durationFailureClassify = new Date();
@@ -247,6 +326,31 @@ class Failure {
 
         await driver.setViewport(range.getMinimum(), settings.testingHeight);
 
+        range.minClassification = await this.isFailing(driver, range.getMinimum(), classificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotMin === true)
+            await this.snapshotViewport(driver, range.getMinimum(), snapshotDirectory, true);
+        // if (settings.humanStudy === true)
+        //     await this.screenshotForHumanStudy('Failure');
+
+        await driver.setViewport(range.getMiddle(), settings.testingHeight);
+        range.midClassification = await this.isFailing(driver, range.getMiddle(), classificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotMid === true)
+            await this.snapshotViewport(driver, range.getMiddle(), snapshotDirectory, true);
+
+        await driver.setViewport(range.getMaximum(), settings.testingHeight);
+
+        range.maxClassification = await this.isFailing(driver, range.getMaximum(), classificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotMax === true)
+            await this.snapshotViewport(driver, range.getMaximum(), snapshotDirectory, true);
+
+        await driver.setViewport(range.getWider(), settings.testingHeight);
+
+        range.widerClassification = await this.isFailing(driver, range.getWider(), classificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotWider === true)
+            await this.snapshotViewport(driver, range.getWider(), snapshotDirectory, true);
+
+        bar.tick();
+        this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
 }
 

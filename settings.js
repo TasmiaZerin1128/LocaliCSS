@@ -23,8 +23,8 @@ function getDateTime() {
 }
 
 const settings = {
-  testWidthMin: 1390, //320
-  testWidthMax: 1400, //1400
+  testWidthMin: 320, //320
+  testWidthMax: 330, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
@@ -32,6 +32,12 @@ const settings = {
   loadDirectory: 'saved-doms-headless',
   webpagesDirectory: 'subjects',
   mainOutputFile: 'output',
+  repairDelay: 0.4,
+  loadDelay: 0.4,
+  autoScrollDelay: 0.4,
+  scrollDelay: 0.4,
+  scrollPage: true, // should the page be scrolled on navigation to trigger any events or load elements?
+  maxAutoScroll: 25000,
   tolerance: { collision: 2, equivalentParent: 1, protrusion: 1, smallrange: 1, ignoreFractions: false }, //Collision allows 1px border over === 1.
   rowThreshold: 2,
   runOutputFile: path.join('output', getDateTime()),

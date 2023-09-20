@@ -1,3 +1,4 @@
+const settings = require("../settings");
 const Failure = require("./Failure");
 const utils = require("./utils");
 

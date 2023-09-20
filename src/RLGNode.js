@@ -10,6 +10,7 @@ const settings = require("../settings.js");
 const ProtrusionFailure = require("./ProtrusionFailure");
 const utils = require("./utils");
 const SmallRangeFailure = require("./SmallRangeFailure");
+const CollisionFailure = require("./CollisionFailure");
 
 class RLGNode {
      /**

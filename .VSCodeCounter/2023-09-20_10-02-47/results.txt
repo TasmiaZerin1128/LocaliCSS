@@ -1,0 +1,58 @@
+Date : 2023-09-20 10:02:47
+Directory : d:\Codes\Mr.ReDeFix
+Total : 28 files,  6829 codes, 200 comments, 1443 blanks, all 8472 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| HTML       |          1 |      4,473 |         48 |      1,157 |      5,678 |
+| JavaScript |         25 |      2,329 |        152 |        283 |      2,764 |
+| JSON       |          1 |         24 |          0 |          1 |         25 |
+| Markdown   |          1 |          3 |          0 |          2 |          5 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------+------------+------------+------------+------------+------------+
+| path                                         | files      | code       | comment    | blank      | total      |
++----------------------------------------------+------------+------------+------------+------------+------------+
+| .                                            |         28 |      6,829 |        200 |      1,443 |      8,472 |
+| . (Files)                                    |          5 |        116 |          5 |         23 |        144 |
+| HTML                                         |          1 |      4,473 |         48 |      1,157 |      5,678 |
+| src                                          |         22 |      2,240 |        147 |        263 |      2,650 |
++----------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                     | language   | code       | comment    | blank      | total      |
++----------------------------------------------+------------+------------+------------+------------+------------+
+| d:\Codes\Mr.ReDeFix\HTML\test.html           | HTML       |      4,473 |         48 |      1,157 |      5,678 |
+| d:\Codes\Mr.ReDeFix\README.md                | Markdown   |          3 |          0 |          2 |          5 |
+| d:\Codes\Mr.ReDeFix\app.js                   | JavaScript |         31 |          5 |         11 |         47 |
+| d:\Codes\Mr.ReDeFix\package.json             | JSON       |         24 |          0 |          1 |         25 |
+| d:\Codes\Mr.ReDeFix\settings.js              | JavaScript |         57 |          0 |          9 |         66 |
+| d:\Codes\Mr.ReDeFix\src\AboveBelowEdge.js    | JavaScript |          9 |          1 |          2 |         12 |
+| d:\Codes\Mr.ReDeFix\src\CollisionFailure.js  | JavaScript |         17 |          0 |          2 |         19 |
+| d:\Codes\Mr.ReDeFix\src\ContainerEdge.js     | JavaScript |          9 |          0 |          1 |         10 |
+| d:\Codes\Mr.ReDeFix\src\DOM.js               | JavaScript |         69 |          0 |          9 |         78 |
+| d:\Codes\Mr.ReDeFix\src\DOMNode.js           | JavaScript |        112 |          2 |         19 |        133 |
+| d:\Codes\Mr.ReDeFix\src\Driver.js            | JavaScript |        258 |          9 |         31 |        298 |
+| d:\Codes\Mr.ReDeFix\src\Failure.js           | JavaScript |        323 |          7 |         27 |        357 |
+| d:\Codes\Mr.ReDeFix\src\OverlapEdge.js       | JavaScript |         14 |          1 |          4 |         19 |
+| d:\Codes\Mr.ReDeFix\src\PCEdge.js            | JavaScript |         50 |          4 |          9 |         63 |
+| d:\Codes\Mr.ReDeFix\src\ProtrusionFailure.js | JavaScript |         15 |          0 |          2 |         17 |
+| d:\Codes\Mr.ReDeFix\src\RLG.js               | JavaScript |        441 |         55 |         40 |        536 |
+| d:\Codes\Mr.ReDeFix\src\RLGEdge.js           | JavaScript |         12 |          2 |          3 |         17 |
+| d:\Codes\Mr.ReDeFix\src\RLGNode.js           | JavaScript |        457 |         38 |         43 |        538 |
+| d:\Codes\Mr.ReDeFix\src\Range.js             | JavaScript |        129 |         16 |         23 |        168 |
+| d:\Codes\Mr.ReDeFix\src\Rectangle.js         | JavaScript |         34 |          0 |         10 |         44 |
+| d:\Codes\Mr.ReDeFix\src\RepairStatistics.js  | JavaScript |         11 |          0 |          1 |         12 |
+| d:\Codes\Mr.ReDeFix\src\RightLeftEdge.js     | JavaScript |          9 |          1 |          2 |         12 |
+| d:\Codes\Mr.ReDeFix\src\SmallRangeFailure.js | JavaScript |         47 |          2 |          6 |         55 |
+| d:\Codes\Mr.ReDeFix\src\ViewportFailure.js   | JavaScript |         35 |          4 |          6 |         45 |
+| d:\Codes\Mr.ReDeFix\src\Webpage.js           | JavaScript |         80 |          3 |         12 |         95 |
+| d:\Codes\Mr.ReDeFix\src\WrappingFailure.js   | JavaScript |         29 |          2 |          3 |         34 |
+| d:\Codes\Mr.ReDeFix\src\utils.js             | JavaScript |         80 |          0 |          8 |         88 |
+| d:\Codes\Mr.ReDeFix\xpath.js                 | JavaScript |          1 |          0 |          0 |          1 |
+| Total                                        |            |      6,829 |        200 |      1,443 |      8,472 |
++----------------------------------------------+------------+------------+------------+------------+------------+

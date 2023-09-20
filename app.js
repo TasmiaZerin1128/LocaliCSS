@@ -10,26 +10,17 @@ const startTool = async () => {
   await driver.start();
   const page = await driver.createPage();
 
-  let url = 'https://holycrossgirlshighschool.com/';
+  let url = 'https://teachers.gov.bd/';
   let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
   // await driver.goto(url);
 
-  let pageName = 'bootstrap';
+  let pageName = 'webpage';
   let testOutputPath = path.join(settings.runOutputFile, pageName);
   let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
   newWebpage.createMainOutputFile();
   await newWebpage.navigateToPage();
   await newWebpage.testWebpage();
-
-  const html = await page.content();
-
-    fs.writeFile('HTML/test.html', html, (err) => {
-      if (err) {
-        return console.log(err);
-      }
-      console.log('The file was saved!');
-      return true;
-    });
+  await newWebpage.classifyFailures();
 
   //   await page.setViewport({ width: 1200, height: 1024 });
   //   const element = await page.$('.SDkEP');

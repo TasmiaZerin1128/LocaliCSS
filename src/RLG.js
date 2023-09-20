@@ -6,6 +6,7 @@ const settings = require('../settings.js');
 const RepairStatistics = require('./RepairStatistics.js');
 const cliProgress = require('cli-progress');
 const utils = require('./utils.js');
+const ProgressBar = require('progress');
 
 const tolerance = settings.tolerance;
 
@@ -14,7 +15,7 @@ class RLG {
         this.ranges = new Range();
         this.root = undefined;
         this.map = new Map();
-        this.nodeWithFailures = [];
+        this.nodesWithFailures = [];
         this.collisionRepairStats = new RepairStatistics();
         this.protrusionRepairStats = new RepairStatistics();
         this.viewportRepairStats = new RepairStatistics();
@@ -497,30 +498,28 @@ class RLG {
     }
 
     detectFailures(progress = true) {
-        let testCounter = 0;
-        let bar = new cliProgress.SingleBar({
-            format: 'Find RLFs  |' + '{bar}' + '| {percentage}% || {value}/{total} Viewports Completed\n',
-        }, cliProgress.Presets.shades_classic);
-        bar.start(this.map.size, testCounter);
+        let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
         let bodyNode = this.map.get('/HTML/BODY');
         let nodesWithFailures = [];
         this.map.forEach((node) => {
             node.detectFailures(bodyNode);
             if (node.hasFailures()) {
+                // console.log("Node ");
+                // console.log(node);
                 nodesWithFailures.push(node);
             }
             if (progress) {
-                testCounter++;
-                bar.update(testCounter);
+                bar.tick();
             }
         });
-        this.nodeWithFailures = nodesWithFailures;
-        bar.stop();
+        this.nodesWithFailures = nodesWithFailures;
+        console.log('Failure Nodes before classify: ' + this.nodesWithFailures.length);
     }
 
     // Classify the failure of all nodes with failures
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :token1/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        console.log('Failure Nodes: ' + this.nodesWithFailures.length);
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar);
         }
