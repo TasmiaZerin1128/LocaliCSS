@@ -320,7 +320,7 @@ class Failure {
         let range = this.range;
 
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
-        range.narrowerClassification = await this.isFalling(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
+        range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotNarrower === true)
             await this.snapshotViewport(driver, range.getNarrower(), snapshotDirectory, true);
 
