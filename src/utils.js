@@ -83,6 +83,17 @@ class utils {
         }
         return false;
     }
+
+    static areOverlapping(rectangle1, rectangle2) {
+        //check if one is on right of the other
+        if (rectangle1.minX > rectangle2.maxX || rectangle2.minX > rectangle1.maxX)
+            return false;
+        //check if one is below the other
+        if (rectangle1.minY > rectangle2.maxY || rectangle2.minY > rectangle1.maxY)
+            return false;
+        //they are overlapping
+        return true;
+    }
 }
 
 module.exports = utils;

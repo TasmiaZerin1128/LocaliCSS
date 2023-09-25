@@ -202,6 +202,23 @@ driver.goto = async function goto(uri) {
   return gotoUri;
 };
 
+driver.getElementByXPath = async function getElementByXPath(xpath) {
+  // Get an element by XPath
+  await driver.page.waitForXPath(xpath);
+  const element = await driver.page.$x(xpath);
+  return element;
+}
+
+driver.getElementBySelector = async function getElementBySelector(selector) {
+  // Get an element by CSS selector
+  await driver.page.waitForSelector(selector);
+  let result = await driver.page.$(selector);
+  if (result === null || result === undefined) {
+    throw selector + " is not a valid selector";
+  }
+  return result;
+}
+
 driver.getRectangle = async function getRectangle(element, traverseUP = false) {
   let rect = await element.boundingBox();
   if (traverseUP && rect === null) {

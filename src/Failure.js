@@ -60,15 +60,15 @@ class Failure {
         let problemArea = new Rectangle();
         for (let rect of rectangles) {
             if (rect.isMissingValues()) {
-                assist.log(this.ID + " " + this.type + " " + this.range.toString());
-                assist.log("Warning: cannot use rectangle for cutting screenshot...");
-                assist.log(rect.toString(true));
+                utils.log(this.ID + " " + this.type + " " + this.range.toString());
+                utils.log("Warning: cannot use rectangle for cutting screenshot...");
+                utils.log(rect.toString(true));
                 continue;
             }
             if (rect.height > maxHeight) { //max element height to support.
-                assist.log(this.ID + " " + this.type + " " + this.range.toString());
-                assist.log("Warning: Human Study - rectangle height exceeds maximum height: " + maxHeight);
-                assist.log(rect.toString(true));
+                utils.log(this.ID + " " + this.type + " " + this.range.toString());
+                utils.log("Warning: Human Study - rectangle height exceeds maximum height: " + maxHeight);
+                utils.log(rect.toString(true));
                 continue;
             }
             if (problemArea.minX === undefined || rect.minX < problemArea.minX)
@@ -81,10 +81,10 @@ class Failure {
                 problemArea.maxY = (rect.maxY + extra);
         }
         if (problemArea.isMissingValues()) { //use first in the worst case
-            assist.log(this.ID + " " + this.type + " " + this.range.toString());
-            assist.log("Warning: Human Study - Had to use first rectangle for cutting.");
+            utils.log(this.ID + " " + this.type + " " + this.range.toString());
+            utils.log("Warning: Human Study - Had to use first rectangle for cutting.");
             let rect = rectangles[0];
-            assist.log(rect.toString(true));
+            utils.log(rect.toString(true));
             problemArea.minX = rect.minX;
             problemArea.maxX = rect.maxX;
             problemArea.minY = Math.max(rect.minY - extra, 0);
@@ -310,8 +310,107 @@ class Failure {
             await driver.removeRepair(this.snapshotCSSElementHandle);
             await this.snapshotCSSElementHandle.dispose();
         }
-        if (settings.browserMode === assist.Mode.HEADLESS)
+        if (settings.browserMode === utils.Mode.HEADLESS)
             await driver.setViewport(viewport, settings.testingHeight);
+    }
+
+    // Returns an object with pixels child protruding {left, right, top, bottom}.
+    calculateProtrusion(parentRect, childRect) {
+        let protruding =
+        {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0
+        }
+        if (childRect.minX < parentRect.minX) {
+            protruding.left = parentRect.minX - childRect.minX;
+        }
+        if (childRect.maxX > parentRect.maxX) {
+            protruding.right = childRect.maxX - parentRect.maxX;
+        }
+        if (childRect.minY < parentRect.minY) {
+            protruding.top = parentRect.minY - childRect.minY;
+        }
+        if (childRect.maxY > parentRect.maxY) {
+            protruding.bottom = childRect.maxY - parentRect.maxY;
+        }
+        return protruding;
+    }
+
+   /* Returns an object with number of pixels overlapping {left, right, top, bottom}.
+    * Zeros for no collision.
+    */
+    calculateOverlap(nodeRect, siblingRect) {
+        let overlap =
+        {
+            //node to be pushed away on either the x-axis or the y-axis.
+            nodeRectToBeCleared: undefined,
+            otherNodeRect: undefined,
+            xToClear: 0,
+            yToClear: 0
+        }
+        let nodeRectToBeCleared = undefined;
+        let otherNodeRect = undefined;
+        let xToClear = 0;
+        let yToClear = 0;
+        if (nodeRect.minX < siblingRect.minX) {
+            nodeRectToBeCleared = siblingRect;
+            otherNodeRect = nodeRect;
+        } else if (nodeRect.minX > siblingRect.minX) {
+            nodeRectToBeCleared = nodeRect;
+            otherNodeRect = siblingRect;
+        } else if (nodeRect.minX === siblingRect.minX) {
+            if (nodeRect.minY < siblingRect.minY) {
+                nodeRectToBeCleared = siblingRect;
+                otherNodeRect = nodeRect;
+            } else if (nodeRect.minY > siblingRect.minY) {
+                nodeRectToBeCleared = nodeRect;
+                otherNodeRect = siblingRect;
+            } else if (nodeRect.minY === siblingRect.minY) {
+                if (nodeRect.maxX < siblingRect.maxX) {
+                    nodeRectToBeCleared = siblingRect;
+                    otherNodeRect = nodeRect;
+                } else if (nodeRect.maxX > siblingRect.maxX) {
+                    nodeRectToBeCleared = nodeRect;
+                    otherNodeRect = siblingRect;
+                } else if (nodeRect.maxX === siblingRect.maxX) {
+                    if (nodeRect.maxY < siblingRect.maxY) {
+                        nodeRectToBeCleared = siblingRect;
+                        otherNodeRect = nodeRect;
+                    } else if (nodeRect.maxY > siblingRect.maxY) {
+                        nodeRectToBeCleared = nodeRect;
+                        otherNodeRect = siblingRect;
+                    } else if (nodeRect.maxY === siblingRect.maxY) {
+                        /**
+                         * If they are equal rectangles break the tie by xpath length.
+                         */
+                        let sortedByXpath = [nodeRect.xpath, siblingRect.xpath].sort();
+                        if (sortedByXpath[0] === nodeRect.xpath) {
+                            nodeRectToBeCleared = siblingRect;
+                            otherNodeRect = nodeRect;
+                        } else {
+                            nodeRectToBeCleared = nodeRect;
+                            otherNodeRect = siblingRect;
+                        }
+
+                    }
+                }
+            }
+        }
+        if (utils.areOverlapping(nodeRectToBeCleared, otherNodeRect)) {
+            xToClear = otherNodeRect.maxX - nodeRectToBeCleared.minX + 1;
+            yToClear = otherNodeRect.maxY - nodeRectToBeCleared.minY + 1;
+        } else {
+            xToClear = 0;
+            yToClear = 0;
+        }
+
+        overlap.nodeRectToBeCleared = nodeRectToBeCleared;
+        overlap.otherNodeRect = otherNodeRect;
+        overlap.xToClear = xToClear;
+        overlap.yToClear = yToClear;
+        return overlap;
     }
 
     // DOM level verification of the reported failures
