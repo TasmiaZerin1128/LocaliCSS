@@ -103,6 +103,11 @@ class utils {
         //they are overlapping
         return true;
     }
+
+    static parseName(url) {
+        let name = new URL(url).hostname.replace('www.', '');
+        return name;
+    }
 }
 
 module.exports = utils;

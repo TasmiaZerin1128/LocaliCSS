@@ -12,6 +12,11 @@ class RLGEdge {
     addViewport(viewport) {
         this.ranges.addValue(viewport);
     }
+
+    hasTheSameNodes(otherEdge) {
+        return (this.node1.xpath === otherEdge.node1.xpath && this.node2.xpath === otherEdge.node2.xpath)
+            || (this.node1.xpath === otherEdge.node2.xpath && this.node2.xpath === otherEdge.node1.xpath);
+    }
 }
 
 module.exports = RLGEdge;

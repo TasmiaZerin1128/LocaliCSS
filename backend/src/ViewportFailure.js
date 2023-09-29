@@ -60,7 +60,7 @@ const utils = require('./utils');
         let result = (protruding.top > tol || protruding.right > tol || protruding.left > tol);
         if (file !== undefined) {
             let classification = result ? 'TP' : 'FP';
-            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range + ' Viewport:' + viewport + ' Classification: ' + classification;
+            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
             utils.printToFile(file, text);
             text = '|  |--[ Left-P: ' + protruding.left + ' Right-P: ' + protruding.right + ' Top-P: ' + protruding.top + ' Bottom-P: ' + protruding.bottom + ' ]';
             utils.printToFile(file, text);

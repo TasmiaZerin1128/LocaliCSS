@@ -497,6 +497,14 @@ class RLG {
         return (childRect.minY - parentRect.minY === parentRect.maxY - childRect.maxY);
     }
 
+    hasFailure(failure) {
+        for (let node of this.nodesWithFailures) {
+            if (node.hasFailure(failure) === true)
+                return true;
+        }
+        return false;
+    }
+
     detectFailures(progress = true) {
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
         let bodyNode = this.map.get('/HTML/BODY');
@@ -518,7 +526,7 @@ class RLG {
 
     // Classify the failure of all nodes with failures
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
-        let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :token1/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         console.log('Failure Nodes: ' + this.nodesWithFailures.length);
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar);
@@ -526,10 +534,21 @@ class RLG {
     }
 
     async screenshotFailures(driver, directory) {
-        let bar = new ProgressBar('Screenshot RLFs  | [:bar] | :percent :etas | Screenshot Completed :token1/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        let bar = new ProgressBar('Screenshot RLFs  | [:bar] | :percent :etas | Screenshot Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         for (const node of this.nodesWithFailures) {
             await node.screenshotFailures(driver, directory, bar);
         } 
+    }
+
+    printGraph(file, printAlignments = false) {
+        let text = '*';
+        utils.printToFile(file, text);
+        this.map.forEach(function (node) {
+            if (printAlignments)
+                node.print(file, true, true);
+            else
+                node.print(file);
+        });
     }
 
 }

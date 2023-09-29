@@ -7,8 +7,7 @@ function Home() {
         </h1>
         <img className="w-3/4 lg:w-2/5 my-4 md:my-12 lg:my-12 flex-shrink-0" src="/ReDeFix-Logo.png" />
         <p className="font-body text-sm md:text-lg lg:text-xl text-center my-4">
-          Find Your Responsive Webpage Layout Failures and Repair them
-          instantly!
+          Find Your Responsive Webpage Layout Failures and Repair them instantly!
         </p>
         <input
           className="w-3/4 md:w-3/5 lg:w-1/2 my-8 md:my-12 lg:my-16 bg-gray-100 appearance-none border-2 border-primary rounded-lg py-2 px-4 text-black text-sm md:text-lg lg:text-lg focus:outline-none focus:bg-white focus:border-primary"

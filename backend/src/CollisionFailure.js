@@ -1,4 +1,4 @@
-const { default: RBush } = require("rbush");
+const RBush = require("rbush");
 const settings = require("../settings");
 const Failure = require("./Failure");
 const Rectangle = require("./Rectangle");
@@ -15,6 +15,13 @@ class CollisionFailure extends Failure {
         this.outputDirectory = outputDirectory;
         if (settings.humanStudy === true)
             this.setupHumanStudyData();
+    }
+
+    getSelectors() {
+        let selectors = [];
+        selectors.push(this.node.getSelector());
+        selectors.push(this.sibling.getSelector());
+        return selectors;
     }
 
     // Return true if there is an overlap between two nodes
@@ -47,7 +54,7 @@ class CollisionFailure extends Failure {
     
         if (file !== undefined) {
             let classification = result ? 'TP' : 'FP';
-            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range + ' Viewport:' + viewport + ' Classification: ' + classification;
+            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
             utils.printToFile(file, text);
             text = '|  |--[ Overlap-X: ' + collision.xToClear + ' Overlap-Y: ' + collision.yToClear + ' ]';
             utils.printToFile(file, text);

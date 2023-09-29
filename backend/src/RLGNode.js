@@ -571,6 +571,94 @@ class RLGNode {
         if (settings.detectWrapping)
             this.detectWrapping(this.aboveMeEdges, 'above');
     }
+
+    // Print the node information in a tree
+    print(file, printNode = true, printAlignment = false) {
+        if (printNode)
+            utils.printToFile(file, '|--[ Node: ' + this.xpath + ' ]');
+        this.printRange(file);
+        this.printFailures(file);
+        for (let overlapEdge of this.overlapEdges) {
+            utils.printToFile(file, '|  |--[ Overlap: ' + overlapEdge.getOtherNode(this.xpath) + ' ]');
+            utils.printToFile(file, '|  |  |--[ Range: ' + overlapEdge.ranges.toString() + ' ]');
+        }
+        for (let parent of this.parentEdges) {
+            utils.printToFile(file, '|  |--[ Parent: ' + parent.getParent(this.xpath).xpath + ' ]');
+            utils.printToFile(file, '|  |  |--[ Range: ' + parent.ranges.toString() + ' ]');
+            for (let sibling of parent.getParent().childrenEdges) {
+                if (sibling.getChild().xpath !== this.xpath) {
+                    utils.printToFile(file, '|  |  |--[ Sibling: ' + sibling.getChild().xpath + ' ]');
+                    utils.printToFile(file, '|  |  |  |--[ Range: ' + sibling.ranges.toString() + ' ]');
+                }
+            }
+        }
+        for (let childEdge of this.childrenEdges) {
+            utils.printToFile(file, '|  |--[ Child: ' + childEdge.getChild().xpath + ' ]');
+            utils.printToFile(file, '|  |  |--[ Range: ' + childEdge.ranges.toString() + ' ]');
+            if (printAlignment) {
+                if (!childEdge.horizontallyCenterJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Horizontally Center Justified: ' + childEdge.horizontallyCenterJustifiedRanges.toString() + ' ]');
+                if (!childEdge.verticallyCenterJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Vertically Center Justified: ' + childEdge.verticallyCenterJustifiedRanges.toString() + ' ]');
+                if (!childEdge.leftJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Left Justified: ' + childEdge.leftJustifiedRanges.toString() + ' ]');
+                if (!childEdge.rightJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Right Justified: ' + childEdge.rightJustifiedRanges.toString() + ' ]');
+                if (!childEdge.topJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Top Justified: ' + childEdge.topJustifiedRanges.toString() + ' ]');
+                if (!childEdge.bottomJustifiedRanges.isEmpty())
+                    utils.printToFile(file, '|  |  |--[ Bottom Justified: ' + childEdge.bottomJustifiedRanges.toString() + ' ]');
+            }
+
+        }
+
+
+        if (printAlignment) {
+            for (let aboveEdge of this.aboveMeEdges) {
+                utils.printToFile(file, '|  |--[ Above Me: ' + aboveEdge.above.xpath + ' ]');
+                utils.printToFile(file, '|  |  |--[ Range: ' + aboveEdge.ranges.toString() + ' ]');
+            }
+            for (let belowEdge of this.belowMeEdges) {
+                utils.printToFile(file, '|  |--[ Below Me: ' + belowEdge.below.xpath + ' ]');
+                utils.printToFile(file, '|  |  |--[ Range: ' + belowEdge.ranges.toString() + ' ]');
+            }
+            for (let rightEdge of this.toMyRightEdges) {
+                utils.printToFile(file, '|  |--[ Right of Me: ' + rightEdge.right.xpath + ' ]');
+                utils.printToFile(file, '|  |  |--[ Range: ' + rightEdge.ranges.toString() + ' ]');
+            }
+            for (let leftEdge of this.toMyLeftEdges) {
+                utils.printToFile(file, '|  |--[ Left of Me: ' + leftEdge.left.xpath + ' ]');
+                utils.printToFile(file, '|  |  |--[ Range: ' + leftEdge.ranges.toString() + ' ]');
+            }
+        }
+    }
+
+    printRange(file, rangeLabel = '') {
+        utils.printToFile(file, '|  |--[ ' + rangeLabel + 'Range: ' + this.ranges.toString() + ' ]');
+    }
+
+    printFailures(file, printNode = false) {
+        if (this.isFailing()) {
+            if (printNode) {
+                utils.printToFile(file, '|--[ Node: ' + this.xpath + ' ]');
+            }
+            for (let viewportProtrusion of this.viewportProtrusions) {
+                viewportProtrusion.printClassified(file);
+            }
+            for (let protrusion of this.elementProtrusions) {
+                protrusion.printClassified(file);
+            }
+            for (let collision of this.elementCollisions) {
+                collision.printClassified(file);
+            }
+            for (let wrapping of this.wrappings) {
+                wrapping.printClassified(file);
+            }
+            for (let smallrange of this.smallranges) {
+                smallrange.printClassified(file);
+            }
+        }
+    }
 }
 
 module.exports = RLGNode;

@@ -90,6 +90,15 @@ class Webpage {
     async screenshotFailures() {
         await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);
     }
+
+    printRLG() {
+        this.rlg.printGraph(path.join(this.pageRunOutputPath, 'RLG.txt'));
+    }
+
+    printFailures() {
+        this.rlg.printFailuresTXT(path.join(this.pageRunOutputPath, 'Failures.txt'));
+        this.rlg.printFailuresCSV(path.join(this.pageRunOutputPath, 'Failures.csv'), this.name, this.runCounter);
+    }
 }
 
 module.exports = Webpage;

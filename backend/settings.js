@@ -23,8 +23,8 @@ function getDateTime() {
 }
 
 const settings = {
-  testWidthMin: 320, //320
-  testWidthMax: 330, //1400
+  testWidthMin: 450, //320
+  testWidthMax: 600, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
@@ -50,7 +50,7 @@ const settings = {
   detectElementProtrusion: true,
   detectViewportProtrusion: true,
   detectWrapping: true,
-  detectSmallrange: true,
+  detectSmallRange: true,
   screenshotNarrower: false,
   screenshotMin: true,
   screenshotMid: false,
