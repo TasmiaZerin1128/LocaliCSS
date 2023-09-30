@@ -551,6 +551,35 @@ class RLG {
         });
     }
 
+    printFailuresTXT(fileTXT) {
+        let text = '*';
+        utils.printToFile(fileTXT, text);
+        this.map.forEach(function (node) {
+            node.printFailures(fileTXT, true);
+        })
+        text = utils.failureCount + ' Responsive Layout Failures Found.';
+        utils.printToFile(fileTXT, text);
+    }
+    /**
+     * Prints the failures of the RLG to CSV.
+     * @param {Path} file File to save to.
+     * @param {String} webpage Name of webpage.
+     * @param {Number} run The run number.
+     * @param {String} repairApplied repair applied before before extracting RLG.
+     * @param {Number} repairAppliedTo The repair was applied to resolve the given failure-number/ID.
+     */
+    printFailuresCSV(fileCSV, webpage, run, repairApplied = 'none', repairAppliedTo = 0) {
+        if (utils.failureCount > 0) {
+            let text =
+                "Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,XPath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider,RepairApplied,RepairAppliedTo";
+            utils.printToFile(fileCSV, text);
+            this.map.forEach(function (node) {
+                node.printFailuresCSV(fileCSV, webpage, run, repairApplied, repairAppliedTo);
+            })
+        }
+
+    }
+
 }
 
 module.exports = RLG;

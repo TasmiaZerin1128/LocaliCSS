@@ -1,4 +1,16 @@
+import { Link, useNavigate } from "react-router-dom";
+import InputField from "../components/InputField";
+import { useState } from "react";
+
 function Home() {
+  const navigate = useNavigate();
+
+  const [urlValue, setUrlValue] = useState('');
+
+  function goToTestPage() {
+    navigate("/test", {state: {url:urlValue}});
+  }
+
   return (
     <>
       <div className="p-8 sm:p-16 md:p-20 lg:p-36 flex flex-col h-screen items-center justify-center">
@@ -9,15 +21,11 @@ function Home() {
         <p className="font-body text-sm md:text-lg lg:text-xl text-center my-4">
           Find Your Responsive Webpage Layout Failures and Repair them instantly!
         </p>
-        <input
-          className="w-3/4 md:w-3/5 lg:w-1/2 my-8 md:my-12 lg:my-16 bg-gray-100 appearance-none border-2 border-primary rounded-lg py-2 px-4 text-black text-sm md:text-lg lg:text-lg focus:outline-none focus:bg-white focus:border-primary"
-          id="inline-full-name"
-          type="text"
-          placeholder="Enter Your Website URL"
-        ></input>
-        <button className="w-1/3 md:w-1/4 lg:w-1/5 text-md md:text-xl lg:text-2xl font-title font-bold bg-primary hover:bg-black py-2 text-white rounded-lg">
-          Start
-        </button>
+        <InputField type={"text"} placeholder={"Enter Your Website URL"} value={urlValue} setValue={setUrlValue}/>
+          <button className="w-1/3 md:w-1/4 lg:w-1/5 text-md md:text-xl lg:text-2xl font-title font-bold bg-primary hover:bg-black py-2 text-white rounded-lg"
+          onClick={() => goToTestPage()}>
+            Start
+          </button>
       </div>
     </>
   );

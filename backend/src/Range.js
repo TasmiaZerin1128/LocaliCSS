@@ -102,6 +102,14 @@ class Range {
     getWider() {
         return this.max + 1;
     }
+
+    toString() {
+        return this.min + "-" + this.max;
+    }
+
+    toClassifiedString() {
+        return this.toString() + '(' + this.narrowerClassification + ',' + this.minClassification + ',' + this.midClassification + ',' + this.maxClassification + ',' + this.widerClassification + ')';
+    }
 }
 
 class Ranges {
@@ -204,6 +212,47 @@ class Ranges {
             return b.max - a.max;
         });
         return this;
+    }
+
+    toClassifiedString() {
+        let ranges = "";
+        for (let i = this.list.length - 1; i >= 0; i--) {
+            ranges += this.list[i].toClassifiedString();
+            if (i !== 0)
+                ranges += " ";
+        }
+        return ranges === "" ? "Never" : ranges;
+    }
+    
+    toString() {
+        let ranges = "";
+        for (let i = this.list.length - 1; i >= 0; i--) {
+            ranges += this.list[i].toString();
+            if (i !== 0)
+                ranges += " ";
+        }
+        return ranges === "" ? "Never" : ranges;
+    }
+    
+    toShortString() {
+        let ranges = "";
+        let maxRanges = 2;
+        if (this.list.length > 0) {
+            ranges += this.list[0].toString();
+            let i = 1;
+            for (; i < this.list.length && i < maxRanges; i++) {
+                ranges += "_";
+                ranges += this.list[i].toString();
+            }
+            if (this.list.length > maxRanges) {
+                if (this.list.length === maxRanges + 1)
+                    ranges += "_"
+                else
+                    ranges += "___";
+                ranges += this.list[this.list.length - 1].toString();
+            }
+        }
+        return ranges === "" ? "Never" : ranges;
     }
 
 }

@@ -69,6 +69,18 @@ class CollisionFailure extends Failure {
         }
         return result;
     }
+    print(file) {
+        let text = '|  |--[ ' + this.type + ' (' + this.ID + '): ' + this.range.toString() + ' ]';
+        utils.printToFile(file, text);
+        text = '|  |  |--[ Sibling: ' + this.sibling.xpath + ' ]';
+        utils.printToFile(file, text);
+    }
+    printClassified(file) {
+        let text = '|  |--[ ' + this.type + ' (' + this.ID + '): ' + this.range.toClassifiedString() + ' ]';
+        utils.printToFile(file, text);
+        text = '|  |  |--[ Sibling: ' + this.sibling.xpath + ' ]';
+        utils.printToFile(file, text);
+    }
 }
 
 module.exports = CollisionFailure;

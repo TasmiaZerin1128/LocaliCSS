@@ -66,17 +66,6 @@ class DOMNode {
         this.xpath = this.parent.xpath + '/' + this.xptagName;;
       }
     }
-
-    fs.appendFile('./XPath/test.txt', this.xpath + '\n', (err) => {
-      try {
-        if (err) {
-          throw new Error(err);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-      return true;
-    });
   }
 
   setComputedStyle(computedStyles) {
