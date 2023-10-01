@@ -1,35 +1,29 @@
-const fs = require('fs');
-const driver = require('./src/Driver');
-const Webpage = require('./src/Webpage');
-const settings = require('./settings');
-const path = require('path');
-const { Range } = require('./src/Range');
-const utils = require('./src/utils');
+const express = require('express');
+const dotenv = require('dotenv');
+const router = require('./route');
 
-const startTool = async () => {
-  let webpages = [];
-  await driver.start();
-  const page = await driver.createPage();
+dotenv.config();
 
-  let url = 'https://teachers.gov.bd/';
-  //https://teachers.gov.bd/
-  //http://www.dphe.gov.bd/
-  let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
-  // await driver.goto(url);
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || 'localhost';
 
-  let pageName = utils.parseName(url);
-  let testOutputPath = path.join(settings.runOutputFile, pageName);
-  let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
-  newWebpage.createMainOutputFile();
-  await newWebpage.navigateToPage();
-  await newWebpage.testWebpage();
-  await newWebpage.classifyFailures();
-  newWebpage.printRLG();
-  newWebpage.printFailures();
+const app = express();
 
-  console.log('completed ');
+app.listen(PORT, () => {
+  console.log(`App Started on ${PORT}`);
+});
 
-  await driver.close();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const globalErrorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const msg = err.message || 'Oops! something went wrong. Please try again';
+  res.status(statusCode).send(msg);
 };
 
-startTool();
+app.use('/api/v1', router);
+
+app.use(globalErrorHandler);
+
+module.exports = app;

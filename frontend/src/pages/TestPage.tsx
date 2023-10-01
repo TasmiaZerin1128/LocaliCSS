@@ -16,7 +16,7 @@ export default function TestPage() {
   useEffect(() => {
     const parsedUrl = parseUrlDomain(location.state.url);
     setUrl(parsedUrl);
-    fetchTestResults(parsedUrl);
+    fetchTestResults(location.state.url);
   }, []);
 
   const fetchTestResults = async (url) => {
