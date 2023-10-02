@@ -7,10 +7,11 @@ const utils = require('./src/utils');
 
 exports.startTool = async (req, res) => {
   let webpages = [];
+  try {
   await driver.start();
   const page = await driver.createPage();
 
-  let url = req.body.url;
+  let url = req.params.url;
   console.log(url);
   //https://teachers.gov.bd/
   //http://www.dphe.gov.bd/
@@ -30,4 +31,7 @@ exports.startTool = async (req, res) => {
   console.log('completed ');
 
   await driver.close();
+  } catch (err) {
+    console.log('Error: ', err);
+  }
 };

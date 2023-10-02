@@ -24,7 +24,7 @@ function getDateTime() {
 
 const settings = {
   testWidthMin: 450, //320
-  testWidthMax: 500, //1400
+  testWidthMax: 470, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
