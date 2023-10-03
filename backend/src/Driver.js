@@ -273,7 +273,7 @@ driver.getVisibilityProperties = async function (element) {
 };
 
 driver.getChildren = async function getChildren(element) {
-  const listHandle = await driver.page.evaluateHandle((element) => element.children, element);
+  const listHandle = await this.page.evaluateHandle((element) => element.children, element);
   const properties = await listHandle.getProperties();
   const children = [];
   for (const property of properties.values()) {
@@ -282,6 +282,9 @@ driver.getChildren = async function getChildren(element) {
       children.push(child);
     }
   }
+
+  await listHandle.dispose();
+  
   return children;
 };
 

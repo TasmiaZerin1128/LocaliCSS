@@ -11,7 +11,7 @@ exports.startTool = async (req, res) => {
   await driver.start();
   const page = await driver.createPage();
 
-  let url = req.params.url;
+  let url = req.query.url;
   console.log(url);
   //https://teachers.gov.bd/
   //http://www.dphe.gov.bd/
