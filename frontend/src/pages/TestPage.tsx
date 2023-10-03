@@ -21,7 +21,7 @@ export default function TestPage() {
 
   const fetchTestResults = async (url) => {
     const response = await testUrl(url);
-    console.log(response);
+    console.log(response.data);
   };
 
   return (
