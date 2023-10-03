@@ -540,6 +540,12 @@ class RLG {
         } 
     }
 
+    printWorkingRepairs(file, webpage, run) {
+        for (let node of this.nodesWithFailures) {
+            node.printWorkingRepairs(file, webpage, run);
+        }
+    }
+
     printGraph(file, printAlignments = false) {
         let text = '*';
         utils.printToFile(file, text);

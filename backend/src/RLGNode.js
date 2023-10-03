@@ -559,6 +559,24 @@ class RLGNode {
         }
     }
 
+    printWorkingRepairs(file, webpage, run) {
+        for (let collision of this.elementCollisions) {
+            collision.printWorkingRepairs(file, webpage, run);
+        }
+        for (let protrusion of this.elementProtrusions) {
+            protrusion.printWorkingRepairs(file, webpage, run);
+        }
+        for (let viewportProtrusion of this.viewportProtrusions) {
+            viewportProtrusion.printWorkingRepairs(file, webpage, run);
+        }
+        for (let wrapping of this.wrappings) {
+            wrapping.printWorkingRepairs(file, webpage, run);
+        }
+        for (let smallrange of this.smallranges) {
+            smallrange.printWorkingRepairs(file, webpage, run);
+        }
+    }
+
     // Detect the failures of this node
     detectFailures(bodyNode) {
         this.ranges.sortRangesDescending();

@@ -27,6 +27,7 @@ exports.startTool = async (req, res) => {
     await newWebpage.classifyFailures();
     newWebpage.printRLG();
     newWebpage.printFailures();
+    newWebpage.repairFailures();
 
     console.log('completed ');
 

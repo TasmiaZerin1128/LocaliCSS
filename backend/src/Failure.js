@@ -452,6 +452,56 @@ class Failure {
         bar.tick();
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
+
+    // Repair this failure
+    async repair(driver, directory, bar, webpage, run) {
+        this.durationFailureRepair = new Date();
+        await this.findRepair(driver, directory, bar, webpage, run);
+        this.durationFailureRepair = new Date() - this.durationFailureRepair;
+    }
+
+    printWorkingRepairs(file, webpage, run) {
+        for (let i = 0; i < this.repairCombinationResult.length; i++) {
+            let repairArray = settings.repairCombination[i];
+            let repairName = '';
+            for (let subRepair of repairArray) {
+                if (repairName === '')
+                    repairName = subRepair;
+                else
+                    repairName += "-" + subRepair;
+            }
+            let xpaths = ''
+            if (this.type === utils.FailureType.COLLISION || this.type === utils.FailureType.SMALLRANGE)
+                xpaths = this.node.xpath + ',' + this.sibling.xpath;
+            else if (this.type === utils.FailureType.VIEWPORT || this.type === utils.FailureType.PROTRUSION)
+                xpaths = this.node.xpath + ',' + this.parent.xpath;
+            else if (this.type === utils.FailureType.WRAPPING)
+                xpaths = this.node.xpath + ',' + this.row[0].xpath;
+            let repairOutcome = this.repairCombinationResult[i];
+            let text =
+                EOL + webpage + "," + run + "," + this.ID + "," + this.type + "," + this.range.getMinimum() + "," + this.range.getMaximum() + "," + xpaths + "," + this.range.narrowerClassification + "," + this.range.minClassification + "," + this.range.midClassification + "," + this.range.maxClassification + "," + this.range.widerClassification + "," + repairName + "," + repairOutcome;
+            fs.appendFileSync(file, text, function (err) {
+                if (err) throw err;
+            });
+        }
+    
+        if (this.repairCombinationResult.length === 0) {
+            let xpaths = ''
+            if (this.type === utils.FailureType.COLLISION || this.type === utils.FailureType.SMALLRANGE)
+                xpaths = this.node.xpath + ',' + this.sibling.xpath
+            else if (this.type === utils.FailureType.VIEWPORT || this.type === utils.FailureType.PROTRUSION)
+                xpaths = this.node.xpath + ',' + this.parent.xpath
+            else if (this.type === utils.FailureType.WRAPPING)
+                xpaths = this.node.xpath + ',' + this.row[0].xpath;
+            let repairOutcome = "Skipped";
+            let repairName = 'None';
+            let text =
+                EOL + webpage + "," + run + "," + this.ID + "," + this.type + "," + this.range.getMinimum() + "," + this.range.getMaximum() + "," + xpaths + "," + this.range.narrowerClassification + "," + this.range.minClassification + "," + this.range.midClassification + "," + this.range.maxClassification + "," + this.range.widerClassification + "," + repairName + "," + repairOutcome;
+            fs.appendFileSync(file, text, function (err) {
+                if (err) throw err;
+            });
+        }
+    }
 }
 
 module.exports = Failure;
