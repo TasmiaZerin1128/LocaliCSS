@@ -1,6 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const router = require('./route');
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 
 dotenv.config();
 
@@ -9,8 +11,20 @@ const HOST = process.env.HOST || 'localhost';
 
 const app = express();
 
-app.listen(PORT, () => {
-  console.log(`App Started on ${PORT}`);
+// app.listen(PORT, () => {
+//   console.log(`App Started on ${PORT}`);
+// });
+
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+
+io.on('connection', (socket) => {
+  console.log('Socket connected');
+});
+
+
+httpServer.listen(PORT, () => {
+  console.log("Server started");
 });
 
 app.use(express.json());

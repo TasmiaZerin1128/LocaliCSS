@@ -8,7 +8,7 @@ function parseUrlDomain(url) {
     return name;
 }
 
-export default function TestPage() {
+export default function TestPage({socket}) {
 
   const [url, setUrl] = useState('');
   const location = useLocation();
@@ -16,12 +16,17 @@ export default function TestPage() {
   useEffect(() => {
     const parsedUrl = parseUrlDomain(location.state.url);
     setUrl(parsedUrl);
+    startTest();
     fetchTestResults(location.state.url);
   }, []);
 
-  const fetchTestResults = async (url) => {
+  const fetchTestResults = async (url: string) => {
     const response = await testUrl(url);
     console.log(response.data);
+  };
+
+  const startTest = () => {
+    socket.emit('Test started');
   };
 
   return (

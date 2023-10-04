@@ -540,6 +540,17 @@ class RLG {
         } 
     }
 
+    async repairFailures(driver, directory, webpage, run) {
+        let bar = new ProgressBar('Repair RLFs   [:bar] :etas Repair:         :current' + "/" + (assist.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (assist.failureCount * settings.repairCombination.length), width: 25 })
+        for (const [xpath, node] of this.map.entries()) {
+            await node.repairFailures(driver, directory, bar, webpage, run);
+            this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);
+            this.protrusionRepairStats.addValuesFrom(node.protrusionRepairStats);
+            this.collisionRepairStats.addValuesFrom(node.collisionRepairStats);
+        }
+        this.allRepairStats.addValuesFrom(this.viewportRepairStats, this.protrusionRepairStats, this.collisionRepairStats);
+    }
+
     printWorkingRepairs(file, webpage, run) {
         for (let node of this.nodesWithFailures) {
             node.printWorkingRepairs(file, webpage, run);
