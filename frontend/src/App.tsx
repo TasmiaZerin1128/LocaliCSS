@@ -1,11 +1,35 @@
 import {Routes, Route} from "react-router-dom";
 import Home from "./pages/Home";
 import TestPage from "./pages/TestPage";
-import io from 'socket.io-client';
+import { io } from "socket.io-client";
+import React, { useState, useEffect } from 'react';
 
-const socket = io.connect('http://localhost:3000');
+const socket = io("http://localhost:3000", {
+  withCredentials: true,
+});
 
 export default function App () {
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      
+      console.log('Connected to server');
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log(`connect_error due to ${err.message}`);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+
   return (
     <>
       <Routes>
