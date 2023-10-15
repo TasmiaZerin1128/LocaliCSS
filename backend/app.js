@@ -4,6 +4,7 @@ const router = require('./route');
 const { createServer } = require("http");
 const socketIO = require("socket.io");
 const cors = require('cors');
+const { socketConnection } = require('./socket-connect');
 
 dotenv.config();
 
@@ -14,15 +15,7 @@ const app = express();
 app.use(cors());
 
 const httpServer = createServer(app);
-const io = socketIO(httpServer, {cors: {
-  origin: "https://localhost:5173",
-  methods: ["GET", "POST"]
-}});
-
-io.on('connection', (socket) => {
-  console.log(`⚡: ${socket.id} user just connected`);
-});
-
+socketConnection(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log("Server started");

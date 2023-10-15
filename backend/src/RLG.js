@@ -7,6 +7,7 @@ const RepairStatistics = require('./RepairStatistics.js');
 const cliProgress = require('cli-progress');
 const utils = require('./utils.js');
 const ProgressBar = require('progress');
+const { sendMessage } = require('../socket-connect');
 
 const tolerance = settings.tolerance;
 
@@ -506,22 +507,24 @@ class RLG {
     }
 
     detectFailures(progress = true) {
+        let counter = 0;
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
         let bodyNode = this.map.get('/HTML/BODY');
         let nodesWithFailures = [];
         this.map.forEach((node) => {
             node.detectFailures(bodyNode);
             if (node.hasFailures()) {
-                // console.log("Node ");
-                // console.log(node);
                 nodesWithFailures.push(node);
             }
             if (progress) {
+                counter++;
                 bar.tick();
+                sendMessage("Find RLFs", {'counter': counter, 'total': this.map.size});
             }
         });
         this.nodesWithFailures = nodesWithFailures;
         console.log('Failure Nodes before classify: ' + this.nodesWithFailures.length);
+        sendMessage("Detected Failure Nodes", this.nodesWithFailures.length);
     }
 
     // Classify the failure of all nodes with failures
@@ -541,7 +544,7 @@ class RLG {
     }
 
     async repairFailures(driver, directory, webpage, run) {
-        let bar = new ProgressBar('Repair RLFs   [:bar] :etas Repair:         :current' + "/" + (assist.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (assist.failureCount * settings.repairCombination.length), width: 25 })
+        let bar = new ProgressBar('Repair RLFs   [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
         for (const [xpath, node] of this.map.entries()) {
             await node.repairFailures(driver, directory, bar, webpage, run);
             this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);

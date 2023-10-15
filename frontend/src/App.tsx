@@ -4,16 +4,17 @@ import TestPage from "./pages/TestPage";
 import { io } from "socket.io-client";
 import React, { useState, useEffect } from 'react';
 
-const socket = io("http://localhost:3000", {
-  withCredentials: true,
-});
+const socket = io("http://localhost:3000", { transports: ['polling'] });
 
-export default function App () {
+const App = () => {
 
   useEffect(() => {
-    socket.on('connect', () => {
-      
-      console.log('Connected to server');
+    socket.on("connect", () => {
+      console.log(socket.id); 
+    });
+
+    socket.on("message", (arg) => {
+      console.log(arg);
     });
 
     socket.on("connect_error", (err) => {
@@ -39,3 +40,5 @@ export default function App () {
     </>
   )
 }
+
+export default App;

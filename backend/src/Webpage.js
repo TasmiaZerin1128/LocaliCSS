@@ -4,6 +4,7 @@ const DOM = require('./DOM');
 const cliProgress = require('cli-progress');
 const ProgressBar = require('progress');
 const RLG = require('./RLG');
+const { sendMessage } = require('../socket-connect');
 
 
 class Webpage {
@@ -55,7 +56,7 @@ class Webpage {
 
     async testWebpage(navigate = true) {
         this.durationDOM = new Date();
-        console.log('Testing---> ');
+        sendMessage("message", 'Testing---> ');
         this.setRunOutputPath();
         let testRange = this.testRange;
         let totalTestViewports = testRange.max - testRange.min + 1;
@@ -74,6 +75,7 @@ class Webpage {
             await newDom.captureDOM();
             newDom.saveRBushData(this.domOutputPath);
             this.rlg.extractRLG(newDom, width);
+            sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
             bar.tick({'token1': testCounter})
         }
         this.durationDOM = new Date() - this.durationDOM;

@@ -6,6 +6,7 @@ const Rectangle = require("./Rectangle");
 const RepairStatistics = require("./RepairStatistics");
 const utils = require("./utils");
 const fs = require('fs');
+const { sendMessage } = require("../socket-connect");
 
 class Failure {
     constructor(webpage, run) {
@@ -418,6 +419,7 @@ class Failure {
     async classify(driver, classificationFile, snapshotDirectory, bar) {
         this.durationFailureClassify = new Date();
         let range = this.range;
+        let counter = 0;
 
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
         range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
@@ -449,7 +451,9 @@ class Failure {
         if (settings.screenshotWider === true)
             await this.snapshotViewport(driver, range.getWider(), snapshotDirectory, true);
 
+        counter++;
         bar.tick();
+        sendMessage("Classify", {'counter': counter, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
 
