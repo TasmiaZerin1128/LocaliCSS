@@ -1,6 +1,6 @@
 const { EOL } = require('os');
 const fs = require('fs');
-
+const path = require('path');
 
 class utils {
 
@@ -107,6 +107,23 @@ class utils {
     static parseName(url) {
         let name = new URL(url).hostname.replace('www.', '');
         return name;
+    }
+
+    static addToZip(zip, folderPath, relativePath = '') {
+        const files = fs.readdirSync(folderPath);
+      
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          const fileStats = fs.statSync(filePath);
+          const fileRelativePath = path.join(relativePath, file);
+      
+          if (fileStats.isDirectory()) {
+            this.addToZip(zip.folder(file), filePath, fileRelativePath);
+          } else {
+            const fileData = fs.readFileSync(filePath);
+            zip.file(fileRelativePath, fileData);
+          }
+        });
     }
 }
 

@@ -2,6 +2,10 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../layouts/Navbar";
 import { useState, useEffect } from "react";
 import { testUrl } from "../services/test";
+import { downloadResults } from "../services/download";
+import { downloadZipResults } from "../services/download";
+import download from 'downloadjs';
+import JSZip from 'jszip';
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/ProgressBar";
 
@@ -74,9 +78,34 @@ export default function TestPage({ socket }) {
     console.log(response.data);
   };
 
-  // const startTest = () => {
-  //   socket.emit("Test started");
-  // };
+  const viewResults = async () => {
+    const results = await downloadResults();
+    if (results!== null)
+      download(results, "test.txt");
+  }
+
+  const viewZipResults = async () => {
+    try {
+      const results = await downloadZipResults();
+      const blob = new Blob([results], { type: 'application/zip' });
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create an anchor element and trigger the download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'myFolder.zip'; // Specify the desired file name
+      a.click();
+
+      // Clean up by revoking the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading zip file:', error);
+      // Handle the error as needed
+    }
+  }
+
 
   return (
     <>
@@ -108,8 +137,9 @@ export default function TestPage({ socket }) {
         </div>
         <div className="flex flex-row justify-center space-x-8">
           { step >= 3 &&
-          <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg">View Results</button>
+          <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg" onClick={() => viewResults()}>View Results</button>
           }
+          <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg" onClick={() => viewZipResults()}>View Zip Results</button>
           <button className="flex flex-row items-center justify-center w-42 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg"
               onClick={() => navigate('/')}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

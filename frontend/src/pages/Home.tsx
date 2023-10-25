@@ -8,7 +8,7 @@ function Home() {
   const [urlValue, setUrlValue] = useState('');
 
   function goToTestPage() {
-    navigate("/test", {state: {url:urlValue}});
+    navigate(`/test`, {state: {url:urlValue}});
   }
 
   return (
