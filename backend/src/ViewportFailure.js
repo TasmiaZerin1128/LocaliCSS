@@ -1,5 +1,5 @@
 const { tolerance } = require('../settings');
-const Failure = require('./Failure');
+const Failure = require('./Failure')
 const Rectangle = require('./Rectangle');
 const utils = require('./utils');
  

@@ -509,7 +509,9 @@ class RLG {
     detectFailures(progress = true) {
         let counter = 0;
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
+        console.log(this.map);
         let bodyNode = this.map.get('/HTML/BODY');
+        console.log(bodyNode);
         let nodesWithFailures = [];
         this.map.forEach((node) => {
             node.detectFailures(bodyNode);
@@ -544,7 +546,7 @@ class RLG {
     }
 
     async repairFailures(driver, directory, webpage, run) {
-        let bar = new ProgressBar('Repair RLFs   [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
+        let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
         for (const [xpath, node] of this.map.entries()) {
             await node.repairFailures(driver, directory, bar, webpage, run);
             this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);
@@ -575,7 +577,7 @@ class RLG {
         let text = '*';
         utils.printToFile(fileTXT, text);
         this.map.forEach(function (node) {
-            node.printFailures(fileTXT, true);
+            node.printFailures(fileTXT, false);
         })
         text = utils.failureCount + ' Responsive Layout Failures Found.';
         utils.printToFile(fileTXT, text);

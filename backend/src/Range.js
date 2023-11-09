@@ -79,30 +79,6 @@ class Range {
                 (otherRange.min - 1 === this.max || otherRange.max + 1 === this.min));
     }
 
-    length() {
-        return this.max - this.min + 1;
-    }
-
-    getMaximum() {
-        return this.max;
-    }
-
-    getMinimum() {
-        return this.min;
-    }
-
-    getMiddle() {
-        return Math.floor((this.min + this.max) / 2);
-    }
- 
-    getNarrower() {
-        return this.min - 1;
-    }
-
-    getWider() {
-        return this.max + 1;
-    }
-
     toString() {
         return this.min + "-" + this.max;
     }
@@ -187,6 +163,16 @@ class Ranges {
             mergedRanges.addRange(otherRanges.list[i]);
         }
         return mergedRanges;
+    }
+
+    getMinimum() {
+        let min = undefined;
+        for (let range of this.list) {
+            if (min === undefined)
+                min = range.min;
+            min = Math.min(min, range.min);
+        }
+        return min;
     }
 
     /** Get a new set of ranges that has all values in 'this' set of ranges but not in

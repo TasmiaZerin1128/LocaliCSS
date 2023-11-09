@@ -15,7 +15,8 @@ exports.startTool = async (req, res) => {
     await driver.start();
     const page = await driver.createPage();
 
-    let url = req.query.url;
+    // let url = req.query.url;
+    let url = "https://sharifmabdullah.github.io/";
     console.log(url);
     //https://teachers.gov.bd/
     //http://www.dphe.gov.bd/
@@ -31,7 +32,7 @@ exports.startTool = async (req, res) => {
     await newWebpage.classifyFailures();
     newWebpage.printRLG();
     newWebpage.printFailures();
-    // newWebpage.repairFailures();
+    await newWebpage.repairFailures();
 
     console.log('completed ');
 

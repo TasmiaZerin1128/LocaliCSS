@@ -28,6 +28,12 @@ class utils {
         computedStyle: 7,
     };
 
+    static AdditionalRepairs = {
+        NONE: "None",
+        COMBINATIONS: "Combinations",
+        PERMUTATIONS: "Permutations"
+    };
+
     static RepairConfirmed = {
         DOM: "DOM",
         RLG: "RLG",
@@ -102,6 +108,14 @@ class utils {
             return false;
         //they are overlapping
         return true;
+    }
+
+    static resolveAfterSeconds(seconds = 2) {
+        return new Promise(function (resolve) {
+            setTimeout(function () {
+                resolve('done');
+            }, seconds * 1000);
+        });
     }
 
     static parseName(url) {

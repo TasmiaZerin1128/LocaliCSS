@@ -76,7 +76,7 @@ class Webpage {
             newDom.saveRBushData(this.domOutputPath);
             this.rlg.extractRLG(newDom, width);
             sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
-            bar.tick({'token1': testCounter})
+            bar.tick({'token1': testCounter});
         }
         this.durationDOM = new Date() - this.durationDOM;
         this.durationDetection = new Date();
@@ -113,6 +113,7 @@ class Webpage {
     }
 
     async repairFailures() {
+        console.log("repair started");
         this.durationRepair = new Date();
         await this.rlg.repairFailures(this.driver, this.pageRunOutputPath, this.name, this.runCounter);
         this.durationRepair = new Date() - this.durationRepair;

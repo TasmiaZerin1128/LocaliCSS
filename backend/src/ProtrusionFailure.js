@@ -1,4 +1,4 @@
-const Failure = require('./Failure.js');
+const Failure = require('./Failure');
 const settings = require('../settings.js');
 const utils = require('./utils.js');
 const Rectangle = require('./Rectangle.js');

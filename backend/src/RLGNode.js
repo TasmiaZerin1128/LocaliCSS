@@ -1,3 +1,4 @@
+const path = require('path');
 const { Ranges } = require("./Range");
 const RepairStatistics = require('./RepairStatistics.js');
 const PCEdge = require('./PCedge.js');
@@ -277,6 +278,7 @@ class RLGNode {
 
     // Detect Viewport Protrusion of this node
     detectViewportProtrusion(bodyNode) {
+        console.log(bodyNode);
         if (this.xpath === bodyNode.xpath) {
             return;
         }

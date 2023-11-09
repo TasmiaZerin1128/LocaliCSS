@@ -1,4 +1,5 @@
 const path = require('path');
+const utils = require('./src/utils');
 
 function getDateTime() {
   const date = new Date();
@@ -23,8 +24,8 @@ function getDateTime() {
 }
 
 const settings = {
-  testWidthMin: 450, //320
-  testWidthMax: 470, //1400
+  testWidthMin: 400, //320
+  testWidthMax: 600, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
@@ -51,6 +52,7 @@ const settings = {
   detectViewportProtrusion: true,
   detectWrapping: true,
   detectSmallRange: true,
+  repairConfirmUsing: utils.RepairConfirmed.DOMRLG,
   screenshotNarrower: false,
   screenshotMin: true,
   screenshotMid: false,
@@ -59,6 +61,13 @@ const settings = {
   screenshotFullpage: true,
   screenshotFailingRepairs: true,
   screenshotHighlights: true,
+  skipCopyingCSSProperties: [],
+  NoScalingCSSProperties: [],
+  additionalRepairs: utils.AdditionalRepairs.NONE,
+  repairCombination: [
+     'Transform-Wider',
+     'Transform-Narrower'
+],
   humanStudy: false,
 };
 

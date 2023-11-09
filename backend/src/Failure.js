@@ -6,6 +6,7 @@ const Rectangle = require("./Rectangle");
 const RepairStatistics = require("./RepairStatistics");
 const utils = require("./utils");
 const fs = require('fs');
+const RLG = require("./RLG");
 const { sendMessage } = require("../socket-connect");
 
 class Failure {
@@ -31,6 +32,7 @@ class Failure {
         this.durationNarrowerRepair = undefined;
         this.durationWiderConfirmRepair = undefined;
         this.durationNarrowerConfirmRepair = undefined;
+        this.outputDirectory = undefined;
     }
 
     setupHumanStudyData() {
@@ -108,6 +110,112 @@ class Failure {
         return problemArea;
     }
 
+    async getRectangles(driver, traverseUp = false) {
+        let selectors = this.getSelectors();
+        let xpaths = this.getXPaths();
+        let rectangles = [];
+        let elements = [];
+        for (let i = 0; i < selectors.length; i++) {
+            let currentSelector = selectors[i];
+            let xpath = xpaths[i];
+            let element = undefined;
+            try {
+                element = await driver.getElementBySelector(currentSelector);
+                elements.push(element);
+            } catch (err) {
+                console.log(err);
+                elements.push(undefined);
+            }
+            if (element != undefined) {
+                try {
+                    let boundingBox = await driver.getRectangle(element, traverseUp);
+                    if (boundingBox === undefined || boundingBox === null || boundingBox === NaN) {
+                        let rectangle = {
+                            selector: currentSelector,
+                            xpath: xpath,
+                            isMissingValues: function () {
+                                return true;
+                            },
+                            toString: function () {
+                                return xpath + "\nNo BoundingBox."
+                            }
+                        };
+                        rectsnapshotViewportangles.push(rectangle);
+                    } else {
+                        let rectangle = new Rectangle(boundingBox);
+                        rectangle.selector = currentSelector;
+                        rectangle.xpath = xpath;
+                        rectangles.push(rectangle);
+                    }
+                } catch (err) {
+                    console.log(err);
+                    rectangles.push(undefined);
+                }
+            }
+            else
+                rectangles.push(undefined);
+        }
+        for (let element of elements) {
+            if (element !== undefined)
+                element.dispose();
+        }
+        return rectangles;
+    }
+
+    async setViewportHeightBeforeSnapshots(viewport = driver.currentViewport, ruleMin = undefined, ruleMax = undefined) {
+        if (settings.browserMode === utils.Mode.HEADLESS) {
+            let css = undefined
+            if (this.repairElementHandle === undefined) {
+                let htmlElement = await driver.getHTMLElement();
+                let dom = await this.getDOMFrom(driver, viewport, [], htmlElement);
+                css = this.getDOMStylesCSS(dom);
+            }
+
+            let pageHeight = await driver.getPageHeightUsingHTMLElement();
+            if (settings.screenshotSpecial !== undefined && settings.screenshotSpecial.length > 0) {
+                for (let name of settings.screenshotSpecial) {
+                    if (this.webpage.toLocaleLowerCase().includes(name.toLocaleLowerCase())) {
+                        pageHeight = await driver.getMaxElementHeight();
+                    }
+                }
+            }
+            pageHeight = Math.max(pageHeight, settings.testingHeight);
+            await driver.setViewport(viewport, pageHeight);
+            if (this.repairElementHandle === undefined)
+                this.snapshotCSSElementHandle = await driver.addRepair(css);
+        } else {
+            await driver.setViewport(viewport, settings.testingHeight);
+        }
+    }
+    async resetViewportHeightAfterSnapshots(viewport = driver.currentViewport) {
+        if (this.repairElementHandle === undefined && this.snapshotCSSElementHandle !== undefined) {
+            await driver.removeRepair(this.snapshotCSSElementHandle);
+            await this.snapshotCSSElementHandle.dispose();
+        }
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            await driver.setViewport(viewport, settings.testingHeight);
+    }
+
+    async screenshot(driver, file, highlight = true, encoding64 = true, fullViewportHeightScreenshot = false, fullViewportWidthClipping = false) {
+        // await this.setViewportHeightBeforeSnapshots(driver.currentViewport);
+        let fullPage = true;
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            fullPage = false;
+        let screenshot = await driver.screenshot(undefined, fullPage, encoding64);
+        if (highlight === true) {
+            let rectangles = await this.getRectangles(driver);
+            screenshot = await driver.highlight(rectangles, screenshot);
+            //screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true);
+            this.saveScreenshot(file, screenshot);
+        } else if (fullViewportHeightScreenshot === true) {
+            let rectangles = await this.getRectangles(driver);
+            screenshot = await this.clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, driver.currentViewport);
+            this.saveScreenshot(file, screenshot);
+        } else {
+            this.saveScreenshot(file, screenshot, false);
+        }
+        // await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+    }
 
     async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
         try {
@@ -288,7 +396,7 @@ class Failure {
             let properties = ['min-width', 'width', 'max-width', 'min-height', 'height', 'font-size', 'line-height', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'border-left-width', 'border-right-width', 'border-top-width', 'border-bottom-width']
             let domNodeMin = domMin.getDOMNode(domNode.xpath);
             if (domNodeMin === undefined) {
-                assist.log("In Wider not in Min DOM: " + domNode.xpath);
+                utils.log("In Wider not in Min DOM: " + domNode.xpath);
             }
             let computedStylesWider = domNode.getComputedStyle();
             let computedStylesMin = undefined;
@@ -343,7 +451,7 @@ class Failure {
             let domNode = traversalStackDOM.shift();
             let domNodeWider = domWider.getDOMNode(domNode.xpath);
             if (domNodeWider === undefined) {
-                assist.log("In Min not in Wider DOM: " + domNode.xpath)
+                utils.log("In Min not in Wider DOM: " + domNode.xpath)
             }
             for (let child of domNode.children) {
                 traversalStackDOM.push(child);
@@ -714,8 +822,6 @@ class Failure {
         let failureViewport = this.range.getMinimum();
         await driver.setViewport(failureViewport, settings.testingHeight);
         if (this.range.minClassification === 'TP') { //Needs Repair.
-            //if (await this.isFailing(driver)) { //Attempt to repair failure only if there is a problem.
-            //if (await this.isFailing(driver)) { //Attempt to repair failure only if there is a problem.
                 this.repairCombinationResult = [];
 
                 //let repairBar = new ProgressBar('Repair ' + this.ID + '      [:bar] :etas Attempt:       :token1/' + settings.repairCombination.length, { incomplete: ' ', total: settings.repairCombination.length, width: 25 })
@@ -738,14 +844,14 @@ class Failure {
                             let htmlElement = await driver.getHTMLElement();
                             let domWider = await this.getDOMFrom(driver, this.range.getWider(), pseudoElements, htmlElement);
                             css = this.getDOMStylesCSS(domWider);
-                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === assist.Mode.HEADLESS))
+                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                                 css = this.makeRuleCSS(css);
                             //Scale ratio specifically made for viewport...
                             let min = this.range.getMinimum();
                             let max = this.range.getMaximum();
-                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === assist.Mode.HEADLESS))
+                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                             {
-                                min = settings.testingWidthMin;
+                                min = settings.testWidthMin;
                                 max= settings.testingRangeMax;
                             }
                             for (let failureViewport = min; failureViewport <= max; failureViewport++) {
@@ -761,45 +867,24 @@ class Failure {
                         }
                         this.durationWiderRepair = new Date() - this.durationWiderRepair;
                     }
-                    if (repair.includes('Transform-Wider-Targeted')) {
-                        if (this.range.widerClassification === 'FP') {
-                            let parent = this.node.getParentAtViewport(this.range.getWider());
-                            attemptedRepair = true;
-                            repairName = repair[0];
-                            await driver.setViewport(this.range.getWider(), settings.testingHeight);
-                            let root = await driver.getElementBySelector(parent.getSelector());
-                            let domWider = await this.getDOMFrom(driver, this.range.getWider(), pseudoElements, root, parent.xpath);
-                            css = this.getDOMStylesCSS(domWider);
-                            css = this.makeRuleCSS(css);
-                            //Scale ratio specifically made for viewport...
-                            for (let failureViewport = this.range.getMinimum(); failureViewport <= this.range.getMaximum(); failureViewport++) {
-                                let scaleValue = failureViewport / this.range.getWider();
-                                let scaleCSS = this.getTransformScaleCSS(scaleValue, parent.getSelector());
-                                let scaleCSSRule = this.makeRuleCSS(scaleCSS, false, failureViewport, failureViewport);
-                                css += scaleCSSRule;
-                            }
-                            repaired = await this.isRepaired(css, repairName, outputDirectory, webpage, run);
-                            css = await this.resolveRepair(repaired, cssRepairedDirectory, repairName, cssFailedDirectory, css);
-                        }
-                    }
                     if (repair.includes('Transform-Narrower')) {
                         this.durationNarrowerRepair = new Date();
                         let narrowerViewportWidth = this.range.getNarrower();
-                        if (narrowerViewportWidth >= settings.testingWidthMin && this.range.narrowerClassification === 'FP') {
+                        if (narrowerViewportWidth >= settings.testWidthMin && this.range.narrowerClassification === 'FP') {
                             attemptedRepair = true;
                             repairName = repair[0];
                             await driver.setViewport(this.range.getNarrower(), settings.testingHeight);
                             let htmlElement = await driver.getHTMLElement();
                             let domNarrower = await this.getDOMFrom(driver, this.range.getNarrower(), pseudoElements, htmlElement);
                             css = this.getDOMStylesCSS(domNarrower);
-                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === assist.Mode.HEADLESS))
+                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                                 css = this.makeRuleCSS(css);
                             //Scale ratio specifically made for viewport...
                             let min = this.range.getMinimum();
                             let max = this.range.getMaximum();
-                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === assist.Mode.HEADLESS))
+                            if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                             {
-                                min = settings.testingWidthMin;
+                                min = settings.testWidthMin;
                                 max= settings.testingRangeMax;
                             }
                             for (let failureViewport = min; failureViewport <= max; failureViewport++) {
@@ -815,61 +900,6 @@ class Failure {
                         }
                         this.durationNarrowerRepair = new Date() - this.durationNarrowerRepair;
                     }
-
-                    if (repair.includes('widerComparisonViewportSpacing')) {
-                        if (this.range.widerClassification === 'FP') {
-                            attemptedRepair = true;
-                            repairName = repair[0];
-                            let domMin = await this.getDOMFrom(driver, this.range.getMinimum(), pseudoElements);
-                            let widerViewportWidth = this.range.getWider();
-                            let domWider = await this.getDOMFrom(driver, widerViewportWidth, pseudoElements);
-                            this.WiderComparisonViewportSpacingCSS(domWider, domMin, widerViewportWidth, pseudoElements)
-                            css = this.makeRuleCSS();
-                            repaired = await this.isRepaired(css, repairName, outputDirectory, webpage, run);
-                            css = await this.resolveRepair(repaired, cssRepairedDirectory, repairName, cssFailedDirectory, css);
-                        }
-                    }
-                    if (repair.includes('narrowerComparisonViewportSpacing')) {
-                        repairName = repair[0];
-                        let narrowerViewportWidth = this.range.getNarrower();
-                        if (narrowerViewportWidth >= settings.testingWidthMin && this.range.narrowerClassification === 'FP') {
-                            attemptedRepair = true;
-                            let domMin = await this.getDOMFrom(driver, this.range.getMinimum(), pseudoElements);
-                            let domNarrower = await this.getDOMFrom(driver, narrowerViewportWidth, pseudoElements);
-                            this.narrowerComparisonViewportSpacingCSS(domNarrower, domMin, narrowerViewportWidth, pseudoElements);
-                            css = this.makeRuleCSS();
-                            repaired = await this.isRepaired(css, repairName, outputDirectory, webpage, run);
-                            css = await this.resolveRepair(repaired, cssRepairedDirectory, repairName, cssFailedDirectory, css);
-                        }
-                    }
-
-                    if (repair.includes('widerComparisonElements')) {
-                        if (this.range.widerClassification === 'FP') {
-                            attemptedRepair = true;
-                            let domWider = await this.getDOMFrom(driver, this.range.getWider(), pseudoElements);
-                            this.associateRLGNodesToDOMNodes(domWider, this.node.rlg);
-                            let ancestorLevel = 0;
-                            while (repaired === false && rlgNode !== undefined) {
-                                ancestorLevel++;
-                                if (this.ID == 2)
-                                    assist.log('Level: ' + ancestorLevel);
-                                repairName = repair + '-' + ancestorLevel;
-                                this.widerComparisonElements(domWider, rlgNode);
-                                css = this.makeRuleCSS();
-                                repaired = await this.isRepaired(css, repairName, outputDirectory, webpage, run);
-                                if (repaired === false) {
-                                    this.saveRepairToFile(path.join(cssFailedDirectory, this.ID + '-' + repairName + ".css"), css)
-                                    await this.deleteRepair();
-                                    css = undefined;
-                                    rlgNode = rlgNode.getParentAtViewport(this.range.getWider());
-                                }
-                                else if (repaired === true) {
-                                    this.repairCombinationResult.push("Repaired");
-                                    this.saveRepairToFile(path.join(cssRepairedDirectory, this.ID + '-' + repairName + ".css"), css)
-                                }
-                            }
-                        }
-                    }
                     if (attemptedRepair) {
                         if (repaired) {
                             // this.repairCombinationResult.push("Repaired");
@@ -881,7 +911,7 @@ class Failure {
                                 let aftermathDOMsDirectory = path.join(aftermathDirectory, "DOMs");
                                 fs.mkdirSync(aftermathDOMsDirectory);
                                 let aftermathFile = path.join(aftermathDirectory, 'Failures.csv');
-                                let rlg = await this.getNewRLG(settings.testingWidthMin, settings.testingWidthMax, aftermathDOMsDirectory);
+                                let rlg = await this.getNewRLG(settings.testWidthMin, settings.testWidthMax, aftermathDOMsDirectory);
                                 await rlg.classifyFailures(driver, aftermathDirectory + path.sep + 'Classifications.txt', aftermathDirectory);
                                 rlg.printFailuresCSV(aftermathFile, webpage, run, repair, this.ID);
                                 rlg.printGraph(path.join(aftermathDirectory, 'RLG.txt'));
@@ -898,11 +928,10 @@ class Failure {
                     if (repaired) { //Repair worked
                         this.repairStats.repairs++;
                         this.checkRepairLater = false;
-                        //bar.tick();
+                        bar.tick();
                     } else {//Repair did not work
                         this.checkRepairLater = true;
                         if (css !== undefined) {
-                            //assist.log(css);
                             await driver.removeRepair(this.repairElementHandle);
                             this.repairCSS = undefined;
                             await this.repairElementHandle.dispose();
@@ -911,7 +940,6 @@ class Failure {
                     }
                     //delete later this is to always remove the repair so it does not have an effect on others.
                     if (css !== undefined) {
-                        //assist.log(css);
                         await driver.removeRepair(this.repairElementHandle);
                         this.repairCSS = undefined;
                         await this.repairElementHandle.dispose();
@@ -951,11 +979,11 @@ class Failure {
                 let miniRLGDirectory = path.join(outputDirectory, 'mini-rlg', this.ID.toString(), repairName);
                 fs.mkdirSync(miniRLGDirectory, { recursive: true });
                 await this.injectRepair(css);
-                if (settings.repairConfirmUsing === RepairConfirmed.RLG)
+                if (settings.repairConfirmUsing === utils.RepairConfirmed.RLG)
                     repaired = await this.isRepairedRLG(driver, outputDirectory, miniRLGDirectory, webpage, run, repairName, this.ID);
-                else if (settings.repairConfirmUsing === RepairConfirmed.DOM)
+                else if (settings.repairConfirmUsing === utils.RepairConfirmed.DOM)
                     repaired = await this.isRepairedDOM(driver, repairName, outputDirectory);
-                else if (settings.repairConfirmUsing === RepairConfirmed.DOMRLG) {
+                else if (settings.repairConfirmUsing === utils.RepairConfirmed.DOMRLG) {
                     repaired = await this.isRepairedDOM(driver, repairName, outputDirectory);
                     if (repaired)
                         repaired = await this.isRepairedRLG(driver, outputDirectory, miniRLGDirectory, webpage, run, repairName, this.ID);
@@ -979,23 +1007,58 @@ class Failure {
             let failed = await this.isFailing(driver)
             let repaired = !failed;
             if (repaired && directory !== undefined) {
-                let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + failureViewport + '-repaired-' + repairName + '.png';
+                let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repairName + '.png';
                 let imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
                 let maxViewport = this.range.getMaximum();
                 if (driver.currentViewport !== maxViewport)
                     await driver.setViewport(maxViewport, settings.testingHeight);
-                imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + maxViewport + '-repaired-' + repairName + '.png';
+                imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + maxViewport + '-repaired-' + repairName + '.png';
                 imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             } else if (!repaired && directory !== undefined) {
                 if (settings.screenshotFailingRepairs) {
-                    let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + failureViewport + '-FAILED-DOM-' + repairName + '.png';
+                    let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-DOM-' + repairName + '.png';
                     let imagePath = path.join(directory, "snapshots", imageFileName);
                     await this.screenshot(driver, imagePath, settings.screenshotHighlights);
                 }
             }
             return repaired;
+        }
+
+        async getNewRLG(testingRangeMin = undefined, testingRangeMax = undefined, directory = undefined) {
+            let rlg =  new RLG(directory, null, 1);
+            let visit = [];
+            if (testingRangeMin === undefined || testingRangeMax === undefined) {
+                if (this.type === utils.FailureType.SMALLRANGE && this.range.getNarrower() >= settings.testWidthMin)
+                    visit.push(this.range.getNarrower());
+                visit.push(this.range.getMinimum());
+                if (!visit.includes(this.range.getMiddle()))
+                    visit.push(this.range.getMiddle());
+                if (!visit.includes(this.range.getMaximum()))
+                    visit.push(this.range.getMaximum());
+                visit.push(this.range.getWider());
+            } else {
+                for (let width = testingRangeMin; width <= testingRangeMax; width++)
+                    visit.push(width);
+            }
+            for (let i = visit.length - 1; i >= 0; i--) {
+                let width = visit[i];
+                await driver.setViewport(width, settings.testingHeight);
+                let dom = new DOM(driver, width);
+                await dom.captureDOM();
+                if (directory !== undefined)
+                    dom.saveRBushData(directory);
+                if (testingRangeMin === undefined || testingRangeMax === undefined)
+                    rlg.extractRLG(dom, i + 1);
+                else
+                    rlg.extractRLG(dom, width);
+                // dom.disposeAllElementHandles();
+            }
+            rlg.detectFailures(false);
+            if (directory !== undefined)
+                rlg.printGraph(path.join(directory, 'mini-RLG.txt'));
+            return rlg;
         }
     
         async isRepairedRLG(driver, directory, miniRLGDirectory, webpage, run, repair, id) {
@@ -1012,14 +1075,14 @@ class Failure {
                 let failureViewport = this.range.getMinimum();
                 if (driver.currentViewport !== failureViewport)
                     await driver.setViewport(failureViewport, settings.testingHeight);
-                let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + failureViewport + '-repaired-' + repair + '.png';
+                let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repair + '.png';
                 let imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
                 // Take image of repair at maximum of viewport range... 
                 let maxViewport = this.range.getMaximum();
                 if (driver.currentViewport !== maxViewport)
                     await driver.setViewport(maxViewport, settings.testingHeight);
-                imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + maxViewport + '-repaired-' + repair + '.png';
+                imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + maxViewport + '-repaired-' + repair + '.png';
                 imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath);
                 return true;
@@ -1028,7 +1091,7 @@ class Failure {
                     let failureViewport = this.range.getMinimum();
                     if (driver.currentViewport !== failureViewport)
                         await driver.setViewport(failureViewport, settings.testingHeight);
-                    let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toShortString().trim() + '-capture-' + failureViewport + '-FAILED-RLG-' + repair + '.png';
+                    let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-RLG-' + repair + '.png';
                     let imagePath = path.join(directory, "snapshots", imageFileName);
                     await this.screenshot(driver, imagePath, settings.screenshotHighlights);
                 }

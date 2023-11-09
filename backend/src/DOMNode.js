@@ -1,4 +1,5 @@
 const fs = require('fs');
+const utils = require('./utils');
 
 class DOMNode {
   constructor(element) {
@@ -71,6 +72,41 @@ class DOMNode {
   setComputedStyle(computedStyles) {
     this.computedStyles = computedStyles;
   }
+
+  getComputedStyle() {
+    return this.computedStyles;
+}
+
+getSelector() {
+  if (this.xpath === undefined || this.xpath === "")
+      return undefined;
+  let elements = this.xpath.split("/");
+  let selector = ""
+  for (let element of elements) {
+      if (element === "") {
+          continue;
+      }
+      else if (element.includes("[")) {
+          if (element.includes(utils.svg.prefix)) {
+              element = element.replace(utils.svg.prefix, "");
+              element = element.replace(utils.svg.prefix, "");
+          }
+          if (element.includes("[")) {
+              element = element.replace("[", ":nth-of-type(");
+              element = element.replace("]", ")");
+          } else {
+              element = element + ":nth-of-type(1)"
+          }
+      } else {
+          element = element + ":nth-of-type(1)"
+      }
+      if (selector === "")
+          selector = element.toLowerCase();
+      else
+          selector = selector + " > " + element.toLowerCase();
+  }
+  return selector;
+}
 
   setCSSVisibilityProperties(properties) {
         this.display = properties.display;

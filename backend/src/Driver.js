@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const settings = require('../settings');
 const { highlightColors } = require('./utils');
+const utils = require('./utils');
 
 const driver = {};
 
@@ -298,7 +299,7 @@ driver.getPageHeightUsingHTMLElement = async function () {
 driver.addRepair = async function (repairCode) {
     let elementHandle = await driver.page.addStyleTag({ content: repairCode });
     if (settings.repairDelay != undefined && settings.repairDelay > 0) {
-      await assist.resolveAfterSeconds(settings.repairDelay);
+      await utils.resolveAfterSeconds(settings.repairDelay);
     }
     return elementHandle;
 };

@@ -21,7 +21,7 @@ export default function TestPage({ socket }) {
   const [url, setUrl] = useState("");
   const location = useLocation();
 
-  const [step, setStep] = useState(5);
+  const [step, setStep] = useState(0);
 
   // extract RLG
   const [completedViewport, setCompletedViewport] = useState(0);
@@ -70,6 +70,10 @@ export default function TestPage({ socket }) {
       setCompletedClassify(arg.counter);
       setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
+
+    // socket.on("Repair", (arg) => {
+    //   setStep(4);
+    //   });
 
   }, [socket]);
 
@@ -134,7 +138,15 @@ export default function TestPage({ socket }) {
               <ProgressBar progress={classifyProgress} completed={completedClassify} total={totalClassify} type={"Classification of RLFs"} />
             </div>
           }
+
+          { step >= 4 && 
+            <div className="my-8">
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Repairing RLFs</h1>
+              <ProgressBar progress={failureProgress} completed={completedFailures} total={totalNode} type={"Repair RLFs"} />
+            </div>
+          }
         </div>
+        {/* buttons */}
         <div className="flex flex-row justify-center space-x-8">
           { step >= 3 &&
           <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg" onClick={() => viewResults()}>View Results</button>
