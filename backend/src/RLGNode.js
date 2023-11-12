@@ -536,18 +536,18 @@ class RLGNode {
     }
 
     // Repair each 
-    async repairFailures(driver, directory, bar, webpage, run) {
+    async repairFailures(driver, directory, bar, webpage, run, counter) {
         let repairCSSFile = path.join(directory, "repairs.css");
         for (let viewportProtrusion of this.viewportProtrusions)
-            await viewportProtrusion.repair(driver, directory, bar, webpage, run);
+            await viewportProtrusion.repair(driver, directory, bar, webpage, run, counter);
         for (let protrusion of this.elementProtrusions)
-            await protrusion.repair(driver, directory, bar, webpage, run);
+            await protrusion.repair(driver, directory, bar, webpage, run, counter);
         for (let collision of this.elementCollisions)
-            await collision.repair(driver, directory, bar, webpage, run);
+            await collision.repair(driver, directory, bar, webpage, run,counter);
         for (let wrapping of this.wrappings)
-            await wrapping.repair(driver, directory, bar, webpage, run);
+            await wrapping.repair(driver, directory, bar, webpage, run, counter);
         for (let smallrange of this.smallranges)
-            await smallrange.repair(driver, directory, bar, webpage, run);
+            await smallrange.repair(driver, directory, bar, webpage, run, counter);
 
         for (let viewportProtrusion of this.viewportProtrusions) {
             await viewportProtrusion.checkForLaterRepair(driver, directory, bar);
@@ -574,21 +574,21 @@ class RLGNode {
         }
     }
 
-    async classifyFailures(driver, classificationFile, snapshotDirectory, bar) {
+    async classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter) {
         for (let viewportProtrusion of this.viewportProtrusions) {
-            await viewportProtrusion.classify(driver, classificationFile, snapshotDirectory, bar);
+            await viewportProtrusion.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let protrusion of this.elementProtrusions) {
-            await protrusion.classify(driver, classificationFile, snapshotDirectory, bar);
+            await protrusion.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let collision of this.elementCollisions) {
-            await collision.classify(driver, classificationFile, snapshotDirectory, bar);
+            await collision.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let wrapping of this.wrappings) {
-            await wrapping.classify(driver, classificationFile, snapshotDirectory, bar);
+            await wrapping.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let smallrange of this.smallranges) {
-            await smallrange.classify(driver, classificationFile, snapshotDirectory, bar);
+            await smallrange.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
     }
 

@@ -39,6 +39,11 @@ export default function TestPage({ socket }) {
   const [completedClassify, setCompletedClassify] = useState(0);
   const [totalClassify, setTotalClassify] = useState(0);
   const [classifyProgress, setClassifyProgress] = useState(0);
+
+  // Repair RLFs
+  const [completedRepair, setCompletedRepair] = useState(0);
+  const [totalRepair, setTotalRepair] = useState(0);
+  const [repairProgress, setRepairProgress] = useState(0);
   
 
   useEffect(() => {
@@ -71,9 +76,12 @@ export default function TestPage({ socket }) {
       setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
 
-    // socket.on("Repair", (arg) => {
-    //   setStep(4);
-    //   });
+    socket.on("Repair", (arg) => {
+      setStep(4);
+      setTotalRepair(arg.total);
+      setCompletedRepair(arg.counter);
+      setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
+      });
 
   }, [socket]);
 
@@ -142,7 +150,7 @@ export default function TestPage({ socket }) {
           { step >= 4 && 
             <div className="my-8">
               <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Repairing RLFs</h1>
-              <ProgressBar progress={failureProgress} completed={completedFailures} total={totalNode} type={"Repair RLFs"} />
+              <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Repair RLFs"} />
             </div>
           }
         </div>

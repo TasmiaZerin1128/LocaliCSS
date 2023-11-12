@@ -1,6 +1,5 @@
 const RBush = require('rbush');
 const { Range } = require('./Range.js');
-const RLGNode = require('./RLGNode.js');
 const Rectangle = require('./Rectangle.js');
 const settings = require('../settings.js');
 const RepairStatistics = require('./RepairStatistics.js');
@@ -532,9 +531,10 @@ class RLG {
     // Classify the failure of all nodes with failures
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        let counter = 0;
         console.log('Failure Nodes: ' + this.nodesWithFailures.length);
         for (const node of this.nodesWithFailures) {
-            await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar);
+            await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
         }
     }
 
@@ -547,8 +547,9 @@ class RLG {
 
     async repairFailures(driver, directory, webpage, run) {
         let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
+        let counter = 0;
         for (const [xpath, node] of this.map.entries()) {
-            await node.repairFailures(driver, directory, bar, webpage, run);
+            await node.repairFailures(driver, directory, bar, webpage, run, counter);
             this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);
             this.protrusionRepairStats.addValuesFrom(node.protrusionRepairStats);
             this.collisionRepairStats.addValuesFrom(node.collisionRepairStats);
@@ -605,3 +606,4 @@ class RLG {
 }
 
 module.exports = RLG;
+const RLGNode = require('./RLGNode.js');
