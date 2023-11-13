@@ -1,11 +1,11 @@
 import api from "../api";
 
-const downloadResults = async () => {
+const downloadResults = async (file: string) => {
     try {
-        const response = await api.get(`/download/failures`);
+        const response = await api.get(`/download/result/${file}`);
         console.log(response.data);
         return await response.data;
-    } catch (err) {
+    } catch (err: any) {
         return err.response;
     }
 }
@@ -17,7 +17,7 @@ const downloadZipResults = async () => {
           });
         console.log(response.data);
         return await response.data;
-    } catch (err) {
+    } catch (err: any) {
         return err.response;
     }
 }

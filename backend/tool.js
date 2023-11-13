@@ -15,11 +15,11 @@ exports.startTool = async (req, res) => {
     await driver.start();
     const page = await driver.createPage();
 
-    // let url = req.query.url;
-    let url = "https://sharifmabdullah.github.io/";
+    let url = req.query.url;
     console.log(url);
     //https://teachers.gov.bd/
     //http://www.dphe.gov.bd/
+    //https://sharifmabdullah.github.io/
     let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
     // await driver.goto(url);
 
@@ -41,12 +41,21 @@ exports.startTool = async (req, res) => {
 
   } catch (err) {
     console.log('Error: ', err);
+    await driver.close();
     return res.status(500).json('Something went wrong');
   }
 };
 
-exports.sendFailures = async (req, res) => {
-  res.download('output/2023-10-24-21-10-47/airbnb.com/run---1/RLG.txt');
+exports.sendResultFile = async (req, res) => {
+  let fileName = req.params.file;
+  console.log(fileName);
+  if(fileName.includes('RLG')) {
+    res.download('output/2023-11-13-10-36-54/sharifmabdullah.github.io/run---1/RLG.txt');
+  }
+  if(fileName.includes('RLF')) {
+    res.setHeader('Content-Type', 'text/csv');
+    res.download('output/2023-11-13-21-10-42/sharifmabdullah.github.io/run---1/Failures.csv');
+  }
   console.log('Sending file');
 }
 

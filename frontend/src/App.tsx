@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import TestPage from "./pages/TestPage";
 import { io } from "socket.io-client";
 import React, { useState, useEffect } from 'react';
+import ShowResult from "./pages/Result";
 
 const socket = io("http://localhost:3000", { transports: ['polling'] });
 
@@ -36,6 +37,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/test" element={<TestPage socket={socket}/>} />
+        <Route path="/result" element={<ShowResult />} />
       </Routes>
     </>
   )

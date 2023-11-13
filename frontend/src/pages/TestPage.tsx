@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/ProgressBar";
 
 function parseUrlDomain(url) {
-  const name = new URL(url).hostname.replace("www.", "");
+  const name = new URL(url).hostname.replace(/^https?:\/\//, "");
   return name;
 }
 
@@ -51,6 +51,8 @@ export default function TestPage({ socket }) {
     setUrl(parsedUrl);
     fetchTestResults(location.state.url);
 
+
+    // Step 1
     socket.on("Extract RLG", (arg) => {
       console.log(arg.counter + " " + arg.total);
       setTotalViewport(arg.total);
@@ -58,6 +60,7 @@ export default function TestPage({ socket }) {
       setViewportProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
 
+    // Step 2
     socket.on("Find RLFs", (arg) => {
       setStep(2);
       setTotalNode(arg.total);
@@ -69,6 +72,7 @@ export default function TestPage({ socket }) {
       setFailureNodes(arg);
     });
 
+    // Step 3
     socket.on("Classify", (arg) => {
       setStep(3);
       setTotalClassify(arg.total);
@@ -76,6 +80,7 @@ export default function TestPage({ socket }) {
       setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
 
+    // Step 4
     socket.on("Repair", (arg) => {
       setStep(4);
       setTotalRepair(arg.total);
@@ -141,7 +146,7 @@ export default function TestPage({ socket }) {
 
           { step >= 3 && 
             <div className="my-8">
-              <h1 className="font-body text-center text-lg lg:text-xl mb-4 text-black font-bold">Number of Detected Failure Nodes: <span className="text-primary">{failureNodes}</span></h1>
+              {/* <h1 className="font-body text-center text-lg lg:text-xl mb-4 text-black font-bold">Number of Detected Failure Nodes: <span className="text-primary">{failureNodes}</span></h1> */}
               <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Classifying RLFs</h1>
               <ProgressBar progress={classifyProgress} completed={completedClassify} total={totalClassify} type={"Classification of RLFs"} />
             </div>
@@ -156,11 +161,11 @@ export default function TestPage({ socket }) {
         </div>
         {/* buttons */}
         <div className="flex flex-row justify-center space-x-8">
-          { step >= 3 &&
-          <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg" onClick={() => viewResults()}>View Results</button>
+          { step >= 4 &&
+          <button className="purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg" onClick={() => viewResults()}>View Results</button>
           }
-          <button className="justify-center w-28 md:w-36 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg" onClick={() => viewZipResults()}>View Zip Results</button>
-          <button className="flex flex-row items-center justify-center w-42 lg:w-56 text-sm md:text-md lg:text-lg mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg"
+          {/* <button className="purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg" onClick={() => viewZipResults()}>View Zip Results</button> */}
+          <button className="flex flex-row items-center purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg"
               onClick={() => navigate('/')}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />

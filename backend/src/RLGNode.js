@@ -719,31 +719,31 @@ class RLGNode {
         }
     }
 
-    printFailuresCSV(file, webpage, run, repairApplied, repairAppliedTo) {
+    printFailuresCSV(file, webpage, run) {
         if (this.isFailing()) {
             for (let collision of this.elementCollisions) {
                 let xpaths = collision.node.xpath + ',' + collision.sibling.xpath;
-                let text = webpage + "," + run + "," + collision.ID + "," + collision.type + "," + collision.range.getMinimum() + "," + collision.range.getMaximum() + "," + xpaths + "," + collision.range.narrowerClassification + "," + collision.range.minClassification + "," + collision.range.midClassification + "," + collision.range.maxClassification + "," + collision.range.widerClassification + "," + repairApplied + "," + repairAppliedTo;
+                let text = webpage + "," + run + "," + collision.ID + "," + collision.type + "," + collision.range.getMinimum() + "," + collision.range.getMaximum() + "," + xpaths + "," + collision.range.narrowerClassification + "," + collision.range.minClassification + "," + collision.range.midClassification + "," + collision.range.maxClassification + "," + collision.range.widerClassification;
                 utils.printToFile(file, text);
             }
             for (let protrusion of this.elementProtrusions) {
                 let xpaths = protrusion.node.xpath + ',' + protrusion.parent.xpath;
-                let text = webpage + "," + run + "," + protrusion.ID + "," + protrusion.type + "," + protrusion.range.getMinimum() + "," + protrusion.range.getMaximum() + "," + xpaths + "," + protrusion.range.narrowerClassification + "," + protrusion.range.minClassification + "," + protrusion.range.midClassification + "," + protrusion.range.maxClassification + "," + protrusion.range.widerClassification + "," + repairApplied + "," + repairAppliedTo;
+                let text = webpage + "," + run + "," + protrusion.ID + "," + protrusion.type + "," + protrusion.range.getMinimum() + "," + protrusion.range.getMaximum() + "," + xpaths + "," + protrusion.range.narrowerClassification + "," + protrusion.range.minClassification + "," + protrusion.range.midClassification + "," + protrusion.range.maxClassification + "," + protrusion.range.widerClassification;
                 utils.printToFile(file, text);
             }
             for (let viewportProtrusion of this.viewportProtrusions) {
                 let xpaths = viewportProtrusion.node.xpath + ',' + viewportProtrusion.parent.xpath;
-                let text = webpage + "," + run + "," + viewportProtrusion.ID + "," + viewportProtrusion.type + "," + viewportProtrusion.range.getMinimum() + "," + viewportProtrusion.range.getMaximum() + "," + xpaths + "," + viewportProtrusion.range.narrowerClassification + "," + viewportProtrusion.range.minClassification + "," + viewportProtrusion.range.midClassification + "," + viewportProtrusion.range.maxClassification + "," + viewportProtrusion.range.widerClassification + "," + repairApplied + "," + repairAppliedTo;
+                let text = webpage + "," + run + "," + viewportProtrusion.ID + "," + viewportProtrusion.type + "," + viewportProtrusion.range.getMinimum() + "," + viewportProtrusion.range.getMaximum() + "," + xpaths + "," + viewportProtrusion.range.narrowerClassification + "," + viewportProtrusion.range.minClassification + "," + viewportProtrusion.range.midClassification + "," + viewportProtrusion.range.maxClassification + "," + viewportProtrusion.range.widerClassification;
                 utils.printToFile(file, text);
             }
             for (let smallrange of this.smallranges) {
                 let xpaths = smallrange.node.xpath + ',' + smallrange.sibling.xpath;
-                let text = webpage + "," + run + "," + smallrange.ID + "," + smallrange.type + "," + smallrange.range.getMinimum() + "," + smallrange.range.getMaximum() + "," + xpaths + "," + smallrange.range.narrowerClassification + "," + smallrange.range.minClassification + "," + smallrange.range.midClassification + "," + smallrange.range.maxClassification + "," + smallrange.range.widerClassification + "," + repairApplied + "," + repairAppliedTo;
+                let text = webpage + "," + run + "," + smallrange.ID + "," + smallrange.type + "," + smallrange.range.getMinimum() + "," + smallrange.range.getMaximum() + "," + xpaths + "," + smallrange.range.narrowerClassification + "," + smallrange.range.minClassification + "," + smallrange.range.midClassification + "," + smallrange.range.maxClassification + "," + smallrange.range.widerClassification;
                 utils.printToFile(file, text);
             }
             for (let wrapping of this.wrappings) {
                 let xpaths = wrapping.node.xpath + ',' + wrapping.row[0].xpath;
-                let text = webpage + "," + run + "," + wrapping.ID + "," + wrapping.type + "," + wrapping.range.getMinimum() + "," + wrapping.range.getMaximum() + "," + xpaths + "," + wrapping.range.narrowerClassification + "," + wrapping.range.minClassification + "," + wrapping.range.midClassification + "," + wrapping.range.maxClassification + "," + wrapping.range.widerClassification + "," + repairApplied + "," + repairAppliedTo;
+                let text = webpage + "," + run + "," + wrapping.ID + "," + wrapping.type + "," + wrapping.range.getMinimum() + "," + wrapping.range.getMaximum() + "," + xpaths + "," + wrapping.range.narrowerClassification + "," + wrapping.range.minClassification + "," + wrapping.range.midClassification + "," + wrapping.range.maxClassification + "," + wrapping.range.widerClassification;
                 utils.printToFile(file, text);
             }
         }

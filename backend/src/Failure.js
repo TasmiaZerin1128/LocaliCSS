@@ -385,7 +385,7 @@ class Failure {
                                 let aftermathFile = path.join(aftermathDirectory, 'Failures.csv');
                                 let rlg = await this.getNewRLG(settings.testingWidthMin, settings.testingWidthMax, aftermathDOMsDirectory);
                                 await rlg.classifyFailures(driver, aftermathDirectory + path.sep + 'Classifications.txt', aftermathDirectory);
-                                rlg.printFailuresCSV(aftermathFile, webpage, run, repair, this.ID);
+                                rlg.printFailuresCSV(aftermathFile, webpage, run);
                                 rlg.printGraph(path.join(aftermathDirectory, 'RLG.txt'));
                             }
                         }

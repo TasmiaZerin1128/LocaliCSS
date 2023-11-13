@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components{
+    .purple-button-lg {
+        @apply justify-center w-28 text-sm mt-24 font-title border border-primary hover:bg-primary py-2 px-4 text-primary hover:text-white rounded-lg;
+    }
+}

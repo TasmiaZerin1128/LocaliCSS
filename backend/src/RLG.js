@@ -508,9 +508,7 @@ class RLG {
     detectFailures(progress = true) {
         let counter = 0;
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
-        console.log(this.map);
         let bodyNode = this.map.get('/HTML/BODY');
-        console.log(bodyNode);
         let nodesWithFailures = [];
         this.map.forEach((node) => {
             node.detectFailures(bodyNode);
@@ -532,7 +530,6 @@ class RLG {
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         let counter = 0;
-        console.log('Failure Nodes: ' + this.nodesWithFailures.length);
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
         }
@@ -588,16 +585,14 @@ class RLG {
      * @param {Path} file File to save to.
      * @param {String} webpage Name of webpage.
      * @param {Number} run The run number.
-     * @param {String} repairApplied repair applied before before extracting RLG.
-     * @param {Number} repairAppliedTo The repair was applied to resolve the given failure-number/ID.
      */
-    printFailuresCSV(fileCSV, webpage, run, repairApplied = 'none', repairAppliedTo = 0) {
+    printFailuresCSV(fileCSV, webpage, run) {
         if (utils.failureCount > 0) {
             let text =
-                "Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,XPath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider,RepairApplied,RepairAppliedTo";
+                "Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider";
             utils.printToFile(fileCSV, text);
             this.map.forEach(function (node) {
-                node.printFailuresCSV(fileCSV, webpage, run, repairApplied, repairAppliedTo);
+                node.printFailuresCSV(fileCSV, webpage, run);
             })
         }
 
