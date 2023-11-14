@@ -5,6 +5,7 @@ const cliProgress = require('cli-progress');
 const ProgressBar = require('progress');
 const RLG = require('./RLG');
 const { sendMessage } = require('../socket-connect');
+const utils = require('./utils');
 
 
 class Webpage {
@@ -35,13 +36,16 @@ class Webpage {
         this.runCounter++;
         console.log(this.outputPath);
         this.pageRunOutputPath = path.join(this.outputPath, 'run---' + this.runCounter);
+        utils.testOutputPath.concat(this.pageRunOutputPath);
         fs.mkdirSync(this.pageRunOutputPath);
         this.domOutputPath = path.join(this.pageRunOutputPath, 'DOM');
         fs.mkdirSync(this.domOutputPath);
         this.snapshotOutputPath = path.join(this.pageRunOutputPath, 'snapshots');
+        utils.testOutputSnapshot.concat(this.snapshotOutputPath);
         fs.mkdirSync(this.snapshotOutputPath);
 
         let cssDirectory = path.join(this.pageRunOutputPath, 'CSS');
+        utils.testOutputCSS.concat(cssDirectory);
         let cssRepairedDirectory = path.join(cssDirectory, 'Repaired');
         let cssFailedDirectory = path.join(cssDirectory, 'Failed');
 

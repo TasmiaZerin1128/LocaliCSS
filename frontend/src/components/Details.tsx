@@ -90,7 +90,7 @@ export default function Details() {
             { !showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>View generated RLG</p> }
             { showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>Hide generated RLG</p> }
             {
-                showRLG && <p className="whitespace-pre">{RLG}</p>
+                showRLG && RLG ? (<p className="whitespace-pre">{RLG}</p>) : (<p>Loading...</p>)
             }
           </div>
           <div

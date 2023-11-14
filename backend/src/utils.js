@@ -4,6 +4,10 @@ const path = require('path');
 
 class utils {
 
+    static testOutputPath = '';
+    static testOutputCSS = '';
+    static testOutputSnapshot = '';
+
     static failureID = 0;
     static failureCount = 0;
 
@@ -73,6 +77,29 @@ class utils {
     static resetFailureCount() {
         this.failureCount = 0;
     }
+
+    static getDateTime() {
+        const date = new Date();
+        console.log(date);
+        const year = date.getFullYear();
+        let month = date.getMonth() + 1; // months are zero indexed
+        let day = date.getDate();
+      
+        let hour = date.getHours();
+        let min = date.getMinutes();
+        let sec = date.getSeconds();
+      
+        day = (day < 10 ? '0' : '') + day;
+        month = (month < 10 ? '0' : '') + month;
+      
+        hour = (hour < 10 ? '0' : '') + hour;
+        min = (min < 10 ? '0' : '') + min;
+        sec = (sec < 10 ? '0' : '') + sec;
+      
+        const dateTime = `${year}-${month}-${day}-${hour}-${min}-${sec}`;
+      
+        return dateTime;
+      }
 
     static printToFile(file, text, lineBreak = true) {
         if (lineBreak)

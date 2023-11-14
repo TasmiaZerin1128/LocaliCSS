@@ -324,7 +324,7 @@ class Failure {
                             let max = this.range.getMaximum();
                             if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                             {
-                                min = settings.testingWidthMin;
+                                min = settings.testWidthMin;
                                 max= settings.testingRangeMax;
                             }
                             for (let failureViewport = min; failureViewport <= max; failureViewport++) {
@@ -343,7 +343,7 @@ class Failure {
                     if (repair.includes('Transform-Narrower')) {
                         this.durationNarrowerRepair = new Date();
                         let narrowerViewportWidth = this.range.getNarrower();
-                        if (narrowerViewportWidth >= settings.testingWidthMin && this.range.narrowerClassification === 'FP') {
+                        if (narrowerViewportWidth >= settings.testWidthMin && this.range.narrowerClassification === 'FP') {
                             attemptedRepair = true;
                             repairName = repair[0];
                             await driver.setViewport(this.range.getNarrower(), settings.testingHeight);
@@ -357,7 +357,7 @@ class Failure {
                             let max = this.range.getMaximum();
                             if (!(settings.humanStudy && settings.humanStudyMoreViewportWidth && settings.browserMode === utils.Mode.HEADLESS))
                             {
-                                min = settings.testingWidthMin;
+                                min = settings.testWidthMin;
                                 max= settings.testingRangeMax;
                             }
                             for (let failureViewport = min; failureViewport <= max; failureViewport++) {
@@ -383,7 +383,7 @@ class Failure {
                                 let aftermathDOMsDirectory = path.join(aftermathDirectory, "DOMs");
                                 fs.mkdirSync(aftermathDOMsDirectory);
                                 let aftermathFile = path.join(aftermathDirectory, 'Failures.csv');
-                                let rlg = await this.getNewRLG(settings.testingWidthMin, settings.testingWidthMax, aftermathDOMsDirectory);
+                                let rlg = await this.getNewRLG(settings.testWidthMin, settings.testWidthMax, aftermathDOMsDirectory);
                                 await rlg.classifyFailures(driver, aftermathDirectory + path.sep + 'Classifications.txt', aftermathDirectory);
                                 rlg.printFailuresCSV(aftermathFile, webpage, run);
                                 rlg.printGraph(path.join(aftermathDirectory, 'RLG.txt'));
@@ -401,7 +401,7 @@ class Failure {
                         this.checkRepairLater = false;
                         bar.tick();
                         counter++;
-                        sendMessage("Repair", {'counter': counter, 'total': utils.failureCount});
+                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
                     } else {//Repair did not work
                         this.checkRepairLater = true;
                         if (css !== undefined) {
@@ -420,11 +420,16 @@ class Failure {
                         await this.repairElementHandle.dispose();
                     }
                     count++;
+                    counter++;
                     //repairBar.tick({ 'token1': count });
-                    if (bar.total - bar.curr === 1)
+                    if (bar.total - bar.curr === 1) {
                         bar.tick({ 'token1': "Completed" });
-                    else
+                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
+                    }
+                    else {
                         bar.tick({ 'token1': "FID:" + this.ID });
+                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
+                    }
 
                 }
         } else { //FP 

@@ -2,7 +2,6 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../layouts/Navbar";
 import { useState, useEffect } from "react";
 import { testUrl } from "../services/test";
-import { downloadResults } from "../services/download";
 import { downloadZipResults } from "../services/download";
 import download from 'downloadjs';
 import JSZip from 'jszip';
@@ -21,7 +20,7 @@ export default function TestPage({ socket }) {
   const [url, setUrl] = useState("");
   const location = useLocation();
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(5);
 
   // extract RLG
   const [completedViewport, setCompletedViewport] = useState(0);
@@ -34,11 +33,6 @@ export default function TestPage({ socket }) {
   const [failureProgress, setFailureProgress] = useState(0);
 
   const [failureNodes, setFailureNodes] = useState(0);
-
-  // Classify RLFs
-  const [completedClassify, setCompletedClassify] = useState(0);
-  const [totalClassify, setTotalClassify] = useState(0);
-  const [classifyProgress, setClassifyProgress] = useState(0);
 
   // Repair RLFs
   const [completedRepair, setCompletedRepair] = useState(0);
@@ -73,19 +67,12 @@ export default function TestPage({ socket }) {
     });
 
     // Step 3
-    socket.on("Classify", (arg) => {
+    socket.on("Repair RLFs", (arg) => {
       setStep(3);
-      setTotalClassify(arg.total);
-      setCompletedClassify(arg.counter);
-      setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
-    });
-
-    // Step 4
-    socket.on("Repair", (arg) => {
-      setStep(4);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
       setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
+      if(arg.total >= arg.counter) setStep(4);
       });
 
   }, [socket]);
@@ -96,9 +83,7 @@ export default function TestPage({ socket }) {
   };
 
   const viewResults = async () => {
-    const results = await downloadResults();
-    if (results!== null)
-      download(results, "test.txt");
+    navigate('/result');
   }
 
   const viewZipResults = async () => {
@@ -146,15 +131,7 @@ export default function TestPage({ socket }) {
 
           { step >= 3 && 
             <div className="my-8">
-              {/* <h1 className="font-body text-center text-lg lg:text-xl mb-4 text-black font-bold">Number of Detected Failure Nodes: <span className="text-primary">{failureNodes}</span></h1> */}
-              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Classifying RLFs</h1>
-              <ProgressBar progress={classifyProgress} completed={completedClassify} total={totalClassify} type={"Classification of RLFs"} />
-            </div>
-          }
-
-          { step >= 4 && 
-            <div className="my-8">
-              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Repairing RLFs</h1>
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Repairing RLFs</h1>
               <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Repair RLFs"} />
             </div>
           }

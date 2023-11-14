@@ -24,7 +24,7 @@ exports.startTool = async (req, res) => {
     // await driver.goto(url);
 
     let pageName = utils.parseName(url);
-    let testOutputPath = path.join(settings.runOutputFile, pageName);
+    let testOutputPath = path.join(path.join('output', utils.getDateTime()), pageName);
     let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
     newWebpage.createMainOutputFile();
     await newWebpage.navigateToPage();
@@ -48,19 +48,19 @@ exports.startTool = async (req, res) => {
 
 exports.sendResultFile = async (req, res) => {
   let fileName = req.params.file;
-  console.log(fileName);
+  console.log(utils.testOutputPath);
   if(fileName.includes('RLG')) {
-    res.download('output/2023-11-13-10-36-54/sharifmabdullah.github.io/run---1/RLG.txt');
+    res.download(utils.testOutputPath + '/RLG.txt');
   }
   if(fileName.includes('RLF')) {
     res.setHeader('Content-Type', 'text/csv');
-    res.download('output/2023-11-13-21-10-42/sharifmabdullah.github.io/run---1/Failures.csv');
+    res.download(utils.testOutputPath + '/Failures.csv');
   }
   console.log('Sending file');
 }
 
 exports.sendZipFailures = async (req, res) => {
-  folderPath = 'output/2023-10-24-21-10-47/airbnb.com/run---1';
+  folderPath = utils.testOutputPath;
   utils.addToZip(zip, folderPath);
 
   zip.generateAsync({type:"nodebuffer"}).then((buffer) => {
