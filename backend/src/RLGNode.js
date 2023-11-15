@@ -278,7 +278,6 @@ class RLGNode {
 
     // Detect Viewport Protrusion of this node
     detectViewportProtrusion(bodyNode) {
-        console.log(bodyNode);
         if (this.xpath === bodyNode.xpath) {
             return;
         }

@@ -2,9 +2,12 @@ import Navbar from "../layouts/Navbar";
 import { SuccessCard, ErrorCard } from "../components/AlertBar";
 import { useState } from "react";
 import Details from "../components/Details";
+import { useLocation } from "react-router-dom";
 
-export default function ShowResult({ url }) {
-    const [error, setError] = useState(0);
+export default function ShowResult() {
+  const location = useLocation();
+  const url = location.state;
+  const [error, setError] = useState(1);
 
   return (
     <>
@@ -14,7 +17,7 @@ export default function ShowResult({ url }) {
           Generated Results
         </h1>
         <h1 className="font-title text-lg">
-          Target Webpage: <b>{url}</b>
+          Target Webpage: {url && <b>{url}</b>}
         </h1>
         { error === 0 &&
             <SuccessCard heading={"No Error Found"} description={"The tool found no responsive layout failures in the webpage from 320px - 1400px viewport range. Your webpage is nicely designed!"}/>

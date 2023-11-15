@@ -3,8 +3,6 @@ import Navbar from "../layouts/Navbar";
 import { useState, useEffect } from "react";
 import { testUrl } from "../services/test";
 import { downloadZipResults } from "../services/download";
-import download from 'downloadjs';
-import JSZip from 'jszip';
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/ProgressBar";
 
@@ -48,7 +46,6 @@ export default function TestPage({ socket }) {
 
     // Step 1
     socket.on("Extract RLG", (arg) => {
-      console.log(arg.counter + " " + arg.total);
       setTotalViewport(arg.total);
       setCompletedViewport(arg.counter);
       setViewportProgress(Math.ceil((arg.counter / arg.total) * 100));
@@ -69,10 +66,11 @@ export default function TestPage({ socket }) {
     // Step 3
     socket.on("Repair RLFs", (arg) => {
       setStep(3);
+      console.log(arg.counter + " " + arg.total);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
       setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
-      if(arg.total >= arg.counter) setStep(4);
+      setStep(4);
       });
 
   }, [socket]);
@@ -83,7 +81,7 @@ export default function TestPage({ socket }) {
   };
 
   const viewResults = async () => {
-    navigate('/result');
+    navigate('/result', { state:  url });
   }
 
   const viewZipResults = async () => {
@@ -141,7 +139,6 @@ export default function TestPage({ socket }) {
           { step >= 4 &&
           <button className="purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg" onClick={() => viewResults()}>View Results</button>
           }
-          {/* <button className="purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg" onClick={() => viewZipResults()}>View Zip Results</button> */}
           <button className="flex flex-row items-center purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg"
               onClick={() => navigate('/')}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">

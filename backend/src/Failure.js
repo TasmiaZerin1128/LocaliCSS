@@ -424,20 +424,24 @@ class Failure {
                     //repairBar.tick({ 'token1': count });
                     if (bar.total - bar.curr === 1) {
                         bar.tick({ 'token1': "Completed" });
-                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
+                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
                     }
                     else {
                         bar.tick({ 'token1': "FID:" + this.ID });
-                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
+                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
                     }
 
                 }
         } else { //FP 
             this.repairStats.doesNotNeedRepair++;
-            if (bar.total - bar.curr === 1)
+            if (bar.total - bar.curr === 1) {
                 bar.tick(settings.repairCombination.length, { 'token1': "Completed" });
-            else
+                sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+            }
+            else {
                 bar.tick(settings.repairCombination.length, { 'token1': "FID:" + this.ID });
+                sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+            }
         }
 
     }

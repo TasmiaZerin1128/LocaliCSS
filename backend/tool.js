@@ -6,33 +6,61 @@ const { Range } = require('./src/Range');
 const utils = require('./src/utils');
 const JSZip = require('jszip');
 const fs = require('fs');
+const axios = require('axios');
 
 const zip = new JSZip();
 
+async function isWebpage(url) {
+
+  const response = await axios.head(url, { validateStatus: () => true });
+  const contentType = response.headers['content-type'];
+  console.log(contentType);
+
+  if(contentType.startsWith('text/html')) return true;
+  return false;
+}
+
 exports.startTool = async (req, res) => {
-  let webpages = [];
   try {
     await driver.start();
     const page = await driver.createPage();
 
     let url = req.query.url;
     console.log(url);
+
+    await driver.goto(url);
+    // take all hrefs
+    // let hrefs = await page.evaluate(() => {
+    //   let Element = Array.from(document.body.querySelectorAll('a'), (el) => el.href);
+    //   return Array.from(new Set(Element));
+    // });
+    // // only select webpages with text/html
+    // let webpages = [];
+    // for (let i = 0; i < hrefs.length; i++) {
+    //   if(await isWebpage(hrefs[i])) {
+    //     webpages.push(hrefs[i]);
+    //   }
+    // }
+    // console.log(webpages);
     //https://teachers.gov.bd/
     //http://www.dphe.gov.bd/
     //https://sharifmabdullah.github.io/
     let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
-    // await driver.goto(url);
+    let currentDateTime = utils.getDateTime();
 
-    let pageName = utils.parseName(url);
-    let testOutputPath = path.join(path.join('output', utils.getDateTime()), pageName);
-    let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
-    newWebpage.createMainOutputFile();
-    await newWebpage.navigateToPage();
-    await newWebpage.testWebpage();
-    await newWebpage.classifyFailures();
-    newWebpage.printRLG();
-    newWebpage.printFailures();
-    await newWebpage.repairFailures();
+    // for (let i = 0; i < webpages.length; i++) {
+      let pageName = utils.parseName(url);
+      let testOutputPath = path.join(path.join('output', currentDateTime), pageName);
+    
+      let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
+      newWebpage.createMainOutputFile();
+      await newWebpage.navigateToPage();
+      await newWebpage.testWebpage();
+      await newWebpage.classifyFailures();
+      newWebpage.printRLG();
+      newWebpage.printFailures();
+      await newWebpage.repairFailures();
+    // }
 
     console.log('completed ');
 
@@ -48,11 +76,16 @@ exports.startTool = async (req, res) => {
 
 exports.sendResultFile = async (req, res) => {
   let fileName = req.params.file;
-  console.log(utils.testOutputPath);
+  console.log("path ==> " + utils.testOutputPath);
   if(fileName.includes('RLG')) {
     res.download(utils.testOutputPath + '/RLG.txt');
+    // res.download('output/2023-11-16-04-03-25/tasmiazerin1128.github.io/run---1/RLG.txt');
   }
   if(fileName.includes('RLF')) {
+    res.setHeader('Content-Type', 'text/csv');
+    res.download(utils.testOutputPath + '/Failures.csv');
+  }
+  if(fileName.includes('RLF_snapshot')) {
     res.setHeader('Content-Type', 'text/csv');
     res.download(utils.testOutputPath + '/Failures.csv');
   }
@@ -60,11 +93,16 @@ exports.sendResultFile = async (req, res) => {
 }
 
 exports.sendZipFailures = async (req, res) => {
-  folderPath = utils.testOutputPath;
+  let type = req.params.type;
+  if (type === 'RLF_snapshot') {
+    folderPath = utils.testOutputPath + '/snapshots';
+  } else {
+    folderPath = utils.testOutputPath;
+  }
   utils.addToZip(zip, folderPath);
 
   zip.generateAsync({type:"nodebuffer"}).then((buffer) => {
-    res.setHeader('Content-Disposition', 'attachment; filename=myFolder.zip');
+    res.setHeader('Content-Disposition', `attachment; filename=${type}.zip`);
     res.setHeader('Content-Type', 'application/zip');
     res.status(200).send(buffer);
   })

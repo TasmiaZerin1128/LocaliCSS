@@ -80,7 +80,6 @@ class utils {
 
     static getDateTime() {
         const date = new Date();
-        console.log(date);
         const year = date.getFullYear();
         let month = date.getMonth() + 1; // months are zero indexed
         let day = date.getDate();
@@ -146,7 +145,7 @@ class utils {
     }
 
     static parseName(url) {
-        let name = new URL(url).hostname.replace('www.', '');
+        let name = new URL(url).hostname.replace(/^https?:\/\//, "");
         return name;
     }
 

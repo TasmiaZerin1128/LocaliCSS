@@ -4,6 +4,6 @@ const router = express.Router();
 
 router.route('/testPage').get(startTool);
 router.route('/download/result/:file').get(sendResultFile);
-router.route('/download/zip/failures').get(sendZipFailures);
+router.route('/download/zip/failures/:type').get(sendZipFailures);
 
 module.exports = router;

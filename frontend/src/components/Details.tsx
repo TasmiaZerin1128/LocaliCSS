@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { downloadResults } from "../services/download";
+import { downloadResults, downloadZipResults } from "../services/download";
+import download from 'downloadjs';
 import ShowCSVData from "./ShowCSVData";
 
 export default function Details() {
@@ -17,7 +18,7 @@ export default function Details() {
         setShowRLG(!showRLG);
         if(!RLG) {
             const response = await downloadResults('RLG');
-            setRLG(response);
+            if(response.status != 404) setRLG(response.data);
             console.log(response);
         }
     }
@@ -25,7 +26,50 @@ export default function Details() {
     async function showRLFData() {
         setOption("two");
         const response = await downloadResults('RLF');
-        setRLF(response);
+        if(response.status != 404) setRLF(response.data);
+    }
+
+    async function downloadRLFData(type: string) {
+      if (type === 'RLF') {
+        const response = await downloadResults(type);
+        if (response.status != 404 && response.data!== null) {
+          download(response.data, "RLF_Reports.csv");
+        }
+      } else {
+        try {
+          const response = await downloadZipResults(type);
+          const blob = new Blob([response], { type: 'application/zip' });
+    
+          const url = window.URL.createObjectURL(blob);
+    
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'RLF_Snapshots.zip';
+          a.click();
+    
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error downloading zip file:', error);
+        }
+      }
+    }
+
+    async function downloadFullData() {
+      try {
+        const response = await downloadZipResults('full');
+        const blob = new Blob([response], { type: 'application/zip' });
+  
+        const url = window.URL.createObjectURL(blob);
+  
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RLF_Report.zip';
+        a.click();
+  
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading zip file:', error);
+      }
     }
 
   return (
@@ -90,7 +134,7 @@ export default function Details() {
             { !showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>View generated RLG</p> }
             { showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>Hide generated RLG</p> }
             {
-                showRLG && RLG ? (<p className="whitespace-pre">{RLG}</p>) : (<p>Loading...</p>)
+                showRLG && RLG ? (<p className="whitespace-pre overflow-x-auto">{RLG}</p>) : (<p>Loading...</p>)
             }
           </div>
           <div
@@ -105,7 +149,7 @@ export default function Details() {
             the HTML elements involved in the RLF; and the RLF range, {'{'} failmin. .failmax {'}'}, or the set of viewports in which the layout failure occurs.
             </p>
             { RLF ? <div className="overflow-x-auto"><ShowCSVData csvString={RLF}/></div> : <p>Loading RLF data...</p> }
-            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => showRLFData()}>Download RLF Reports</p>
+            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => downloadRLFData('RLF')}>Download RLF Reports</p>
             <p className="mb-3 text-gray-500 dark:text-gray-400 text-justify">
             If the generated report shows an evident RLF (i.e., a true positive (TP)) then the developer can debug and fix the issue. If no failure is visible (i.e., a false positive (FP)) then no action
             is required. The reason is, DOM based RLF Detection is prone to non-observable issues — issues that are apparent in the DOM but which are not visibly evident in the page itself. For instance, 
@@ -117,8 +161,8 @@ export default function Details() {
                 The tool also outputs a set of snapshots of the webpage at the viewport widths in which the RLFs occur, to help developers visualize the RLFs and their context. The failure
                 region is marked with red borders in the snapshots.
             </p>
-            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => showRLFData()}>Download RLF Snapshots</p>
-            <button className="px-2 py-1 mt-4 bg-primary text-white rounded-md">Download reports as a zip</button>
+            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => downloadRLFData('RLF_snapshot')}>Download RLF Snapshots</p>
+            <button className="px-2 py-1 mt-4 bg-primary text-white rounded-md" onClick={() => downloadFullData()}>Download reports as a zip</button>
           </div>
           <div
             className={`p-4 bg-white rounded-lg md:p-8 ${option === 'three' ? 'block' : 'hidden'}`}

@@ -36,12 +36,13 @@ class Webpage {
         this.runCounter++;
         console.log(this.outputPath);
         this.pageRunOutputPath = path.join(this.outputPath, 'run---' + this.runCounter);
-        utils.testOutputPath.concat(this.pageRunOutputPath);
+        utils.testOutputPath = utils.testOutputPath.concat(this.pageRunOutputPath);
+        console.log(utils.testOutputPath);
         fs.mkdirSync(this.pageRunOutputPath);
         this.domOutputPath = path.join(this.pageRunOutputPath, 'DOM');
         fs.mkdirSync(this.domOutputPath);
         this.snapshotOutputPath = path.join(this.pageRunOutputPath, 'snapshots');
-        utils.testOutputSnapshot.concat(this.snapshotOutputPath);
+        utils.testOutputSnapshot = this.snapshotOutputPath;
         fs.mkdirSync(this.snapshotOutputPath);
 
         let cssDirectory = path.join(this.pageRunOutputPath, 'CSS');
