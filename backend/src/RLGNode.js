@@ -487,9 +487,8 @@ class RLGNode {
                 if (row.length >= settings.rowThreshold) {
                     let rowAfterWrapping = row[0].getRowNodesAtViewport(range.getMaximum());
                     rowAfterWrapping.unshift(row[0]);
-
+                    let rowIntactPostWrapping = true;
                     if (rowAfterWrapping.length === row.length) {
-                        let rowIntactPostWrapping = true;
                         for (let node of row) {
                             if (!utils.isObjectsXPathInArrayOfObjects(node, rowAfterWrapping)) {
                                 rowIntactPostWrapping = false;

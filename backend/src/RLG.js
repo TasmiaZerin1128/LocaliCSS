@@ -522,7 +522,6 @@ class RLG {
             }
         });
         this.nodesWithFailures = nodesWithFailures;
-        console.log('Failure Nodes before classify: ' + this.nodesWithFailures.length);
         sendMessage("Detected Failure Nodes", this.nodesWithFailures.length);
     }
 

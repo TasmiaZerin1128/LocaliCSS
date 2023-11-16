@@ -1,13 +1,19 @@
 import Navbar from "../layouts/Navbar";
 import { SuccessCard, ErrorCard } from "../components/AlertBar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Details from "../components/Details";
 import { useLocation } from "react-router-dom";
 
 export default function ShowResult() {
   const location = useLocation();
-  const url = location.state;
-  const [error, setError] = useState(1);
+  const url = location.state.URL;
+  const [error, setError] = useState(0);
+
+  useEffect(() => {
+    if (location.state.failure != 0) {
+      setError(location.state.failure);
+    }
+  }, [location.state.failure]);
 
   return (
     <>

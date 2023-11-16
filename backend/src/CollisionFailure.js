@@ -17,6 +17,13 @@ class CollisionFailure extends Failure {
             this.setupHumanStudyData();
     }
 
+    getXPaths() {
+        let xpaths = [];
+        xpaths.push(this.node.xpath);
+        xpaths.push(this.sibling.xpath);
+        return xpaths;
+    }
+    
     getSelectors() {
         let selectors = [];
         selectors.push(this.node.getSelector());

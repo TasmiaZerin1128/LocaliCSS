@@ -18,7 +18,7 @@ export default function TestPage({ socket }) {
   const [url, setUrl] = useState("");
   const location = useLocation();
 
-  const [step, setStep] = useState(5);
+  const [step, setStep] = useState(1);
 
   // extract RLG
   const [completedViewport, setCompletedViewport] = useState(0);
@@ -31,6 +31,12 @@ export default function TestPage({ socket }) {
   const [failureProgress, setFailureProgress] = useState(0);
 
   const [failureNodes, setFailureNodes] = useState(0);
+
+  // Classify RLFs
+  const [completedClassify, setCompletedClassify] = useState(0);
+  const [totalClassify, setTotalClassify] = useState(0);
+  const [classifyProgress, setClassifyProgress] = useState(0);
+
 
   // Repair RLFs
   const [completedRepair, setCompletedRepair] = useState(0);
@@ -64,13 +70,21 @@ export default function TestPage({ socket }) {
     });
 
     // Step 3
-    socket.on("Repair RLFs", (arg) => {
+    socket.on("Classify", (arg) => {
       setStep(3);
+      setTotalClassify(arg.total);
+      setCompletedClassify(arg.counter);
+      setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
+    });
+
+    // Step 4
+    socket.on("Repair RLFs", (arg) => {
+      setStep(4);
       console.log(arg.counter + " " + arg.total);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
       setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
-      setStep(4);
+      setStep(5);
       });
 
   }, [socket]);
@@ -81,7 +95,7 @@ export default function TestPage({ socket }) {
   };
 
   const viewResults = async () => {
-    navigate('/result', { state:  url });
+    navigate('/result', { state:  { URL: url, failure: failureNodes } });
   }
 
   const viewZipResults = async () => {
@@ -129,6 +143,13 @@ export default function TestPage({ socket }) {
 
           { step >= 3 && 
             <div className="my-8">
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Classifying RLFs</h1>
+              <ProgressBar progress={classifyProgress} completed={completedClassify} total={totalClassify} type={"Classification of RLFs"} />
+            </div>
+          }
+
+          { step >= 4 && 
+            <div className="my-8">
               <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Repairing RLFs</h1>
               <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Repair RLFs"} />
             </div>
@@ -136,7 +157,7 @@ export default function TestPage({ socket }) {
         </div>
         {/* buttons */}
         <div className="flex flex-row justify-center space-x-8">
-          { step >= 4 &&
+          { step >= 5 &&
           <button className="purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg" onClick={() => viewResults()}>View Results</button>
           }
           <button className="flex flex-row items-center purple-button-lg md:w-36 lg:w-56 text-sm md:text-md lg:text-lg"

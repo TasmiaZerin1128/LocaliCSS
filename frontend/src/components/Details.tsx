@@ -167,24 +167,14 @@ export default function Details() {
           <div
             className={`p-4 bg-white rounded-lg md:p-8 ${option === 'three' ? 'block' : 'hidden'}`}
           >
-            <dl className="grid max-w-screen-xl grid-cols-2 gap-8 p-4 mx-auto text-gray-900 sm:grid-cols-3 xl:grid-cols-6 dark:text-white sm:p-8">
-              <div className="flex flex-col">
-                <dt className="mb-2 text-3xl font-extrabold">73M+</dt>
-                <dd className="text-gray-500 dark:text-gray-400">Developers</dd>
-              </div>
-              <div className="flex flex-col">
-                <dt className="mb-2 text-3xl font-extrabold">100M+</dt>
-                <dd className="text-gray-500 dark:text-gray-400">
-                  Public repositories
-                </dd>
-              </div>
-              <div className="flex flex-col">
-                <dt className="mb-2 text-3xl font-extrabold">1000s</dt>
-                <dd className="text-gray-500 dark:text-gray-400">
-                  Open source projects
-                </dd>
-              </div>
-            </dl>
+            <h2 className="mb-3 text-3xl font-extrabold tracking-tight text-gray-900">
+              Repair Generation for RLFs
+            </h2>
+            <p className="mb-3 text-gray-500 dark:text-gray-400 text-justify">
+            The tool has repaired the RLF(s), identified by the previous step. The four stages of repair, are Patch Sourcing, Patch Generation, Patch Injection, and Repair Confirmation.
+            
+            </p>
+
           </div>
         </div>
       </div>

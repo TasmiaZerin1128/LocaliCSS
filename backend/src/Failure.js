@@ -127,6 +127,7 @@ class Failure {
         bar.tick();
         counter++;
         console.log(utils.failureCount);
+        sendMessage("Detected Failure Nodes", utils.failureCount );
         sendMessage("Classify", {'counter': counter, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
