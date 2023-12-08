@@ -7,7 +7,7 @@ const driver = {};
 
 driver.start = async function start() {
   // Start the browser
-  if (settings.browserMode === 'headless') {
+  if (settings.browserMode === 'Headless') {
     driver.browser = await puppeteer.launch({
       defaultViewport: null,
       ignoreDefaultArgs: ['--enable-automation'],

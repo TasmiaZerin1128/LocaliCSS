@@ -109,6 +109,15 @@ class utils {
             });
     }
 
+    static log(text, lineBreak = true) {
+        if (lineBreak)
+            text = text + EOL;
+        if (this.logFile !== undefined)
+            fs.appendFileSync(this.logFile, text, function (err) {
+                if (err) throw err;
+            });
+    }
+
     static setDifference(allInSet, notInSet) { //TODO: test.
         let difference = [];
         for (let e of allInSet)

@@ -9,7 +9,7 @@ class WrappingFailure extends Failure {
         this.node = node;
         this.row = row;
         this.range = range;
-        this.type = FailureType.WRAPPING;
+        this.type = utils.FailureType.WRAPPING;
         this.outputDirectory = outputDirectory;
         if (settings.humanStudy === true)
             this.setupHumanStudyData();
@@ -29,10 +29,9 @@ class WrappingFailure extends Failure {
     getSelectors() {
         let selectors = [];
         selectors.push(this.node.getSelector());
-        for (let rowElement of this.row) {
-            xpaths.push(rowElement.getSelector());
-        }
-        return xpaths;
+        for (let rowElement of this.row)
+            selectors.push(rowElement.getSelector());
+        return selectors;
     }
 
     print(file) {

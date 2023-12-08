@@ -12,6 +12,8 @@ const ProtrusionFailure = require("./ProtrusionFailure");
 const utils = require("./utils");
 const SmallRangeFailure = require("./SmallRangeFailure");
 const CollisionFailure = require("./CollisionFailure");
+const WrappingFailure = require("./WrappingFailure");
+const { sendMessage } = require('../socket-connect.js');
 
 class RLGNode {
      /**
@@ -536,16 +538,31 @@ class RLGNode {
     // Repair each 
     async repairFailures(driver, directory, bar, webpage, run, counter) {
         let repairCSSFile = path.join(directory, "repairs.css");
-        for (let viewportProtrusion of this.viewportProtrusions)
+        for (let viewportProtrusion of this.viewportProtrusions) {
+            counter++;
+            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
             await viewportProtrusion.repair(driver, directory, bar, webpage, run, counter);
-        for (let protrusion of this.elementProtrusions)
+        }
+        for (let protrusion of this.elementProtrusions) {
+            counter++;
+            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
             await protrusion.repair(driver, directory, bar, webpage, run, counter);
-        for (let collision of this.elementCollisions)
+        }
+        for (let collision of this.elementCollisions) {
+            counter++;
+            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
             await collision.repair(driver, directory, bar, webpage, run,counter);
-        for (let wrapping of this.wrappings)
+        }
+        for (let wrapping of this.wrappings) {
+            counter++;
+            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
             await wrapping.repair(driver, directory, bar, webpage, run, counter);
-        for (let smallrange of this.smallranges)
+        }
+        for (let smallrange of this.smallranges) {
+            counter++;
+            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
             await smallrange.repair(driver, directory, bar, webpage, run, counter);
+        }
 
         for (let viewportProtrusion of this.viewportProtrusions) {
             await viewportProtrusion.checkForLaterRepair(driver, directory, bar);
@@ -590,7 +607,7 @@ class RLGNode {
         }
     }
 
-    hasFailures() {
+    hasFailure() {
         if (this.smallranges.length === 0 && this.elementCollisions.length === 0 && this.elementProtrusions.length === 0 && this.wrappings.length === 0 && this.viewportProtrusions.length === 0) {
             return false;
         } else {

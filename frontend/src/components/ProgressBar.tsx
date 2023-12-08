@@ -11,7 +11,7 @@ export default function ProgressBar({progress, completed, total, type}) {
             </div>
             <span className="text-md lg:text-lg font-medium text-primary">
                 {progress}% | {type} Completed {completed}/{total}
-            </span>
+            </span> 
         </div>
       )
 }

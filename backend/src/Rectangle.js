@@ -40,6 +40,11 @@ hasPositiveCoordinates() {
   return (this.minX >= 0 && this.minY >= 0);
 }
 
+isMissingValues(){
+  return (this.minX === undefined || this.minY === undefined || this.maxX === undefined || this.maxY === undefined ||
+      this.minX === null || this.minY === null || this.maxX === null || this.maxY === null)
+}
+
 isAboveMe(other, tol = tolerance.smallrange) {
   if (other.maxY - tol <= this.minY) //is other above me
       return true;

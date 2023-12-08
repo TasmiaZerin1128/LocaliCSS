@@ -512,7 +512,7 @@ class RLG {
         let nodesWithFailures = [];
         this.map.forEach((node) => {
             node.detectFailures(bodyNode);
-            if (node.hasFailures()) {
+            if (node.hasFailure()) {
                 nodesWithFailures.push(node);
             }
             if (progress) {
@@ -522,12 +522,12 @@ class RLG {
             }
         });
         this.nodesWithFailures = nodesWithFailures;
-        sendMessage("Detected Failure Nodes", this.nodesWithFailures.length);
     }
 
     // Classify the failure of all nodes with failures
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        console.log("classification going on");
         let counter = 0;
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
@@ -542,7 +542,7 @@ class RLG {
     }
 
     async repairFailures(driver, directory, webpage, run) {
-        let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { incomplete: ' ', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
+        let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { complete: '█', incomplete: '░', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
         let counter = 0;
         for (const [xpath, node] of this.map.entries()) {
             await node.repairFailures(driver, directory, bar, webpage, run, counter);

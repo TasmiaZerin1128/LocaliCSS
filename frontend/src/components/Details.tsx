@@ -9,6 +9,7 @@ export default function Details() {
     const [showRLG, setShowRLG] = useState(false);
     const [RLG, setRLG] = useState(null);
     const [RLF, setRLF] = useState(null);
+    const [repair, setRepair] = useState(null);
 
     function changeOption({value}) {
         setOption(value);
@@ -51,6 +52,24 @@ export default function Details() {
         } catch (error) {
           console.error('Error downloading zip file:', error);
         }
+      }
+    }
+
+    async function downloadRepairData() {
+      try {
+        const response = await downloadZipResults('repair');
+        const blob = new Blob([response], { type: 'application/zip' });
+  
+        const url = window.URL.createObjectURL(blob);
+  
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RepairCSS.zip';
+        a.click();
+  
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading zip file:', error);
       }
     }
 
@@ -134,7 +153,7 @@ export default function Details() {
             { !showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>View generated RLG</p> }
             { showRLG && <p className="text-primary font-semibold cursor-pointer mb-4" onClick={() => showRLGText()}>Hide generated RLG</p> }
             {
-                showRLG && RLG ? (<p className="whitespace-pre overflow-x-auto">{RLG}</p>) : (<p>Loading...</p>)
+                showRLG && ( RLG ? (<p className="whitespace-pre overflow-x-auto">{RLG}</p>) : (<p>Loading...</p>) )
             }
           </div>
           <div
@@ -172,7 +191,7 @@ export default function Details() {
             </h2>
             <p className="mb-3 text-gray-500 dark:text-gray-400 text-justify">
             The tool has repaired the RLF(s), identified by the previous step. The four stages of repair, are Patch Sourcing, Patch Generation, Patch Injection, and Repair Confirmation.
-            
+            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => downloadRepairData()}>Download Repair CSS</p>
             </p>
 
           </div>

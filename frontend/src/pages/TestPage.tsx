@@ -65,13 +65,14 @@ export default function TestPage({ socket }) {
       setFailureProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
 
-    socket.on("Detected Failure Nodes", (arg) => {
-      setFailureNodes(arg);
-    });
+    // socket.on("Detected Failure Nodes", (arg) => {
+    //   setFailureNodes(arg);
+    // });
 
     // Step 3
     socket.on("Classify", (arg) => {
       setStep(3);
+      console.log(arg.counter);
       setTotalClassify(arg.total);
       setCompletedClassify(arg.counter);
       setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
@@ -80,9 +81,11 @@ export default function TestPage({ socket }) {
     // Step 4
     socket.on("Repair RLFs", (arg) => {
       setStep(4);
-      console.log(arg.counter + " " + arg.total);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
+      if(arg.counter > arg.total) {
+        arg.counter = arg.total;
+      }
       setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
       setStep(5);
       });
@@ -95,7 +98,7 @@ export default function TestPage({ socket }) {
   };
 
   const viewResults = async () => {
-    navigate('/result', { state:  { URL: url, failure: failureNodes } });
+    navigate('/result', { state:  { URL: url, failure: totalNode } });
   }
 
   const viewZipResults = async () => {
@@ -150,8 +153,8 @@ export default function TestPage({ socket }) {
 
           { step >= 4 && 
             <div className="my-8">
-              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 3: Repairing RLFs</h1>
-              <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Repair RLFs"} />
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Repairing RLFs</h1>
+              <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Generate Repairs"} />
             </div>
           }
         </div>

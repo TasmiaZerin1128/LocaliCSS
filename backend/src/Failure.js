@@ -11,6 +11,7 @@ const { EOL } = require('os');
 const RepairConfirmed = utils.RepairConfirmed;
 const fs = require('fs');
 const driver = require('./Driver.js');
+const { sendMessage } = require('../socket-connect.js');
 
 class Failure {
     constructor(webpage, run) {
@@ -95,7 +96,7 @@ class Failure {
      */
     async classify(driver, classificationFile, snapshotDirectory, bar, counter) {
         this.durationFailureClassify = new Date();
-        let range = this.range
+        let range = this.range;
 
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
         range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
@@ -125,10 +126,7 @@ class Failure {
             await this.screenshotViewport(driver, range.getWider(), snapshotDirectory, true);
 
         bar.tick();
-        counter++;
-        console.log(utils.failureCount);
-        sendMessage("Detected Failure Nodes", utils.failureCount );
-        sendMessage("Classify", {'counter': counter, 'total': utils.failureCount});
+        sendMessage("Classify", {'counter': bar.curr, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
     /**
@@ -234,18 +232,18 @@ class Failure {
         let repaired = !failed;
         if (repaired && directory !== undefined) {
             let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repairName + '.png';
-            let imagePath = path.join(directory, "snapshots", imageFileName);
+            let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             let maxViewport = this.range.getMaximum();
             if (driver.currentViewport !== maxViewport)
                 await driver.setViewport(maxViewport, settings.testingHeight);
             imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + maxViewport + '-repaired-' + repairName + '.png';
-            imagePath = path.join(directory, "snapshots", imageFileName);
+            imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
         } else if (!repaired && directory !== undefined) {
             if (settings.screenshotFailingRepairs) {
                 let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-DOM-' + repairName + '.png';
-                let imagePath = path.join(directory, "snapshots", imageFileName);
+                let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             }
         }
@@ -270,7 +268,7 @@ class Failure {
             if (driver.currentViewport !== failureViewport)
                 await driver.setViewport(failureViewport, settings.testingHeight);
             let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repair + '.png';
-            let imagePath = path.join(directory, "snapshots", imageFileName);
+            let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             return true;
         } else {
@@ -279,7 +277,7 @@ class Failure {
                 if (driver.currentViewport !== failureViewport)
                     await driver.setViewport(failureViewport, settings.testingHeight);
                 let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-RLG-' + repair + '.png';
-                let imagePath = path.join(directory, "snapshots", imageFileName);
+                let imagePath = path.join(directory, "snapshots/Failed", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             }
 
@@ -401,8 +399,7 @@ class Failure {
                         this.repairStats.repairs++;
                         this.checkRepairLater = false;
                         bar.tick();
-                        counter++;
-                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount});
+                        sendMessage("Repair RLFs", {'counter': bar.curr, 'total': utils.failureCount * settings.repairCombination.length});
                     } else {//Repair did not work
                         this.checkRepairLater = true;
                         if (css !== undefined) {
@@ -420,16 +417,15 @@ class Failure {
                         this.repairCSS = undefined;
                         await this.repairElementHandle.dispose();
                     }
-                    count++;
                     counter++;
-                    //repairBar.tick({ 'token1': count });
                     if (bar.total - bar.curr === 1) {
                         bar.tick({ 'token1': "Completed" });
-                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+                        sendMessage("Repair RLFs", {'counter': bar.curr, 'total': utils.failureCount * settings.repairCombination.length});
                     }
                     else {
                         bar.tick({ 'token1': "FID:" + this.ID });
-                        sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+                        console.log('repair---' + bar.curr);
+                        sendMessage("Repair RLFs", {'counter': bar.curr, 'total': utils.failureCount * settings.repairCombination.length});
                     }
 
                 }
@@ -437,11 +433,11 @@ class Failure {
             this.repairStats.doesNotNeedRepair++;
             if (bar.total - bar.curr === 1) {
                 bar.tick(settings.repairCombination.length, { 'token1': "Completed" });
-                sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+                sendMessage("Repair RLFs", {'counter': bar.curr, 'total': utils.failureCount * settings.repairCombination.length});
             }
             else {
                 bar.tick(settings.repairCombination.length, { 'token1': "FID:" + this.ID });
-                sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
+                sendMessage("Repair RLFs", {'counter': bar.curr, 'total': utils.failureCount * settings.repairCombination.length});
             }
         }
 
@@ -851,10 +847,6 @@ class Failure {
                 let htmlElement = await driver.getHTMLElement();
                 let dom = await this.getDOMFrom(driver, viewport, [], htmlElement);
                 css = this.getDOMStylesAsCSS(dom);
-
-
-                //css = this.getPixelCSSFromNodes(dom);
-                //this.snapshotCSSElementHandle = await driver.addRepair(css);
             }
 
 
@@ -901,7 +893,7 @@ class Failure {
                 element = await driver.getElementBySelector(currentSelector);
                 elements.push(element);
             } catch (err) {
-                console.printToFile(err);
+                console.log(err);
                 elements.push(undefined);
             }
             if (element != undefined) {
@@ -910,7 +902,7 @@ class Failure {
                     rectangle.selector = currentSelector;
                     rectangles.push(rectangle);
                 } catch (err) {
-                    console.printToFile(err);
+                    console.log(err);
                     rectangles.push(undefined);
                 }
             }
@@ -940,8 +932,6 @@ class Failure {
     }
     /**
     * Takes a screenshot of the failure.
-    * @param {Driver} driver Puppeteer driver object.
-    * @param {Directory} file The name of the image file.
     */
     async screenshot(driver, file, highlight = true, encoding64 = true, fullViewportHeightScreenshot = false, fullViewportWidthClipping = false) {
         await this.setViewportHeightBeforeSnapshots(driver.currentViewport);
@@ -952,7 +942,8 @@ class Failure {
         if (highlight === true) {
             let rectangles = await this.getRectangles(driver);
             screenshot = await driver.highlight(rectangles, screenshot);
-            //screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true);
+            // if (!settings.screenshotFullpage)
+            //     screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, driver.currentViewport);
             this.saveScreenshot(file, screenshot);
         } else if (fullViewportHeightScreenshot === true) {
             let rectangles = await this.getRectangles(driver);
@@ -992,8 +983,8 @@ class Failure {
             screenshot = screenshot.split(',')[1];
         fs.writeFile(file, screenshot, 'base64', function (err) {
             if (err) {
-                console.printToFile('ERROR IN SAVING IMAGE');
-                console.printToFile(err);
+                console.log('ERROR IN SAVING IMAGE');
+                console.log(err);
             }
         });
     }
@@ -1001,15 +992,15 @@ class Failure {
         let problemArea = new Rectangle();
         for (let rect of rectangles) {
             if (rect.isMissingValues()) {
-                utils.printToFile(this.ID + " " + this.type + " " + this.range.toString());
-                utils.printToFile("Warning: cannot use rectangle for cutting screenshot...");
-                utils.printToFile(rect.toString(true));
+                utils.log(this.ID + " " + this.type + " " + this.range.toString());
+                utils.log("Warning: cannot use rectangle for cutting screenshot...");
+                utils.log(rect.toString(true));
                 continue;
             }
             if (rect.height > maxHeight) { //max element height to support.
-                utils.printToFile(this.ID + " " + this.type + " " + this.range.toString());
-                utils.printToFile("Warning: Human Study - rectangle height exceeds maximum height: " + maxHeight);
-                utils.printToFile(rect.toString(true));
+                utils.log(this.ID + " " + this.type + " " + this.range.toString());
+                utils.log("Warning: Human Study - rectangle height exceeds maximum height: " + maxHeight);
+                utils.log(rect.toString(true));
                 continue;
             }
             if (problemArea.minX === undefined || rect.minX < problemArea.minX)
@@ -1022,10 +1013,10 @@ class Failure {
                 problemArea.maxY = (rect.maxY + extra);
         }
         if (problemArea.isMissingValues()) { //use first in the worst case
-            utils.printToFile(this.ID + " " + this.type + " " + this.range.toString());
-            utils.printToFile("Warning: Human Study - Had to use first rectangle for cutting.");
+            utils.log(this.ID + " " + this.type + " " + this.range.toString());
+            utils.log("Warning: Human Study - Had to use first rectangle for cutting.");
             let rect = rectangles[0];
-            utils.printToFile(rect.toString(true));
+            utils.log(rect.toString(true));
             problemArea.minX = rect.minX;
             problemArea.maxX = rect.maxX;
             problemArea.minY = Math.max(rect.minY - extra, 0);
@@ -1052,7 +1043,7 @@ class Failure {
                 element = await driver.getElementBySelector(currentSelector);
                 elements.push(element);
             } catch (err) {
-                console.printToFile(err);
+                console.log(err);
                 elements.push(undefined);
             }
             if (element != undefined) {
@@ -1077,7 +1068,7 @@ class Failure {
                         rectangles.push(rectangle);
                     }
                 } catch (err) {
-                    console.printToFile(err);
+                    console.log(err);
                     rectangles.push(undefined);
                 }
             }
@@ -1194,5 +1185,4 @@ class Failure {
 module.exports = Failure;
 const RLG = require('./RLG.js');
 const DOM = require('./DOM.js');
-const { sendMessage } = require('../socket-connect.js');
 

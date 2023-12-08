@@ -97,6 +97,8 @@ exports.sendZipFailures = async (req, res) => {
   let type = req.params.type;
   if (type === 'RLF_snapshot') {
     folderPath = utils.testOutputPath + '/snapshots';
+  } else if (type === 'repair') {
+    folderPath = utils.testOutputPath + '/CSS';
   } else {
     folderPath = utils.testOutputPath;
   }
@@ -112,4 +114,8 @@ exports.sendZipFailures = async (req, res) => {
     res.status(500).send('Error generating the zip file.');
   });
   console.log('Sending file');
+}
+
+exports.sendSnapshots = async (req, res) => {
+  
 }
