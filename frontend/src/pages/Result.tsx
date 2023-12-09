@@ -8,10 +8,12 @@ export default function ShowResult() {
   const location = useLocation();
   const url = location.state.URL;
   const [error, setError] = useState(0);
+  const [failureNodes, setFailureNodes] = useState(0);
 
   useEffect(() => {
     if (location.state.failure != 0) {
       setError(location.state.failure);
+      setFailureNodes(location.state.failure);
     }
   }, [location.state.failure]);
 
@@ -29,9 +31,9 @@ export default function ShowResult() {
             <SuccessCard heading={"No Error Found"} description={"The tool found no responsive layout failures in the webpage from 320px - 1400px viewport range. Your webpage is nicely designed!"}/>
         }
         {  error > 0 &&
-            <ErrorCard heading={"Error Found"} description={"The tool found responsive layout failures in the webpage from 320px - 1400px viewport range. Your webpage needs some repair for making it responsive!"}/>
+            <ErrorCard heading={"Error Found"} description={`The tool found ${failureNodes} responsive layout failures in the webpage from 320px - 1400px viewport range. Your webpage needs some repair for making it responsive!`}/>
         }
-        <Details />
+        <Details failureNodes={failureNodes}/>
       </div>
     </>
   );

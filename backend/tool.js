@@ -45,7 +45,6 @@ exports.startTool = async (req, res) => {
     // https://acc.org.bd/
     //https://teachers.gov.bd/
     //http://www.dphe.gov.bd/
-    //https://sharifmabdullah.github.io/
     let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
     let currentDateTime = utils.getDateTime();
 
@@ -116,6 +115,51 @@ exports.sendZipFailures = async (req, res) => {
   console.log('Sending file');
 }
 
+async function findImage(folderPath, keyword1, keyword2) {
+  const images = await fs.promises.readdir(folderPath);
+  for (const image of images) {
+    const filename = path.basename(image);
+    if (filename.includes(keyword1) && (!keyword2 || filename.includes(keyword2))) {
+      console.log(filename);
+      return path.join(folderPath, image);
+    }
+  }
+  return null;
+}
+
 exports.sendSnapshots = async (req, res) => {
-  
+
+  let imagesFolder = utils.testOutputPath + '/snapshots';
+
+  try {
+    const imagePromises = [];
+
+    // search failure image
+    const fid1Image = await findImage(imagesFolder, 'FID-' + req.params.image, 'TP');
+    if (fid1Image) {
+      imagePromises.push(
+        fs.promises.readFile(fid1Image)
+          .then((imageBuffer) => Buffer.from(imageBuffer).toString('base64'))
+      );
+    }
+
+    // Search repaired image
+    if (imagePromises.length > 0) {
+    const repairedImage = await findImage(imagesFolder, 'FID-' + req.params.image, 'repaired');
+    if (repairedImage) {
+      imagePromises.push(
+        fs.promises.readFile(repairedImage)
+          .then((imageBuffer) => Buffer.from(imageBuffer).toString('base64'))
+      );
+    }
+  }
+
+    const images = await Promise.all(imagePromises);
+
+    res.send({ images });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: 'Error reading images' });
+  }
+
 }

@@ -1,15 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { downloadResults, downloadZipResults } from "../services/download";
+import { loadRepairImages } from "../services/repair";
 import download from 'downloadjs';
 import ShowCSVData from "./ShowCSVData";
+import { Buffer } from "buffer";
+import LeftArrow from "./LeftArrow";
+import RightArrow from "./RightArrow";
 
-export default function Details() {
+export default function Details({failureNodes}) {
 
     const [option, setOption] = useState('one');
     const [showRLG, setShowRLG] = useState(false);
     const [RLG, setRLG] = useState(null);
     const [RLF, setRLF] = useState(null);
-    const [repair, setRepair] = useState(null);
+    const [RLFNodes, setRLFNodes] = useState(0);
+    const [repairImages, setRepairImages] = useState(['']);
+    const [repairID, setRepairID] = useState(1);
+
+    const snapTitles = ['Containing RLF', 'Repaired'];
+
+    useEffect(() => {
+      setRLFNodes(failureNodes);
+    }, [failureNodes]);
 
     function changeOption({value}) {
         setOption(value);
@@ -55,6 +67,27 @@ export default function Details() {
       }
     }
 
+    async function showRepairImages(rID = 1) {
+      setOption("three");
+      console.log(rID);
+      const response = await loadRepairImages(rID.toString());
+      const imageData = await response.data;
+      
+      if(response.status != 404){ 
+        setRepairImages(() => {
+          let newImages = [];
+          newImages = newImages.concat(imageData.images.map(image => {
+          const imageBuffer = Buffer.from(image, 'base64');
+          const blob = new Blob([imageBuffer], { type: 'image/png' });
+          const imageUrl = URL.createObjectURL(blob);
+          return imageUrl;
+        })
+        );
+        return newImages;
+        });
+      }
+    }
+
     async function downloadRepairData() {
       try {
         const response = await downloadZipResults('repair');
@@ -91,16 +124,30 @@ export default function Details() {
       }
     }
 
+    function changeID(type) {
+      console.log(repairID + " " + RLFNodes);
+      if (type === 'add' && repairID < RLFNodes) {
+        const id = repairID + 1;
+        showRepairImages(id);
+        setRepairID(repairID + 1);
+      }
+      else if (type === 'sub' && repairID > 1) {
+        setRepairID(repairID - 1);
+        showRepairImages(repairID - 1);
+      }
+
+    }
+
   return (
     <>
-      <div className="w-3/5 bg-white border border-gray-200 rounded-lg shadow">
+      <div className="w-4/5 lg:w-2/3 bg-white border border-gray-200 rounded-lg shadow">
         <ul
           className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-lg bg-gray-50"
           id="defaultTab"
           data-tabs-toggle="#defaultTabContent"
           role="tablist"
         >
-          <li className="me-2">
+          <li className="me-2 ml-6">
             <button
               id="about-tab"
               data-tabs-target="#about"
@@ -122,7 +169,7 @@ export default function Details() {
               role="tab"
               aria-controls="services"
               aria-selected="false"
-              className={`inline-block p-4 text-lg rounded-ss-lg hover:bg-gray-100 ${option === 'two' ? 'text-primary' : 'text-gray-400'}`}
+              className={`inline-block p-4 text-lg rounded-ss-lg hover:bg-gray-100 ${option === 'two' ? 'text-primary' : 'text-gray-400'} ${failureNodes === 0 ? 'hidden' : 'visible'}`}
               onClick={() => showRLFData()}
             >
               2. Failure Detection
@@ -131,8 +178,8 @@ export default function Details() {
           <li className="me-2">
             <button
               type="button"
-              className={`inline-block p-4 text-lg rounded-ss-lg hover:bg-gray-100 ${option === 'three' ? 'text-primary' : 'text-gray-400'}`}
-              onClick={() => changeOption({value: 'three'})}
+              className={`inline-block p-4 text-lg rounded-ss-lg hover:bg-gray-100 ${option === 'three' ? 'text-primary' : 'text-gray-400'} ${failureNodes === 0 ? 'hidden' : 'visible'}`}
+              onClick={() => showRepairImages()}
             >
               3. Repair
             </button>
@@ -190,10 +237,22 @@ export default function Details() {
               Repair Generation for RLFs
             </h2>
             <p className="mb-3 text-gray-500 dark:text-gray-400 text-justify">
-            The tool has repaired the RLF(s), identified by the previous step. The four stages of repair, are Patch Sourcing, Patch Generation, Patch Injection, and Repair Confirmation.
-            <p className="text-primary font-semibold cursor-pointer my-2" onClick={() => downloadRepairData()}>Download Repair CSS</p>
+              The tool has repaired the RLF(s), identified by the previous step. The four stages of repair, are Patch Sourcing, Patch Generation, Patch Injection, and Repair Confirmation.
+              The patches are generated for each of the RLFs, and screenshots are taken after adding the patches to the webpage. Here are the snapshots of repaired webpage and of the RLF regions.
             </p>
-
+            <div className="flex flex-row mt-8 justify-between items-center">
+              <LeftArrow changeID={changeID}/>
+              <div className="flex flex-row overflow-x-auto space-x-8">
+                {repairImages  && repairImages.map((image, index) => (
+                  <div className="flex flex-col justify-end items-center">
+                  <img key={index} src={image} />
+                  <div className="image-title mt-4 font-bold text-lg text-primary">{snapTitles[index]}</div>
+                  </div>
+                ))}
+              </div>
+              <RightArrow changeID={changeID}/>
+            </div>
+            <button className="px-2 py-1 mt-12 bg-primary text-white rounded-md" onClick={() => downloadRepairData()}>Download Repair CSS</button>
           </div>
         </div>
       </div>

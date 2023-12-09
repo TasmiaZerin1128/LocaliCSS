@@ -2,12 +2,16 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../layouts/Navbar";
 import { useState, useEffect } from "react";
 import { testUrl } from "../services/test";
-import { downloadZipResults } from "../services/download";
 import { useNavigate } from "react-router-dom";
 import ProgressBar from "../components/ProgressBar";
 
 function parseUrlDomain(url) {
-  const name = new URL(url).hostname.replace(/^https?:\/\//, "");
+  let name;
+  if (url.includes("http://") || url.includes("https://")) {
+    name = new URL(url).hostname.replace(/^https?:\/\//, "");
+} else {
+    name = url;
+}
   return name;
 }
 
@@ -65,17 +69,21 @@ export default function TestPage({ socket }) {
       setFailureProgress(Math.ceil((arg.counter / arg.total) * 100));
     });
 
-    // socket.on("Detected Failure Nodes", (arg) => {
-    //   setFailureNodes(arg);
-    // });
-
     // Step 3
     socket.on("Classify", (arg) => {
       setStep(3);
       console.log(arg.counter);
+      if(arg.total === 0) {
+        setFailureNodes(0);
+        setClassifyProgress(100);
+        setRepairProgress(100);
+        setStep(5);
+      } else {
       setTotalClassify(arg.total);
+      setFailureNodes(arg.total);
       setCompletedClassify(arg.counter);
       setClassifyProgress(Math.ceil((arg.counter / arg.total) * 100));
+      }
     });
 
     // Step 4
@@ -98,29 +106,7 @@ export default function TestPage({ socket }) {
   };
 
   const viewResults = async () => {
-    navigate('/result', { state:  { URL: url, failure: totalNode } });
-  }
-
-  const viewZipResults = async () => {
-    try {
-      const results = await downloadZipResults();
-      const blob = new Blob([results], { type: 'application/zip' });
-
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob);
-
-      // Create an anchor element and trigger the download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'myFolder.zip'; // Specify the desired file name
-      a.click();
-
-      // Clean up by revoking the URL
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading zip file:', error);
-      // Handle the error as needed
-    }
+    navigate('/result', { state:  { URL: url, failure: failureNodes } });
   }
 
 

@@ -43,9 +43,7 @@ class Webpage {
         fs.mkdirSync(this.domOutputPath);
         this.snapshotOutputPath = path.join(this.pageRunOutputPath, 'snapshots');
         utils.testOutputSnapshot = this.snapshotOutputPath;
-        let snaprepairedDirectory = path.join(this.snapshotOutputPath, 'Repaired');
         fs.mkdirSync(this.snapshotOutputPath);
-        fs.mkdirSync(snaprepairedDirectory);
 
         let cssDirectory = path.join(this.pageRunOutputPath, 'CSS');
         utils.testOutputCSS.concat(cssDirectory);

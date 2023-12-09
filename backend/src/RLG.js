@@ -528,6 +528,7 @@ class RLG {
     async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         console.log("classification going on");
+        sendMessage("Classify", {'counter': 0, 'total': utils.failureCount});
         let counter = 0;
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
@@ -544,6 +545,7 @@ class RLG {
     async repairFailures(driver, directory, webpage, run) {
         let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { complete: '█', incomplete: '░', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
         let counter = 0;
+        // sendMessage("Repair RLFs", {'counter': 0, 'total': utils.failureCount * settings.repairCombination.length});
         for (const [xpath, node] of this.map.entries()) {
             await node.repairFailures(driver, directory, bar, webpage, run, counter);
             this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);

@@ -232,18 +232,18 @@ class Failure {
         let repaired = !failed;
         if (repaired && directory !== undefined) {
             let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repairName + '.png';
-            let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
+            let imagePath = path.join(directory, "snapshots", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             let maxViewport = this.range.getMaximum();
             if (driver.currentViewport !== maxViewport)
                 await driver.setViewport(maxViewport, settings.testingHeight);
             imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + maxViewport + '-repaired-' + repairName + '.png';
-            imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
+            imagePath = path.join(directory, "snapshots", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
         } else if (!repaired && directory !== undefined) {
             if (settings.screenshotFailingRepairs) {
                 let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-DOM-' + repairName + '.png';
-                let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
+                let imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             }
         }
@@ -268,7 +268,7 @@ class Failure {
             if (driver.currentViewport !== failureViewport)
                 await driver.setViewport(failureViewport, settings.testingHeight);
             let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-repaired-' + repair + '.png';
-            let imagePath = path.join(directory, "snapshots/Repaired", imageFileName);
+            let imagePath = path.join(directory, "snapshots", imageFileName);
             await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             return true;
         } else {
@@ -277,7 +277,7 @@ class Failure {
                 if (driver.currentViewport !== failureViewport)
                     await driver.setViewport(failureViewport, settings.testingHeight);
                 let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-' + this.range.toString().trim() + '-capture-' + failureViewport + '-FAILED-RLG-' + repair + '.png';
-                let imagePath = path.join(directory, "snapshots/Failed", imageFileName);
+                let imagePath = path.join(directory, "snapshots", imageFileName);
                 await this.screenshot(driver, imagePath, settings.screenshotHighlights);
             }
 
@@ -942,8 +942,10 @@ class Failure {
         if (highlight === true) {
             let rectangles = await this.getRectangles(driver);
             screenshot = await driver.highlight(rectangles, screenshot);
-            // if (!settings.screenshotFullpage)
-            //     screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, driver.currentViewport);
+            // use clipping while taking screenshot
+            if (!settings.screenshotFullpage) {
+                screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, fullViewportWidthClipping, driver.currentViewport);
+            }
             this.saveScreenshot(file, screenshot);
         } else if (fullViewportHeightScreenshot === true) {
             let rectangles = await this.getRectangles(driver);
