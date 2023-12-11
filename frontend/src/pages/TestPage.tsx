@@ -22,7 +22,7 @@ export default function TestPage({ socket }) {
   const [url, setUrl] = useState("");
   const location = useLocation();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(5);
 
   // extract RLG
   const [completedViewport, setCompletedViewport] = useState(0);
@@ -63,7 +63,7 @@ export default function TestPage({ socket }) {
 
     // Step 2
     socket.on("Find RLFs", (arg) => {
-      setStep(2);
+      // setStep(2);
       setTotalNode(arg.total);
       setCompletedFailures(arg.counter);
       setFailureProgress(Math.ceil((arg.counter / arg.total) * 100));
@@ -71,7 +71,7 @@ export default function TestPage({ socket }) {
 
     // Step 3
     socket.on("Classify", (arg) => {
-      setStep(3);
+      // setStep(3);
       console.log(arg.counter);
       if(arg.total === 0) {
         setFailureNodes(0);
@@ -88,14 +88,14 @@ export default function TestPage({ socket }) {
 
     // Step 4
     socket.on("Repair RLFs", (arg) => {
-      setStep(4);
+      // setStep(4);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
       if(arg.counter > arg.total) {
         arg.counter = arg.total;
       }
       setRepairProgress(Math.ceil((arg.counter / arg.total) * 100));
-      setStep(5);
+      // setStep(5);
       });
 
   }, [socket]);

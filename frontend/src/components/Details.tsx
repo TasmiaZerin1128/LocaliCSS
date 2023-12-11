@@ -246,7 +246,7 @@ export default function Details({failureNodes}) {
                 {repairImages  && repairImages.map((image, index) => (
                   <div className="flex flex-col justify-end items-center">
                   <img key={index} src={image} />
-                  <div className="image-title mt-4 font-bold text-lg text-primary">{snapTitles[index]}</div>
+                  <div className="image-title mt-4 font-bold text-lg text-primary">{snapTitles[index]} (FID-{repairID})</div>
                   </div>
                 ))}
               </div>
