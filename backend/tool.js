@@ -136,7 +136,7 @@ exports.sendSnapshots = async (req, res) => {
     const imagePromises = [];
 
     // search failure image
-    const fid1Image = await findImage(imagesFolder, 'FID-' + req.params.image, 'TP');
+    const fid1Image = await findImage(imagesFolder, 'FID-' + req.params.image + '-', 'TP');
     if (fid1Image) {
       imagePromises.push(
         fs.promises.readFile(fid1Image)
@@ -146,7 +146,7 @@ exports.sendSnapshots = async (req, res) => {
 
     // Search repaired image
     if (imagePromises.length > 0) {
-    const repairedImage = await findImage(imagesFolder, 'FID-' + req.params.image, 'repaired');
+    const repairedImage = await findImage(imagesFolder, 'FID-' + req.params.image + '-', 'repaired');
     if (repairedImage) {
       imagePromises.push(
         fs.promises.readFile(repairedImage)
