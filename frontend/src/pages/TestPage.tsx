@@ -8,7 +8,7 @@ import ProgressBar from "../components/ProgressBar";
 function parseUrlDomain(url) {
   let name;
   if (url.includes("http://") || url.includes("https://")) {
-    name = new URL(url).hostname.replace(/^https?:\/\//, "");
+    name = url.replace(/^https?:\/\//, "");
 } else {
     name = url;
 }

@@ -2,8 +2,8 @@ const path = require('path');
 const utils = require('./src/utils');
 
 const settings = {
-  testWidthMin: 350, //320
-  testWidthMax: 380, //1400
+  testWidthMin: 775, //320
+  testWidthMax: 900, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',

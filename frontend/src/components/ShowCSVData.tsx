@@ -31,7 +31,7 @@ export default function ShowCSVData({csvString}) {
                 {Object.keys(data[0]).map((header) => (
                   <th key={header} className='px-4'>{header}</th>
                 ))}
-              </tr>
+              </tr> 
             </thead>
             <tbody>
               {data.map((row, index) => (
