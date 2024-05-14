@@ -14,10 +14,11 @@ function Home() {
   return (
     <>
       <div className="p-8 sm:p-16 md:p-20 lg:p-36 flex flex-col h-screen items-center justify-center">
-        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-title text-center">
+        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-8 font-bold font-title text-center">
           Welcome To
         </h1>
-        <img className="w-3/4 lg:w-2/5 my-4 md:my-12 lg:my-12 flex-shrink-0" src="/ReDeFix-Logo.png" />
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl text-primary font-bold font-title text-center">Automated Detection and Repair Mechanism</h2>
+        {/* <img className="w-3/4 lg:w-2/5 my-4 md:my-12 lg:my-12 flex-shrink-0" src="/ReDeFix-Logo.png" /> */}
         <p className="font-body text-sm md:text-lg lg:text-xl text-center my-4">
           Find Your Responsive Webpage Layout Failures and Repair them instantly!
         </p>

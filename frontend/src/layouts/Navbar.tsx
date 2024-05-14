@@ -17,18 +17,14 @@ export default function Navbar() {
             <div className="absolute inset-y-0 left-0 flex items-center sm:hidden" />
             <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
               <div className="flex flex-shrink-0 items-center">
-                <img
-                  className="block h-8 w-auto lg:hidden cursor-pointer"
-                  src="\ReDeFix-Logo-White.png"
-                  alt="ReDeFix"
+                <h1
+                  className="text-xl font-bold text-white block h-8 w-auto lg:hidden cursor-pointer"
                   onClick={() => navigate('/')}
-                />
-                <img
-                  className="hidden h-8 w-auto lg:block cursor-pointer"
-                  src="\ReDeFix-Logo-White.png"
-                  alt="ReDeFix"
+                >Automated Detection and Repair</h1>
+                <h1
+                  className="text-xl font-bold text-white hidden h-8 w-auto lg:block cursor-pointer"
                   onClick={() => navigate('/')}
-                />
+                >Automated Detection and Repair</h1>
               </div>
             </div>
           </div>
