@@ -76,6 +76,10 @@ const utils = require('./utils');
         }
         return result;
     }
+
+    async isObservable(driver, viewport, file, range) {
+        
+    }
  }
 
  module.exports = ViewportFailure;

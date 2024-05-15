@@ -31,6 +31,7 @@ class Failure {
         this.removeFailingRepair = true;
         this.repairCombinationResult = [];
         this.durationFailureClassify = undefined;
+        this.durationFailureVerify = undefined;
         this.durationFailureRepair = undefined;
         this.durationWiderRepair = undefined;
         this.durationNarrowerRepair = undefined;
@@ -78,21 +79,17 @@ class Failure {
      * @param {Range} range The range to add.
      */
     addRange(range) {
-        this.ranges.addRange(range);
+        this.range.addRange(range);
     }
     /**
      * Adds a set of ranges to the set of ranges belonging to this failures. Deprecated
      * @param {Ranges} ranges The set of ranges to add to this set of ranges.
      */
     addRanges(ranges) {
-        this.ranges.addRanges(ranges);
+        this.range.addRanges(ranges);
     }
     /**
      * Dom level verification of the reported failures.
-     * @param {Driver} driver Browser driver.
-     * @param {Path} classificationFile the classification output file.
-     * @param {Path} snapshotDirectory the snapshot output directory.
-     * @param {ProgressBar} bar Bar to update progress.
      */
     async classify(driver, classificationFile, snapshotDirectory, bar, counter) {
         this.durationFailureClassify = new Date();
@@ -129,9 +126,32 @@ class Failure {
         sendMessage("Classify", {'counter': bar.curr, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
-    /**
-     * Repair this failure.
-     */
+
+    // Layer based verification of the reported failures.
+    async verify(driver, verificationFile, snapshotDirectory, bar, counter) {
+        this.durationFailureVerify = new Date();
+        let range = this.range;
+
+        let minRange = range.getMinimum();
+        let midRange = range.getMiddle();
+        let maxRange = range.getMaximum();
+
+        await driver.setViewport(minRange, settings.testingHeight);
+        range.minVerification = await this.isObservable(driver, minRange, verificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotMid === true)
+            await this.screenshotViewport(driver, minRange, snapshotDirectory, true);
+
+        await driver.setViewport(range.getMiddle(), settings.testingHeight);
+        range.midVerification = await this.isObservable(driver, range.getMiddle(), verificationFile, range) ? 'TP' : 'FP';
+        if (settings.screenshotMid === true)
+            await this.screenshotViewport(driver, range.getMiddle(), snapshotDirectory, true);
+
+        bar.tick();
+        sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
+        this.durationFailureVerify = new Date() - this.durationFailureVerify;
+    }
+
+    // Repair this failure.
     async repair(driver, directory, bar, webpage, run, counter) {
         this.durationFailureRepair = new Date();
         await this.findRepair(driver, directory, bar, webpage, run, counter);

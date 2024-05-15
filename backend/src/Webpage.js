@@ -24,6 +24,7 @@ class Webpage {
         this.durationPage = new Date();
         this.durationDOM = undefined;
         this.durationDetection = undefined;
+        this.durationVerification = undefined;
         this.durationRepair = undefined;
         this.durationClassify = undefined;
     }
@@ -93,6 +94,13 @@ class Webpage {
         this.durationClassify = new Date();
         await this.rlg.classifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Classifications.txt', this.snapshotOutputPath);
         this.durationClassify = new Date() - this.durationClassify;
+    }
+
+    // Verify the failures
+    async verifyFailures() {
+        this.durationVerification = new Date();
+        await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath);
+        this.durationVerification = new Date() - this.durationVerification;
     }
     async screenshotFailures() {
         await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);

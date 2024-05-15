@@ -535,6 +535,17 @@ class RLG {
         }
     }
 
+    // Verify the failure to omit false positives
+    async verifyFailures(driver, verificationFile, snapshotDirectory) {
+        let bar = new ProgressBar('Verify RLFs  | [:bar] | :percent :etas | Verification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        console.log("Verification going on");
+        sendMessage("Verify", {'counter': 0, 'total': utils.failureCount});
+        let counter = 0;
+        for (const node of this.nodesWithFailures) {
+            await node.verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+    }
+
     async screenshotFailures(driver, directory) {
         let bar = new ProgressBar('Screenshot RLFs  | [:bar] | :percent :etas | Screenshot Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         for (const node of this.nodesWithFailures) {

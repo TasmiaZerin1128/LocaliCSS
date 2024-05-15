@@ -113,9 +113,7 @@ class RLGNode {
         return undefined;
     }
 
-    /**
-     * Adds a width/viewport to overlap RLGEdge or creates an RLGEdge between the two RLGNodes. 
-     */
+    // Adds a width/viewport to overlap RLGEdge or creates an RLGEdge between the two RLGNodes. 
     addOverlap(sibling, viewport) {
         let edge = this.updateEdge(sibling, this.overlapEdges, viewport, true);
         if (edge === undefined) {
@@ -606,6 +604,25 @@ class RLGNode {
             await smallrange.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
     }
+
+    async verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter) {
+        for (let viewportProtrusion of this.viewportProtrusions) {
+            await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+        for (let protrusion of this.elementProtrusions) {
+            await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+        for (let collision of this.elementCollisions) {
+            await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+        for (let wrapping of this.wrappings) {
+            await wrapping.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+        for (let smallrange of this.smallranges) {
+            await smallrange.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+    }
+    
 
     hasFailure() {
         if (this.smallranges.length === 0 && this.elementCollisions.length === 0 && this.elementProtrusions.length === 0 && this.wrappings.length === 0 && this.viewportProtrusions.length === 0) {
