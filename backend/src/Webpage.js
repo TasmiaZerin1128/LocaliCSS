@@ -99,7 +99,7 @@ class Webpage {
     // Verify the failures
     async verifyFailures() {
         this.durationVerification = new Date();
-        await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath);
+        await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Verifications.txt', this.snapshotOutputPath);
         this.durationVerification = new Date() - this.durationVerification;
     }
     async screenshotFailures() {

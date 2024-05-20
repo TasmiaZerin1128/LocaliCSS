@@ -12,6 +12,7 @@ class ProtrusionFailure extends Failure {
         this.range = range;
         this.type = utils.FailureType.PROTRUSION;
         this.outputDirectory = outputDirectory;
+        this.images = [];
     }
 
     equals(otherFailure) {
@@ -114,6 +115,30 @@ class ProtrusionFailure extends Failure {
             }
         }
         return result;
+    }
+
+    async isObservable(driver, viewport, file, snapshotDirectory, range) {
+        let child = await driver.getElementBySelector(this.node.getSelector());
+        let parent = await driver.getElementBySelector(this.parent.getSelector());
+        let childRect = new Rectangle(await driver.getRectangle(child));
+        let parentRect = new Rectangle(await driver.getRectangle(parent));
+
+        let opacityChild = await driver.getOpacity(child);
+        console.log("Opacity of child: " + opacityChild);
+        let opacityParent = await driver.getOpacity(parent);
+
+        driver.scroll(child);
+        // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
+        // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
+        
+        let screenshot = await driver.screenshot(snapshotDirectory + '/image1.png', false, true);
+        let rectangles = [];
+        rectangles.push(parentRect);
+        rectangles.push(childRect);
+        screenshot = await driver.highlight(rectangles, screenshot);
+
+        this.images.push();
+        console.log("Took an image!!!!!!!!!!");
     }
 
 }

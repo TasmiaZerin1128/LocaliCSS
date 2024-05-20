@@ -12,6 +12,10 @@ const utils = require('./utils');
         this.range = range;
         this.type = utils.FailureType.VIEWPORT;
         this.outputDirectory = outputDirectory;
+        this.firstImageScrollOffsetX = 0;
+        this.firstImageScrollOffsetY = 0;
+
+        this.images = [];
         // if (settings.humanStudy === true)
         //     this.setupHumanStudyData();
     }
@@ -78,7 +82,20 @@ const utils = require('./utils');
     }
 
     async isObservable(driver, viewport, file, range) {
-        
+        let child = await driver.getElementBySelector(this.node.getSelector());
+        let parent = await driver.getElementBySelector(this.parent.getSelector());
+        let childRect = new Rectangle(await driver.getRectangle(child));
+        let parentRect = new Rectangle(await driver.getRectangle(parent));
+
+        let opacityChild = await driver.getOpacity(childRect);
+        let opacityParent = await driver.getOpacity(parentRect);
+
+        driver.scroll(child);
+        this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
+        this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
+
+        this.images.push(await driver.takeScreenshot(this.outputDirectory + '/image1.png'));
+        console.log("Took an image!!!!!!!!!!");
     }
  }
 

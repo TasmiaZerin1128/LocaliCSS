@@ -171,6 +171,19 @@ driver.cropImage = async function (screenshot, top = 0, bottom = 0, left = 0, ri
         return croppedScreenshot;
 };
 
+driver.scroll = async function scroll(elementHandle) {
+  await this.page.evaluate((element) => {
+    if (element) element.scrollIntoView();
+  }, elementHandle);
+};
+
+driver.getOpacity = async function getOpacity(elementHandle) {
+  return await this.page.evaluate((element) => {
+    const style = window.getComputedStyle(element);
+    return style.getPropertyValue('opacity');
+  }, elementHandle);
+}
+
 driver.getBodyElement = async function getBodyElement() {
   // Get the body element from the page
   const body = await driver.page.$('body');
