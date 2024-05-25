@@ -130,15 +130,31 @@ class ProtrusionFailure extends Failure {
         driver.scroll(child);
         // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
         // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
-        
-        let screenshot = await driver.screenshot(snapshotDirectory + '/image1.png', false, true);
-        let rectangles = [];
-        rectangles.push(parentRect);
-        rectangles.push(childRect);
-        screenshot = await driver.highlight(rectangles, screenshot);
 
-        this.images.push();
-        console.log("Took an image!!!!!!!!!!");
+        console.log("Child xpath: " + this.node.xpath + " Parent xpath: " + this.parent.xpath + "\n");
+
+        await driver.setViewport(viewport, settings.testingHeight);
+
+        await driver.setOpacity(child, 0);
+        await driver.setOpacity(parent, 0);
+        console.log("Opacity of child: " + opacityChild);
+        let imagePath = viewport + '-imgNoElemets';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took image for no elements!!!!!!!!!!");
+
+        await driver.setOpacity(parent, opacityParent);
+        await driver.page.waitForTimeout(100);
+        console.log("Opacity of child: " + opacityChild);
+        imagePath = viewport + '-imgBack';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took an image of back!!!!!!!!!!");
+
+        await driver.setOpacity(child, opacityChild);
+        await driver.page.waitForTimeout(100);
+        console.log("Opacity of child: " + opacityChild);
+        imagePath = viewport + '-imgFront';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took an image of front!!!!!!!!!!");
     }
 
 }

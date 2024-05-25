@@ -151,6 +151,51 @@ class Failure {
         this.durationFailureVerify = new Date() - this.durationFailureVerify;
     }
 
+    async getRectangles() {
+        let rectangles = [];
+        let elements = [];
+        let selectors = this.getSelectors();
+        for (let i = 0; i < selectors.length; i++) {
+            let currentSelector = selectors[i];
+            let element = undefined;
+            try {
+                element = await driver.getElementBySelector(currentSelector);
+                elements.push(element);
+            } catch (err) {
+                console.log(err);
+                elements.push(undefined);
+            }
+            if (element != undefined) {
+                try {
+                    let rectangle = new Rectangle(await driver.getRectangle(element));
+                    rectangle.selector = currentSelector;
+                    rectangles.push(rectangle);
+                } catch (err) {
+                    console.log(err);
+                    rectangles.push(undefined);
+                }
+            }
+            else
+                rectangles.push(undefined);
+        }
+        return rectangles;
+    }
+
+    wrappedArea(rectangles) {
+        if (wrapperBelowAllElements(rectangles)) {
+            wrapped = true;
+            return new Area(rectangles[0], 0, 0);
+        }
+    }
+
+    // Find Areas of Concern for the failure regions
+    async findAreasOfConcern() {
+        let rectangles = this.getRectangles();
+        if (this.type === FailureType.WRAPPING) {
+            wrappedArea = this.wrappedArea(rectangles);
+        }
+    }
+
     // Repair this failure.
     async repair(driver, directory, bar, webpage, run, counter) {
         this.durationFailureRepair = new Date();
@@ -950,6 +995,60 @@ class Failure {
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
     }
+
+    async screenshotViewportforVerification(driver, viewport, imgPath, directory, includeClassification = false) {
+        await this.setViewportHeightBeforeSnapshots(viewport);
+        let fullPage = true;
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            fullPage = false;
+        let rectangles = [];
+        let elements = [];
+        let selectors = this.getSelectors();
+        for (let i = 0; i < selectors.length; i++) {
+            let currentSelector = selectors[i];
+            let element = undefined;
+            try {
+                element = await driver.getElementBySelector(currentSelector);
+                elements.push(element);
+            } catch (err) {
+                console.log(err);
+                elements.push(undefined);
+            }
+            if (element != undefined) {
+                try {
+                    let rectangle = new Rectangle(await driver.getRectangle(element));
+                    rectangle.selector = currentSelector;
+                    rectangles.push(rectangle);
+                } catch (err) {
+                    console.log(err);
+                    rectangles.push(undefined);
+                }
+            }
+            else
+                rectangles.push(undefined);
+        }
+        let screenshot = await driver.screenshot(undefined, fullPage);
+        let removeHeader = false;
+        if (settings.screenshotHighlights) {
+            screenshot = await driver.highlight(rectangles, screenshot);
+            removeHeader = true;
+        }
+        if (!settings.screenshotFullpage)
+            screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+        let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
+        let classification = this.range.getClassificationOfViewport(viewport);
+        if (includeClassification && classification !== '-')
+            imageFileName += '-' + classification + '.png';
+        else
+            imageFileName += '.png';
+        this.saveScreenshot(path.join(directory, imageFileName), screenshot, removeHeader);
+        for (let element of elements) {
+            if (element !== undefined)
+                element.dispose();
+        }
+        await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+    }
+
     /**
     * Takes a screenshot of the failure.
     */
@@ -1207,4 +1306,5 @@ class Failure {
 module.exports = Failure;
 const RLG = require('./RLG.js');
 const DOM = require('./DOM.js');
+const Area = require('./Area.js');
 

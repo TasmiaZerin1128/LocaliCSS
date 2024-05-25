@@ -76,6 +76,53 @@ class CollisionFailure extends Failure {
         }
         return result;
     }
+
+    async isObservable(driver, viewport, file, snapshotDirectory, range) {
+        let xpaths = this.getXPaths();
+        if (xpaths[0] === xpaths[1]) {
+            console.log("Something went wrong, program went to compare the same element to self");
+            return;
+        } 
+        console.log(driver.currentViewport);
+        let node = await driver.getElementBySelector(this.node.getSelector());
+        let sibling = await driver.getElementBySelector(this.parent.getSelector());
+        let nodeRect = new Rectangle(await driver.getRectangle(node));
+        let siblingRect = new Rectangle(await driver.getRectangle(sibling));
+
+        let opacityNode = await driver.getOpacity(node);
+        
+        let opacitySibling = await driver.getOpacity(sibling);
+
+        driver.scroll(node);
+        // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
+        // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
+
+        console.log("Child xpath: " + this.node.xpath + " Parent xpath: " + this.parent.xpath + "\n");
+
+        await driver.setViewport(viewport, settings.testingHeight);
+
+        await driver.setOpacity(node, 0);
+        await driver.setOpacity(sibling, 0);
+        console.log("Opacity of node: " + opacityNode);
+        let imagePath = viewport + '-imgNoElemets';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took image for no elements!!!!!!!!!!");
+
+        await driver.setOpacity(sibling, opacitySibling);
+        await driver.page.waitForTimeout(100);
+        console.log("Opacity of node: " + opacityNode);
+        imagePath = viewport + '-imgBack';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took an image of back!!!!!!!!!!");
+
+        await driver.setOpacity(node, opacityNode);
+        await driver.page.waitForTimeout(100);
+        console.log("Opacity of node: " + opacityNode);
+        imagePath = viewport + '-imgFront';
+        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        console.log("Took an image of front!!!!!!!!!!");
+    }
+
     print(file) {
         let text = '|  |--[ ' + this.type + ' (' + this.ID + '): ' + this.range.toString() + ' ]';
         utils.printToFile(file, text);
