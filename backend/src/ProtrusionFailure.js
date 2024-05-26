@@ -137,24 +137,21 @@ class ProtrusionFailure extends Failure {
 
         await driver.setOpacity(child, 0);
         await driver.setOpacity(parent, 0);
-        console.log("Opacity of child: " + opacityChild);
         let imagePath = viewport + '-imgNoElemets';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
-        console.log("Took image for no elements!!!!!!!!!!");
+        // console.log("Took image for no elements!!!!!!!!!!");
 
         await driver.setOpacity(parent, opacityParent);
         await driver.page.waitForTimeout(100);
-        console.log("Opacity of child: " + opacityChild);
         imagePath = viewport + '-imgBack';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
-        console.log("Took an image of back!!!!!!!!!!");
+        // console.log("Took an image of back!!!!!!!!!!");
 
         await driver.setOpacity(child, opacityChild);
         await driver.page.waitForTimeout(100);
-        console.log("Opacity of child: " + opacityChild);
         imagePath = viewport + '-imgFront';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
-        console.log("Took an image of front!!!!!!!!!!");
+        // console.log("Took an image of front!!!!!!!!!!");
     }
 
 }

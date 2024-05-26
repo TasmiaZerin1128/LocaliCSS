@@ -13,6 +13,10 @@ class CollisionFailure extends Failure {
         this.range = range;
         this.type = utils.FailureType.COLLISION;
         this.outputDirectory = outputDirectory;
+        this.collision = null;
+        this.protruding = false;
+        this.segregated = false;
+        this.overlapping = false;
         if (settings.humanStudy === true)
             this.setupHumanStudyData();
     }
@@ -56,14 +60,14 @@ class CollisionFailure extends Failure {
         let overlappingRectangles = collisionRBush.search(nodeRect);
         let result = overlappingRectangles.length > 0;
 
-
-        let collision = this.calculateOverlap(siblingRect, nodeRect);
+        // store the collision portion
+        this.collision = this.calculateOverlap(siblingRect, nodeRect);
     
         if (file !== undefined) {
             let classification = result ? 'TP' : 'FP';
             let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
             utils.printToFile(file, text);
-            text = '|  |--[ Overlap-X: ' + collision.xToClear + ' Overlap-Y: ' + collision.yToClear + ' ]';
+            text = '|  |--[ Overlap-X: ' + this.collision.xToClear + ' Overlap-Y: ' + this.collision.yToClear + ' ]';
             utils.printToFile(file, text);
             text = '|--[ Node: ' + this.node.xpath + ' ]';
             utils.printToFile(file, text);
@@ -77,23 +81,57 @@ class CollisionFailure extends Failure {
         return result;
     }
 
+    async findAreasOfConcern() {
+        console.log("Collision overlaps: " + this.collision.xToClear + " " + this.collision.yToClear)
+        if (this.collision.xToClear == 0 && this.collision.yToClear == 0) {
+            console.log('False Positive case of Element Collision');
+            return false;
+        }
+        return true;
+    }
+
     async isObservable(driver, viewport, file, snapshotDirectory, range) {
         let xpaths = this.getXPaths();
         if (xpaths[0] === xpaths[1]) {
             console.log("Something went wrong, program went to compare the same element to self");
             return;
         } 
-        console.log(driver.currentViewport);
+        console.log("Viewport " + viewport);
         let node = await driver.getElementBySelector(this.node.getSelector());
         let sibling = await driver.getElementBySelector(this.parent.getSelector());
         let nodeRect = new Rectangle(await driver.getRectangle(node));
         let siblingRect = new Rectangle(await driver.getRectangle(sibling));
 
-        let opacityNode = await driver.getOpacity(node);
-        
-        let opacitySibling = await driver.getOpacity(sibling);
+        this.collision = this.calculateOverlap(siblingRect, nodeRect);
 
-        driver.scroll(node);
+        let aoc = await this.findAreasOfConcern();
+        if(aoc) {
+            await this.takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory);
+            return true;
+        }
+        return false;
+    }
+
+    async takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory) {
+        
+        let frontElement;
+        let backElement;
+
+        if (this.collision.nodeRectToBeCleared == nodeRect) {
+            // Node element is on top of sibling element
+            frontElement = node;
+            backElement = sibling;
+        } else {
+            // Sibling element is on top of node element
+            frontElement = sibling;
+            backElement = node;
+        }
+
+        let opacityFront = await driver.getOpacity(frontElement);
+        
+        let opacityBack = await driver.getOpacity(backElement);
+
+        driver.scroll(frontElement);
         // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
         // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
 
@@ -101,23 +139,24 @@ class CollisionFailure extends Failure {
 
         await driver.setViewport(viewport, settings.testingHeight);
 
-        await driver.setOpacity(node, 0);
-        await driver.setOpacity(sibling, 0);
-        console.log("Opacity of node: " + opacityNode);
+        //Take a screenshot with both elements hidden
+        await driver.setOpacity(frontElement, 0);
+        await driver.setOpacity(backElement, 0);
+        console.log("Opacity of node: " + opacityFront);
         let imagePath = viewport + '-imgNoElemets';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
         console.log("Took image for no elements!!!!!!!!!!");
 
-        await driver.setOpacity(sibling, opacitySibling);
+        // Take a screenshot with only the back element visible
+        await driver.setOpacity(backElement, opacityBack);
         await driver.page.waitForTimeout(100);
-        console.log("Opacity of node: " + opacityNode);
         imagePath = viewport + '-imgBack';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
         console.log("Took an image of back!!!!!!!!!!");
 
-        await driver.setOpacity(node, opacityNode);
+
+        await driver.setOpacity(frontElement, opacityFront);
         await driver.page.waitForTimeout(100);
-        console.log("Opacity of node: " + opacityNode);
         imagePath = viewport + '-imgFront';
         await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
         console.log("Took an image of front!!!!!!!!!!");

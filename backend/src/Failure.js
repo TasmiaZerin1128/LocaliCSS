@@ -138,13 +138,9 @@ class Failure {
 
         await driver.setViewport(minRange, settings.testingHeight);
         range.minVerification = await this.isObservable(driver, minRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
-        if (settings.screenshotMid === true)
-            await this.screenshotViewport(driver, minRange, snapshotDirectory, true);
 
-        await driver.setViewport(range.getMiddle(), settings.testingHeight);
-        range.midVerification = await this.isObservable(driver, range.getMiddle(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
-        if (settings.screenshotMid === true)
-            await this.screenshotViewport(driver, range.getMiddle(), snapshotDirectory, true);
+        await driver.setViewport(midRange, settings.testingHeight);
+        range.midVerification = await this.isObservable(driver, midRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
         bar.tick();
         sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
@@ -189,12 +185,12 @@ class Failure {
     }
 
     // Find Areas of Concern for the failure regions
-    async findAreasOfConcern() {
-        let rectangles = this.getRectangles();
-        if (this.type === FailureType.WRAPPING) {
-            wrappedArea = this.wrappedArea(rectangles);
-        }
-    }
+    // async findAreasOfConcern() {
+    //     let rectangles = this.getRectangles();
+    //     if (this.type === FailureType.WRAPPING) {
+    //         wrappedArea = this.wrappedArea(rectangles);
+    //     }
+    // }
 
     // Repair this failure.
     async repair(driver, directory, bar, webpage, run, counter) {
@@ -1252,7 +1248,7 @@ class Failure {
             otherNodeRect = siblingRect;
         } else if (nodeRect.minX === siblingRect.minX) {
             if (nodeRect.minY < siblingRect.minY) {
-                nodeRectToBeCleared = siblingRect;
+                nodeRectToBeCleared = siblingRect; 
                 otherNodeRect = nodeRect;
             } else if (nodeRect.minY > siblingRect.minY) {
                 nodeRectToBeCleared = nodeRect;
