@@ -98,7 +98,7 @@ class CollisionFailure extends Failure {
         } 
         console.log("Viewport " + viewport);
         let node = await driver.getElementBySelector(this.node.getSelector());
-        let sibling = await driver.getElementBySelector(this.parent.getSelector());
+        let sibling = await driver.getElementBySelector(this.sibling.getSelector());
         let nodeRect = new Rectangle(await driver.getRectangle(node));
         let siblingRect = new Rectangle(await driver.getRectangle(sibling));
 
