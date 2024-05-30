@@ -3,6 +3,7 @@ const settings = require("../settings");
 const Failure = require("./Failure");
 const Rectangle = require("./Rectangle");
 const utils = require("./utils");
+const looksSame = require('looks-same');
 
 class CollisionFailure extends Failure {
     constructor(node, sibling, parent, range, outputDirectory, webpage, run) {
@@ -17,6 +18,7 @@ class CollisionFailure extends Failure {
         this.protruding = false;
         this.segregated = false;
         this.overlapping = false;
+        this.targetImages = [];
         if (settings.humanStudy === true)
             this.setupHumanStudyData();
     }
@@ -107,7 +109,13 @@ class CollisionFailure extends Failure {
         let aoc = await this.findAreasOfConcern();
         if(aoc) {
             await this.takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory);
-            return true;
+            let observable = await this.pixelCheck();
+            this.printVerified(file, observable, range, viewport);
+            if (observable) {
+                return true;
+            } else {
+                return false;
+            }
         }
         return false;
     }
@@ -132,8 +140,6 @@ class CollisionFailure extends Failure {
         let opacityBack = await driver.getOpacity(backElement);
 
         driver.scroll(frontElement);
-        // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
-        // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
 
         console.log("Child xpath: " + this.node.xpath + " Parent xpath: " + this.parent.xpath + "\n");
 
@@ -144,22 +150,40 @@ class CollisionFailure extends Failure {
         await driver.setOpacity(backElement, 0);
         console.log("Opacity of node: " + opacityFront);
         let imagePath = viewport + '-imgNoElemets';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotNoElement = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotNoElement);
         console.log("Took image for no elements!!!!!!!!!!");
 
         // Take a screenshot with only the back element visible
         await driver.setOpacity(backElement, opacityBack);
         await driver.page.waitForTimeout(100);
         imagePath = viewport + '-imgBack';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotBack = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotBack);
         console.log("Took an image of back!!!!!!!!!!");
 
 
         await driver.setOpacity(frontElement, opacityFront);
         await driver.page.waitForTimeout(100);
         imagePath = viewport + '-imgFront';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotFront = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotFront);
         console.log("Took an image of front!!!!!!!!!!");
+    }
+
+    async pixelCheck() {
+        const bufferNoElement = this.targetImages[0];
+        const bufferBack = this.targetImages[1];
+        const bufferFront = this.targetImages[2];
+
+        const {equalNoElementandBack} = await looksSame(bufferNoElement, bufferBack, {strict: true});
+        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
+
+        if (!equalNoElementandBack && !equalNoElementandFront) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     print(file) {
@@ -170,6 +194,14 @@ class CollisionFailure extends Failure {
     }
     printClassified(file) {
         let text = '|  |--[ ' + this.type + ' (' + this.ID + '): ' + this.range.toClassifiedString() + ' ]';
+        utils.printToFile(file, text);
+        text = '|  |  |--[ Sibling: ' + this.sibling.xpath + ' ]';
+        utils.printToFile(file, text);
+    }
+    printVerified(file, observable, range, viewport) {
+        let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Observable Issue: ' + observable;
+        utils.printToFile(file, text);
+        text = '|--[ Node: ' + this.node.xpath + ' ]';
         utils.printToFile(file, text);
         text = '|  |  |--[ Sibling: ' + this.sibling.xpath + ' ]';
         utils.printToFile(file, text);

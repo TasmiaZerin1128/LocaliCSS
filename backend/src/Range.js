@@ -8,6 +8,9 @@ class Range {
         this.maxClassification = '-';
         this.narrowerClassification = '-';
         this.widerClassification = '-';
+        this.minVerification = '-';
+        this.midVerification = '-';
+        this.maxVerification = '-';
 
         this.minRepaired = undefined;
     }

@@ -2,6 +2,8 @@ const Failure = require('./Failure');
 const settings = require('../settings.js');
 const utils = require('./utils.js');
 const Rectangle = require('./Rectangle.js');
+const looksSame = require('looks-same');
+const RLGNode = require('./RLGNode.js');
 
 class ProtrusionFailure extends Failure {
     constructor(node, parent, range, newParent, outputDirectory, webpage, run) {
@@ -13,7 +15,8 @@ class ProtrusionFailure extends Failure {
         this.type = utils.FailureType.PROTRUSION;
         this.outputDirectory = outputDirectory;
         this.protudingArea = null;
-        this.images = [];
+        this.targetImages = [];
+        this.targetSeperatedImages = [];
     }
 
     equals(otherFailure) {
@@ -142,13 +145,23 @@ class ProtrusionFailure extends Failure {
 
         let aoc = await this.findAreasOfConcern();
         if(aoc) {
-            await this.takeImages(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory);
-            return true;
+            await this.analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory);
+            let observable = await this.pixelCheck();
+            if (observable) {
+                await this.analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory);
+                let observableSeperated = await this.pixelCheckSeperated();
+                this.printVerified(file, observableSeperated, range, viewport);
+                if (observableSeperated) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         }
         return false;
     }
 
-    async takeImages(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory) {
+    async analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory) {
 
         let opacityChild = await driver.getOpacity(child);
         
@@ -165,24 +178,105 @@ class ProtrusionFailure extends Failure {
         await driver.setOpacity(parent, 0);
 
         let imagePath = viewport + '-imgNoElemets';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotNoElement = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotNoElement);
         console.log("Took image for no elements!!!!!!!!!!");
 
         // Take a screenshot with only the back element visible
         await driver.setOpacity(parent, opacityParent);
         await driver.page.waitForTimeout(100);
         imagePath = viewport + '-imgBack';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotBack = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotBack);
         console.log("Took an image of back!!!!!!!!!!");
 
 
         await driver.setOpacity(child, opacityChild);
         await driver.page.waitForTimeout(100);
         imagePath = viewport + '-imgFront';
-        await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        let screenshotFront = await this.screenshotViewportforVerification(driver, viewport, imagePath, snapshotDirectory, true);
+        this.targetImages.push(snapshotDirectory + "/" + screenshotFront);
         console.log("Took an image of front!!!!!!!!!!");
     }
 
+    async analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory) {
+        console.log(this.protudingArea)
+        console.log(childRect)
+        this.protudingArea.x = childRect.x + childRect.width + this.protudingArea.left;
+        this.protudingArea.y = childRect.y + this.protudingArea.top;
+        this.protudingArea.width = this.protudingArea.right - this.protudingArea.left;
+        this.protudingArea.height = childRect.height;
+        this.protudingArea.xpath = this.node.xpath;
+
+        let seperated = new Rectangle(this.protudingArea);
+        console.log("Seperated Area: ", seperated);
+        console.log("Parent Area: ", parentRect);
+
+        let opacitySeperated = await driver.getOpacity(child);  // as the opacity of seperated area is the same as the child opacity
+        let opacityParent = await driver.getOpacity(parent);
+
+        await driver.setViewport(viewport, settings.testingHeight);
+
+        //Take a screenshot with both elements hidden
+        await driver.setOpacity(child, 0);
+        await driver.setOpacity(parent, 0);
+
+        let rects = [];
+        rects.push(seperated);
+        rects.push(parentRect);
+
+        let imagePath = viewport + '-detached-imgNoElemets';
+        let screenshotNoElement = await this.screenshotDetached(driver, viewport, rects, imagePath, snapshotDirectory);
+        this.targetSeperatedImages.push(snapshotDirectory + "/" + screenshotNoElement);
+        console.log("Took image for no elements again!");
+
+        await driver.setOpacity(child, opacitySeperated);
+        await driver.setOpacity(parent, opacityParent);
+        await driver.page.waitForTimeout(100);
+        imagePath = viewport + '-detached-imgFront';
+        let screenshotFront = await this.screenshotDetached(driver, viewport, rects, imagePath, snapshotDirectory);
+        this.targetSeperatedImages.push(snapshotDirectory + "/" + screenshotFront);
+        console.log("Took an image of front again!");
+    }
+
+    async pixelCheckSeperated() {
+        const bufferNoElement = this.targetSeperatedImages[0];
+        const bufferFront = this.targetSeperatedImages[1];
+
+        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
+        console.log(equalNoElementandFront);
+
+        if (!equalNoElementandFront) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async pixelCheck() {
+        const bufferNoElement = this.targetImages[0];
+        const bufferBack = this.targetImages[1];
+        const bufferFront = this.targetImages[2];
+
+        const {equalNoElementandBack} = await looksSame(bufferNoElement, bufferBack, {strict: true});
+        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
+
+        if (!equalNoElementandBack && !equalNoElementandFront) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    printVerified(file, observable, range, viewport) {
+        let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Observable Issue: ' + observable;
+        utils.printToFile(file, text);
+        text = '|--[ Child: ' + this.node.xpath + ' ]';
+        utils.printToFile(file, text);
+        text = '|  |  |--[ Parent: ' + this.parent.xpath + ' ]';
+        utils.printToFile(file, text);
+    }
 }
 
 module.exports = ProtrusionFailure;

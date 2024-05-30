@@ -142,6 +142,9 @@ class Failure {
         await driver.setViewport(midRange, settings.testingHeight);
         range.midVerification = await this.isObservable(driver, midRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
+        await driver.setViewport(maxRange, settings.testingHeight);
+        range.maxVerification = await this.isObservable(driver, maxRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+
         bar.tick();
         sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
         this.durationFailureVerify = new Date() - this.durationFailureVerify;
@@ -1043,6 +1046,7 @@ class Failure {
                 element.dispose();
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+        return imageFileName;
     }
 
     /**
@@ -1071,6 +1075,28 @@ class Failure {
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
     }
+
+    async screenshotDetached(driver, viewport, rects, imgPath, directory) {
+        await this.setViewportHeightBeforeSnapshots(viewport);
+        let fullPage = true;
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            fullPage = false;
+        let screenshot = await driver.screenshot(undefined, fullPage, true);
+        let removeHeader = false;
+        if (settings.screenshotHighlights) {
+            let rectangles = rects;
+            screenshot = await driver.highlight(rectangles, screenshot);
+            removeHeader = true;
+            if (!settings.screenshotFullpage)
+                screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+        }
+        let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
+        imageFileName += '.png';
+        this.saveScreenshot(path.join(directory, imageFileName), screenshot, removeHeader);
+        await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+        return imageFileName;
+    }
+
     async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
         try {
             if (problemArea === undefined)
