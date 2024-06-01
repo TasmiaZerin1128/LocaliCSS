@@ -1085,10 +1085,12 @@ class Failure {
         let removeHeader = false;
         if (settings.screenshotHighlights) {
             let rectangles = rects;
+            console.log("Screenshot ERRORRR");
+            console.log(rectangles[0]);
             screenshot = await driver.highlight(rectangles, screenshot);
             removeHeader = true;
-            if (!settings.screenshotFullpage)
-                screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+            // if (!settings.screenshotFullpage)
+            //     screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
         }
         let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
         imageFileName += '.png';

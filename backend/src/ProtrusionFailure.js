@@ -202,7 +202,7 @@ class ProtrusionFailure extends Failure {
     async analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory) {
         console.log(this.protudingArea)
         console.log(childRect)
-        this.protudingArea.x = childRect.x + childRect.width + this.protudingArea.left;
+        this.protudingArea.x = parentRect.x + parentRect.width + this.protudingArea.left;
         this.protudingArea.y = childRect.y + this.protudingArea.top;
         this.protudingArea.width = this.protudingArea.right - this.protudingArea.left;
         this.protudingArea.height = childRect.height;
@@ -219,7 +219,7 @@ class ProtrusionFailure extends Failure {
 
         //Take a screenshot with both elements hidden
         await driver.setOpacity(child, 0);
-        await driver.setOpacity(parent, 0);
+        // await driver.setOpacity(parent, 0);
 
         let rects = [];
         rects.push(seperated);
