@@ -2,8 +2,10 @@ const RBush = require("rbush");
 const settings = require("../settings");
 const Failure = require("./Failure");
 const Rectangle = require("./Rectangle");
+const fs = require('fs');
+const PNG = require('pngjs').PNG;
+const pixelmatch = require('pixelmatch');
 const utils = require("./utils");
-const looksSame = require('looks-same');
 
 class CollisionFailure extends Failure {
     constructor(node, sibling, parent, range, outputDirectory, webpage, run) {
@@ -172,13 +174,22 @@ class CollisionFailure extends Failure {
     }
 
     async pixelCheck() {
-        const bufferNoElement = this.targetImages[0];
-        const bufferBack = this.targetImages[1];
-        const bufferFront = this.targetImages[2];
+        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetImages[0]));
+        const bufferBack = PNG.sync.read(fs.readFileSync(this.targetImages[1]));
+        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetImages[2]));
+        const {width, height} = bufferNoElement;
+        const diff = new PNG({width, height});
 
-        const {equalNoElementandBack} = await looksSame(bufferNoElement, bufferBack, {strict: true});
-        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
+        let equalNoElementandBack = null;
+        let equalNoElementandFront = null;
 
+        const numDiffPixelsBack = pixelmatch(bufferNoElement.data, bufferBack.data, diff.data, width, height, { threshold: 0.1 });
+        const numDiffPixelsFront = pixelmatch(bufferNoElement.data, bufferFront.data, diff.data, width, height, { threshold: 0.1 });
+
+        if (numDiffPixelsBack===0) equalNoElementandBack = true;
+        if (numDiffPixelsFront===0) equalNoElementandFront = true;
+
+    
         if (!equalNoElementandBack && !equalNoElementandFront) {
             return true;
         } else {

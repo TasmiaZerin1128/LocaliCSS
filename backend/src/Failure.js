@@ -1089,8 +1089,8 @@ class Failure {
             console.log(rectangles[0]);
             screenshot = await driver.highlight(rectangles, screenshot);
             removeHeader = true;
-            // if (!settings.screenshotFullpage)
-            //     screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+            if (!settings.screenshotFullpage)
+                screenshot = await this.clipOneRectScreenshot(rectangles[0], screenshot.split(',')[1], driver, false, viewport);
         }
         let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
         imageFileName += '.png';
@@ -1101,8 +1101,10 @@ class Failure {
 
     async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
         try {
-            if (problemArea === undefined)
+            console.log("Length: " + rectangles.length);
+            if (problemArea === undefined) {
                 problemArea = this.getClippingCoordinates(rectangles);
+            }
             if (problemArea.isMissingValues())
                 throw "== Begin Problem Area ==\n" +
                 "Missing size for cutting screenshot\n" +
@@ -1117,6 +1119,32 @@ class Failure {
             for (let rect of rectangles) {
                 newErrorMessage += rect.toString(true) + '\n';
             }
+            newErrorMessage += '\n' + passedInErrorMessage;
+            throw newErrorMessage;
+        }
+        return screenshot;
+    }
+
+    async clipOneRectScreenshot(rectangle, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
+        try {
+            console.log("Clip one");
+            if (problemArea === undefined) {
+                problemArea = rectangle;
+                console.log("PROBLEM AREAAAAAAA");
+                console.log(JSON.stringify(problemArea));
+            }
+            // if (problemArea.isMissingValues())
+            //     throw "== Begin Problem Area ==\n" +
+            //     "Missing size for cutting screenshot\n" +
+            //     problemArea + "\n" +
+            //     "== End  Problem  Area ==\n" +
+            //     "==  Begin Rectangles  ==\n" +
+            //     + rectangles + "\n" +
+            //     "==   End  Rectangles  ==\n"
+            screenshot = await driver.clipImage(screenshot, problemArea, fullViewportWidthClipping, viewport);
+        } catch (passedInErrorMessage) {
+            let newErrorMessage = this.ID + ' ' + this.type + ' ' + this.range.toString() + '\n';
+            newErrorMessage += rectangle.toString(true) + '\n';
             newErrorMessage += '\n' + passedInErrorMessage;
             throw newErrorMessage;
         }

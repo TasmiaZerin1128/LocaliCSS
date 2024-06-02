@@ -98,6 +98,8 @@ driver.highlight = async function (rectangles, screenshot, drawViewportWidthLine
 };
 
 driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = false, viewportWidth = Infinity) {
+  console.log("In driver");
+  console.log(rectangle);
         let clippedScreenshot = await driver.page.evaluate(async function (rectangle, screenshot, fullViewportWidth, viewportWidth) {
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");

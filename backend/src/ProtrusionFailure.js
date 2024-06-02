@@ -2,8 +2,9 @@ const Failure = require('./Failure');
 const settings = require('../settings.js');
 const utils = require('./utils.js');
 const Rectangle = require('./Rectangle.js');
-const looksSame = require('looks-same');
-const RLGNode = require('./RLGNode.js');
+const fs = require('fs');
+const PNG = require('pngjs').PNG;
+const pixelmatch = require('pixelmatch');
 
 class ProtrusionFailure extends Failure {
     constructor(node, parent, range, newParent, outputDirectory, webpage, run) {
@@ -16,7 +17,7 @@ class ProtrusionFailure extends Failure {
         this.outputDirectory = outputDirectory;
         this.protudingArea = null;
         this.targetImages = [];
-        this.targetSeperatedImages = [];
+        this.targetSeparatedImages = [];
     }
 
     equals(otherFailure) {
@@ -149,7 +150,7 @@ class ProtrusionFailure extends Failure {
             let observable = await this.pixelCheck();
             if (observable) {
                 await this.analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory);
-                let observableSeperated = await this.pixelCheckSeperated();
+                let observableSeperated = await this.pixelCheckSeparated();
                 this.printVerified(file, observableSeperated, range, viewport);
                 if (observableSeperated) {
                     return true;
@@ -219,15 +220,15 @@ class ProtrusionFailure extends Failure {
 
         //Take a screenshot with both elements hidden
         await driver.setOpacity(child, 0);
-        // await driver.setOpacity(parent, 0);
+        await driver.setOpacity(parent, 0);
 
         let rects = [];
         rects.push(seperated);
-        rects.push(parentRect);
+        // rects.push(parentRect);
 
         let imagePath = viewport + '-detached-imgNoElemets';
         let screenshotNoElement = await this.screenshotDetached(driver, viewport, rects, imagePath, snapshotDirectory);
-        this.targetSeperatedImages.push(snapshotDirectory + "/" + screenshotNoElement);
+        this.targetSeparatedImages.push(snapshotDirectory + "/" + screenshotNoElement);
         console.log("Took image for no elements again!");
 
         await driver.setOpacity(child, opacitySeperated);
@@ -235,32 +236,42 @@ class ProtrusionFailure extends Failure {
         await driver.page.waitForTimeout(100);
         imagePath = viewport + '-detached-imgFront';
         let screenshotFront = await this.screenshotDetached(driver, viewport, rects, imagePath, snapshotDirectory);
-        this.targetSeperatedImages.push(snapshotDirectory + "/" + screenshotFront);
+        this.targetSeparatedImages.push(snapshotDirectory + "/" + screenshotFront);
         console.log("Took an image of front again!");
     }
 
-    async pixelCheckSeperated() {
-        const bufferNoElement = this.targetSeperatedImages[0];
-        const bufferFront = this.targetSeperatedImages[1];
+    async pixelCheckSeparated() {
+        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetSeparatedImages[0]));
+        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetSeparatedImages[1]));
+        const {width, height} = bufferNoElement;
+        const diff = new PNG({width, height});
 
-        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
-        console.log(equalNoElementandFront);
+        let equalNoElementandFront = null;
 
-        if (!equalNoElementandFront) {
-            return true;
-        } else {
-            return false;
-        }
+        const numDiffPixelsFront = pixelmatch(bufferNoElement.data, bufferFront.data, diff.data, width, height, { threshold: 0.1 });
+
+        if (numDiffPixelsFront===0) equalNoElementandFront = true;
+    
+        return !equalNoElementandFront;
     }
 
     async pixelCheck() {
-        const bufferNoElement = this.targetImages[0];
-        const bufferBack = this.targetImages[1];
-        const bufferFront = this.targetImages[2];
+        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetImages[0]));
+        const bufferBack = PNG.sync.read(fs.readFileSync(this.targetImages[1]));
+        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetImages[2]));
+        const {width, height} = bufferNoElement;
+        const diff = new PNG({width, height});
 
-        const {equalNoElementandBack} = await looksSame(bufferNoElement, bufferBack, {strict: true});
-        const {equalNoElementandFront} = await looksSame(bufferNoElement, bufferFront, {strict: true});
+        let equalNoElementandBack = null;
+        let equalNoElementandFront = null;
 
+        const numDiffPixelsBack = pixelmatch(bufferNoElement.data, bufferBack.data, diff.data, width, height, { threshold: 0.1 });
+        const numDiffPixelsFront = pixelmatch(bufferNoElement.data, bufferFront.data, diff.data, width, height, { threshold: 0.1 });
+
+        if (numDiffPixelsBack===0) equalNoElementandBack = true;
+        if (numDiffPixelsFront===0) equalNoElementandFront = true;
+
+    
         if (!equalNoElementandBack && !equalNoElementandFront) {
             return true;
         } else {
