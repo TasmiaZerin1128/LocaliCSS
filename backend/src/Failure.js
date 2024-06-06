@@ -1141,7 +1141,7 @@ class Failure {
             //     "==  Begin Rectangles  ==\n" +
             //     + rectangles + "\n" +
             //     "==   End  Rectangles  ==\n"
-            screenshot = await driver.clipImage(screenshot, problemArea, fullViewportWidthClipping, viewport);
+            screenshot = await driver.clipSmallImage(screenshot, problemArea, fullViewportWidthClipping, viewport);
         } catch (passedInErrorMessage) {
             let newErrorMessage = this.ID + ' ' + this.type + ' ' + this.range.toString() + '\n';
             newErrorMessage += rectangle.toString(true) + '\n';
