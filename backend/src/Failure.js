@@ -133,14 +133,10 @@ class Failure {
         let range = this.range;
 
         let minRange = range.getMinimum();
-        let midRange = range.getMiddle();
         let maxRange = range.getMaximum();
 
         await driver.setViewport(minRange, settings.testingHeight);
         range.minVerification = await this.isObservable(driver, minRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
-
-        await driver.setViewport(midRange, settings.testingHeight);
-        range.midVerification = await this.isObservable(driver, midRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
         await driver.setViewport(maxRange, settings.testingHeight);
         range.maxVerification = await this.isObservable(driver, maxRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';

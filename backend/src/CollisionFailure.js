@@ -2,7 +2,7 @@ const RBush = require("rbush");
 const settings = require("../settings");
 const Failure = require("./Failure");
 const Rectangle = require("./Rectangle");
-const fs = require('fs');
+const fs = require('fs').promises;
 const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 const utils = require("./utils");
@@ -173,10 +173,10 @@ class CollisionFailure extends Failure {
         console.log("Took an image of front!!!!!!!!!!");
     }
 
-    async pixelCheck() {
-        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetImages[0]));
-        const bufferBack = PNG.sync.read(fs.readFileSync(this.targetImages[1]));
-        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetImages[2]));
+    async pixelCheck() { 
+        const bufferNoElement = PNG.sync.read(await fs.readFile(this.targetImages[0]));
+        const bufferBack = PNG.sync.read(await fs.readFile(this.targetImages[1]));
+        const bufferFront = PNG.sync.read(await fs.readFile(this.targetImages[2]));
         const {width, height} = bufferNoElement;
         const diff = new PNG({width, height});
 

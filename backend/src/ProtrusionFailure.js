@@ -2,7 +2,7 @@ const Failure = require('./Failure');
 const settings = require('../settings.js');
 const utils = require('./utils.js');
 const Rectangle = require('./Rectangle.js');
-const fs = require('fs');
+const fs = require('fs').promises;
 const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 
@@ -241,8 +241,8 @@ class ProtrusionFailure extends Failure {
     }
 
     async pixelCheckSeparated() {
-        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetSeparatedImages[0]));
-        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetSeparatedImages[1]));
+        const bufferNoElement = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[0]));
+        const bufferFront = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[1]));
         const {width, height} = bufferNoElement;
         const diff = new PNG({width, height});
 
@@ -256,9 +256,9 @@ class ProtrusionFailure extends Failure {
     }
 
     async pixelCheck() {
-        const bufferNoElement = PNG.sync.read(fs.readFileSync(this.targetImages[0]));
-        const bufferBack = PNG.sync.read(fs.readFileSync(this.targetImages[1]));
-        const bufferFront = PNG.sync.read(fs.readFileSync(this.targetImages[2]));
+        const bufferNoElement = PNG.sync.read(await fs.readFile(this.targetImages[0]));
+        const bufferBack = PNG.sync.read(await fs.readFile(this.targetImages[1]));
+        const bufferFront = PNG.sync.read(await fs.readFile(this.targetImages[2]));
         const {width, height} = bufferNoElement;
         const diff = new PNG({width, height});
 
