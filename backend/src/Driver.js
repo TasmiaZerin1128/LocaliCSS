@@ -43,12 +43,10 @@ driver.highlight = async function (rectangles, screenshot, drawViewportWidthLine
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");
             let image = new Image();
-            let imgLoadPromise = async function () {
-                return new Promise((resolve, reject) => {
-                    image.onload = () => { return resolve };
-                    image.onerror = reject;
-                });
-            }
+            let imgLoadPromise = new Promise((resolve, reject) => {
+              image.onload = () => { resolve(); };
+              image.onerror = reject;
+            });
             image.src = 'data:image/png;base64,' + screenshot;
             await imgLoadPromise;
             canvas.width = image.naturalWidth;
@@ -98,8 +96,6 @@ driver.highlight = async function (rectangles, screenshot, drawViewportWidthLine
 };
 
 driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = false, viewportWidth = Infinity) {
-  console.log("In driver");
-  console.log(rectangle);
         let clippedScreenshot = await driver.page.evaluate(async function (rectangle, screenshot, fullViewportWidth, viewportWidth) {
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");
@@ -144,56 +140,15 @@ driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = fa
         return clippedScreenshot;
 };
 
-driver.clipSmallImage = async function (screenshot, rectangle, fullViewportWidth = false, viewportWidth = Infinity) {
-  console.log("In driver");
-  console.log(rectangle);
-        let clippedScreenshot = await driver.page.evaluate(async function (rectangle, screenshot, fullViewportWidth, viewportWidth) {
-            let canvas = document.createElement("CANVAS");
-            let context = canvas.getContext("2d");
-            let image = new Image();
-            let imgLoadPromise = async function () {
-                return new Promise((resolve, reject) => {
-                    image.onload = () => { return resolve };
-                    image.onerror = reject;
-                });
-            }
-            image.src = 'data:image/png;base64,' + screenshot;
-            await imgLoadPromise;
-            let originalAreaRequested = "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height;
-            if (fullViewportWidth) {
-                rectangle.minX = 0;
-                if (viewportWidth !== undefined)
-                    rectangle.maxX = viewportWidth;
-                else
-                    rectangle.maxX = image.naturalWidth
-            } else {
-                rectangle.minX = Math.max(0, rectangle.minX);
-                rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
-            }
-
-            rectangle.minX = Math.max(0, Math.min(image.naturalWidth, rectangle.minX));
-            rectangle.maxX = Math.max(0, Math.min(image.naturalWidth, rectangle.maxX));
-            rectangle.minY = Math.max(0, Math.min(image.naturalHeight, rectangle.minY));
-            rectangle.maxY = Math.max(0, Math.min(image.naturalHeight, rectangle.maxY));
-            rectangle.width = Math.max(1, rectangle.maxX - rectangle.minX);
-            rectangle.height = Math.max(1, rectangle.maxY - rectangle.minY);
-
-if (rectangle.width <= 0 || rectangle.height <= 0) {
-    throw "\nError cannot clip canvas with width: \n" +
-    "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height +
-    "\n image-natural-width: " + image.naturalWidth +
-    " image-natural-height: " + image.naturalHeight + "\n" +
-    "Originally Requested Clipping:\n " + originalAreaRequested;
-}
-
-canvas.width = rectangle.width;
-canvas.height = rectangle.height;
-context.drawImage(image, rectangle.minX, rectangle.minY, rectangle.width, rectangle.height, 0, 0, rectangle.width, rectangle.height);
-
-return canvas.toDataURL();
-        }, rectangle, screenshot, fullViewportWidth, viewportWidth);
-        return clippedScreenshot;
+driver.clipSmallImage = async function (rectangle) {
+  let options = {
+      clip: rectangle,
+      encoding: 'base64' // Ensure the screenshot is returned as a base64 string
+  };
+  let screenshot = await driver.page.screenshot(options);
+  return screenshot;
 };
+
 
 driver.cropImage = async function (screenshot, top = 0, bottom = 0, left = 0, right = 0) {
         let croppedScreenshot = await driver.page.evaluate(async function (screenshot, top, bottom, left, right) {

@@ -164,11 +164,13 @@ class ProtrusionFailure extends Failure {
 
     async analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory) {
 
+       this.targetImages = [];
+       this.targetSeparatedImages = [];
+
         let opacityChild = await driver.getOpacity(child);
         
         let opacityParent = await driver.getOpacity(parent);
 
-        driver.scroll(child);
         // this.firstImageScrollOffsetX = await driver.getPageScrollWidth();
         // this.firstImageScrollOffsetY = await driver.getPageScrollHeight();
 
@@ -224,7 +226,6 @@ class ProtrusionFailure extends Failure {
 
         let rects = [];
         rects.push(seperated);
-        // rects.push(parentRect);
 
         let imagePath = viewport + '-detached-imgNoElemets';
         let screenshotNoElement = await this.screenshotDetached(driver, viewport, rects, imagePath, snapshotDirectory);
