@@ -615,12 +615,7 @@ class RLGNode {
         for (let collision of this.elementCollisions) {
             await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
         }
-        for (let wrapping of this.wrappings) {
-            await wrapping.verify(driver, verificationFile, snapshotDirectory, bar, counter);
-        }
-        for (let smallrange of this.smallranges) {
-            await smallrange.verify(driver, verificationFile, snapshotDirectory, bar, counter);
-        }
+        // No wrapping and small range verification for now
     }
     
 
