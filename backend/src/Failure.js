@@ -92,7 +92,7 @@ class Failure {
     /**
      * Dom level verification of the reported failures.
      */
-    async classify(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter) {
+    async classify(driver, classificationFile, snapshotDirectory, bar, counter) {
         this.durationFailureClassify = new Date();
         let range = this.range;
 
@@ -107,7 +107,6 @@ class Failure {
             await this.screenshotViewport(driver, range.getMinimum(), snapshotDirectory, true);
         if (settings.humanStudy === true)
             await this.screenshotForHumanStudy('Failure');
-        range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
         await driver.setViewport(range.getMiddle(), settings.testingHeight);
         range.midClassification = await this.isFailing(driver, range.getMiddle(), classificationFile, range) ? 'TP' : 'FP';
@@ -118,7 +117,6 @@ class Failure {
         range.maxClassification = await this.isFailing(driver, range.getMaximum(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotMax === true)
             await this.screenshotViewport(driver, range.getMaximum(), snapshotDirectory, true);
-        range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
         await driver.setViewport(range.getWider(), settings.testingHeight);
         range.widerClassification = await this.isFailing(driver, range.getWider(), classificationFile, range) ? 'TP' : 'FP';
@@ -1082,14 +1080,6 @@ class Failure {
             fullPage = false;
         let rectangles = rects;
         let screenshot = await driver.screenshot(undefined, fullPage, true);
-        let imageName = 'Test-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
-        imageName += '.png';
-        this.saveScreenshot(path.join(directory, imageName), screenshot, false);
-        if (settings.screenshotHighlights) {
-            console.log("Screenshot ERRORRR");
-            console.log(rectangles[0]);
-            // screenshot = await driver.highlight(rectangles, screenshot);
-        }
 
         screenshot = await driver.clipSmallImage(rectangles[0]);
         let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;

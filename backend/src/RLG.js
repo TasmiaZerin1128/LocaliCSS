@@ -525,13 +525,13 @@ class RLG {
     }
 
     // Classify the failure of all nodes with failures
-    async classifyFailures(driver, classificationFile, verificationFile, snapshotDirectory) {
+    async classifyFailures(driver, classificationFile, snapshotDirectory) {
         let bar = new ProgressBar('Classify RLFs  | [:bar] | :percent :etas | Classification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         console.log("classification going on");
         sendMessage("Classify", {'counter': 0, 'total': utils.failureCount});
         let counter = 0;
         for (const node of this.nodesWithFailures) {
-            await node.classifyFailures(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter);
+            await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
         }
     }
 

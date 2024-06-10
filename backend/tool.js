@@ -61,7 +61,7 @@ exports.startTool = async (req, res) => {
       await newWebpage.classifyFailures();
       newWebpage.printRLG();
       newWebpage.printFailures();
-      // await newWebpage.verifyFailures();
+      await newWebpage.verifyFailures();
       // await newWebpage.repairFailures();
     // }
 

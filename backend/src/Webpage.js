@@ -92,7 +92,7 @@ class Webpage {
     // Classify and Screenshot the failures
     async classifyFailures() {
         this.durationClassify = new Date();
-        await this.rlg.classifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Classifications.txt', this.pageRunOutputPath + path.sep + 'Verifications.txt', this.snapshotOutputPath);
+        await this.rlg.classifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Classifications.txt', this.snapshotOutputPath);
         this.durationClassify = new Date() - this.durationClassify;
     }
 

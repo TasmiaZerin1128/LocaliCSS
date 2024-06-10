@@ -587,18 +587,18 @@ class RLGNode {
         }
     }
 
-    async classifyFailures(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter) {
+    async classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter) {
         for (let viewportProtrusion of this.viewportProtrusions) {
-            await viewportProtrusion.classify(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter);
+            await viewportProtrusion.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let protrusion of this.elementProtrusions) {
-            await protrusion.classify(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter);
+            await protrusion.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let collision of this.elementCollisions) {
-            await collision.classify(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter);
+            await collision.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let wrapping of this.wrappings) {
-            await wrapping.classify(driver, classificationFile, verificationFile, snapshotDirectory, bar, counter);
+            await wrapping.classify(driver, classificationFile, snapshotDirectory, bar, counter);
         }
         for (let smallrange of this.smallranges) {
             await smallrange.classify(driver, classificationFile, snapshotDirectory, bar, counter);
