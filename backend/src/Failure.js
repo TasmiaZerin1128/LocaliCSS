@@ -939,7 +939,7 @@ class Failure {
     /**
      * Takes a screenshot of at the given viewport.
      */
-    async screenshotViewport(driver, viewport, directory, includeClassification = false, clip = true) {
+    async screenshotViewport(driver, viewport, directory, includeClassification = false, clip = false) {
         await this.setViewportHeightBeforeSnapshots(viewport);
         let fullPage = true;
         if (settings.browserMode === utils.Mode.HEADLESS)
@@ -1091,7 +1091,6 @@ class Failure {
 
     async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
         try {
-            console.log("Length: " + rectangles.length);
             if (problemArea === undefined) {
                 problemArea = this.getClippingCoordinates(rectangles);
             }
