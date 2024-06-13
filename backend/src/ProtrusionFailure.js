@@ -242,18 +242,23 @@ class ProtrusionFailure extends Failure {
     }
 
     async pixelCheckSeparated() {
-        const bufferNoElement = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[0]));
-        const bufferFront = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[1]));
-        const {width, height} = bufferNoElement;
-        const diff = new PNG({width, height});
+        try {
+            const bufferNoElement = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[0]));
+            const bufferFront = PNG.sync.read(await fs.readFile(this.targetSeparatedImages[1]));
+            const {width, height} = bufferNoElement;
+            const diff = new PNG({width, height});
+        
+            let equalNoElementandFront = null;
 
-        let equalNoElementandFront = null;
+            const numDiffPixelsFront = pixelmatch(bufferNoElement.data, bufferFront.data, diff.data, width, height, { threshold: 0.1 });
 
-        const numDiffPixelsFront = pixelmatch(bufferNoElement.data, bufferFront.data, diff.data, width, height, { threshold: 0.1 });
-
-        if (numDiffPixelsFront===0) equalNoElementandFront = true;
-    
-        return !equalNoElementandFront;
+            if (numDiffPixelsFront===0) equalNoElementandFront = true;
+        
+            return !equalNoElementandFront;
+        } catch (e) {
+            console.log("Error in pixelCheckSeparated: ", e);
+            return false;
+        }
     }
 
     async pixelCheck() {

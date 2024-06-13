@@ -1,7 +1,11 @@
 const { tolerance } = require('../settings');
+const settings = require('../settings.js');
 const Failure = require('./Failure')
 const Rectangle = require('./Rectangle');
 const utils = require('./utils');
+const fs = require('fs').promises;
+const PNG = require('pngjs').PNG;
+const pixelmatch = require('pixelmatch');
  
  class ViewportFailure extends Failure {
     // Create a viewport protrusion failure.
