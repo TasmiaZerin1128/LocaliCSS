@@ -505,22 +505,26 @@ class RLG {
         return false;
     }
 
-    detectFailures(progress = true) {
+    async detectFailures(driver, progress = true) {
         let counter = 0;
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
         let bodyNode = this.map.get('/HTML/BODY');
         let nodesWithFailures = [];
-        this.map.forEach((node) => {
-            node.detectFailures(bodyNode);
-            if (node.hasFailure()) {
-                nodesWithFailures.push(node);
+        for (let node of this.map.values()) {
+            let isCarousel = await node.checkIfCarousel(driver);
+            if (isCarousel) console.log("Carousel ------------- " + isCarousel + " " + node.xpath);
+            if (!isCarousel && !node.xpath.includes('IMG')) {
+                node.detectFailures(bodyNode);
+                if (node.hasFailure()) {
+                    nodesWithFailures.push(node);
+                }
             }
             if (progress) {
                 counter++;
                 bar.tick();
                 sendMessage("Find RLFs", {'counter': counter, 'total': this.map.size});
             }
-        });
+        }
         this.nodesWithFailures = nodesWithFailures;
     }
 

@@ -645,6 +645,40 @@ class RLGNode {
         }
     }
 
+
+    async checkIfCarousel(driver) {
+        try {
+            const element = await driver.getElementByXPath(this.xpath);
+            const style = await driver.getComputedStyle(element);
+            if (( style.position === 'absolute' || style.overflow === 'hidden' )
+                && ( style.transform !== 'none' || style.transition !== 'none' || style['transition-duration'] !== '0s' )) {
+                return new Promise(async (resolve) => {
+                    setTimeout(async () => {
+                        const currentStyle = await driver.getComputedStyle(element);
+                        if (JSON.stringify(currentStyle) !== JSON.stringify(style)) {
+                            console.log('Style changed:', currentStyle);
+                            resolve(true);
+                            return;
+                        }
+            
+                        setTimeout(async () => {
+                            const currentStyle = await driver.getComputedStyle(element);
+                            if (JSON.stringify(currentStyle) !== JSON.stringify(style)) {
+                                console.log('Style changed:', currentStyle);
+                                resolve(true);
+                            }
+                            resolve(false);
+                        }, 5000);
+                    }, 5000);
+                });
+            } else {
+                return false;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     // Detect the failures of this node
     detectFailures(bodyNode) {
         this.ranges.sortRangesDescending();

@@ -86,7 +86,7 @@ class Webpage {
         }
         this.durationDOM = new Date() - this.durationDOM;
         this.durationDetection = new Date();
-        this.rlg.detectFailures();
+        await this.rlg.detectFailures(this.driver);
     }
 
     // Classify and Screenshot the failures

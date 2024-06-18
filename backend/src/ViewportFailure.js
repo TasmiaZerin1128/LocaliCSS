@@ -52,37 +52,43 @@ const pixelmatch = require('pixelmatch');
     }
 
     async isFailing(driver, viewport, file, range) {
-        let child = await driver.getElementBySelector(this.node.getSelector());
-        let parent = await driver.getElementBySelector(this.parent.getSelector());
-        let childRect = new Rectangle(await driver.getRectangle(child));
-        let parentRect = new Rectangle(await driver.getRectangle(parent));
-        if (parentRect.visible === false || parentRect.validSize === false || parentRect.positiveCoordinates == false)
-            return false;
-        if (childRect.visible === false || childRect.validSize === false || childRect.positiveCoordinates == false)
-            return false;
-        let protruding = this.calculateProtrusion(parentRect, childRect);
-        let tol = 0;
-        if (tolerance.protrusion !== undefined && tolerance.protrusion > 0)
-            tol = tolerance.protrusion;
-        //Viewport Protrusion is assumed not to be able to protrude from the bottom and hence bottom protrusion is not checked.
-        let result = (protruding.top > tol || protruding.right > tol || protruding.left > tol);
-        if (file !== undefined) {
-            let classification = result ? 'TP' : 'FP';
-            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
-            utils.printToFile(file, text);
-            text = '|  |--[ Left-P: ' + protruding.left + ' Right-P: ' + protruding.right + ' Top-P: ' + protruding.top + ' Bottom-P: ' + protruding.bottom + ' ]';
-            utils.printToFile(file, text);
-            text = '|--[ Parent: ' + this.parent.xpath + ' ]';
-            utils.printToFile(file, text);
-            text = '|  |--[ minX: ' + parentRect.minX + ' maxX: ' + parentRect.maxX + ' minY: ' + parentRect.minY + ' maxY: ' + parentRect.maxY + ' width: ' + parentRect.width + ' height: ' + parentRect.height + ' ]';
-            utils.printToFile(file, text);
-            text = '|--[ Child: ' + this.node.xpath + ' ]';
-            utils.printToFile(file, text);
-            text = '|  |--[ minX: ' + childRect.minX + ' maxX: ' + childRect.maxX + ' minY: ' + childRect.minY + ' maxY: ' + childRect.maxY + ' width: ' + childRect.width + ' height: ' + childRect.height + ' ]';
-            utils.printToFile(file, text);
+        try {
+            let child = await driver.getElementBySelector(this.node.getSelector());
+            let parent = await driver.getElementBySelector(this.parent.getSelector());
+            let childRect = new Rectangle(await driver.getRectangle(child));
+            let parentRect = new Rectangle(await driver.getRectangle(parent));
+            if (parentRect.visible === false || parentRect.validSize === false || parentRect.positiveCoordinates == false)
+                return false;
+            if (childRect.visible === false || childRect.validSize === false || childRect.positiveCoordinates == false)
+                return false;
+            let protruding = this.calculateProtrusion(parentRect, childRect);
+            let tol = 0;
+            if (tolerance.protrusion !== undefined && tolerance.protrusion > 0)
+                tol = tolerance.protrusion;
+            //Viewport Protrusion is assumed not to be able to protrude from the bottom and hence bottom protrusion is not checked.
+            let result = (protruding.top > tol || protruding.right > tol || protruding.left > tol);
+            if (file !== undefined) {
+                let classification = result ? 'TP' : 'FP';
+                let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
+                utils.printToFile(file, text);
+                text = '|  |--[ Left-P: ' + protruding.left + ' Right-P: ' + protruding.right + ' Top-P: ' + protruding.top + ' Bottom-P: ' + protruding.bottom + ' ]';
+                utils.printToFile(file, text);
+                text = '|--[ Parent: ' + this.parent.xpath + ' ]';
+                utils.printToFile(file, text);
+                text = '|  |--[ minX: ' + parentRect.minX + ' maxX: ' + parentRect.maxX + ' minY: ' + parentRect.minY + ' maxY: ' + parentRect.maxY + ' width: ' + parentRect.width + ' height: ' + parentRect.height + ' ]';
+                utils.printToFile(file, text);
+                text = '|--[ Child: ' + this.node.xpath + ' ]';
+                utils.printToFile(file, text);
+                text = '|  |--[ minX: ' + childRect.minX + ' maxX: ' + childRect.maxX + ' minY: ' + childRect.minY + ' maxY: ' + childRect.maxY + ' width: ' + childRect.width + ' height: ' + childRect.height + ' ]';
+                utils.printToFile(file, text);
 
+            }
+            return result;
         }
-        return result;
+        catch (e) {
+            console.log('Error in getting elements for viewport failure: ' + e);
+            return false;
+        }
     }
 
     async findAreasOfConcern() {
@@ -93,6 +99,7 @@ const pixelmatch = require('pixelmatch');
         return true;
     }
 
+    // Return true if the child is visibly protruding from the viewport
     async isObservable(driver, viewport, file, snapshotDirectory, range) {
         let xpaths = this.getXPaths();
         if (xpaths[0] === xpaths[1]) {
@@ -100,29 +107,35 @@ const pixelmatch = require('pixelmatch');
             return;
         } 
 
-        let child = await driver.getElementBySelector(this.node.getSelector());
-        let parent = await driver.getElementBySelector(this.parent.getSelector());
-        let childRect = new Rectangle(await driver.getRectangle(child));
-        let parentRect = new Rectangle(await driver.getRectangle(parent));
+        try {
+            let child = await driver.getElementBySelector(this.node.getSelector());
+            let parent = await driver.getElementBySelector(this.parent.getSelector());
+            let childRect = new Rectangle(await driver.getRectangle(child));
+            let parentRect = new Rectangle(await driver.getRectangle(parent));
 
-        this.protudingArea = this.calculateProtrusion(parentRect, childRect);
+            this.protudingArea = this.calculateProtrusion(parentRect, childRect);
 
-        let aoc = await this.findAreasOfConcern();
-        if(aoc) {
-            await this.analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory);
-            let observable = await this.pixelCheck();
-            if (observable) {
-                await this.analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory);
-                let observableSeperated = await this.pixelCheckSeparated();
-                this.printVerified(file, observableSeperated, range, viewport);
-                if (observableSeperated) {
-                    return true;
-                } else {
-                    return false;
+            let aoc = await this.findAreasOfConcern();
+            if(aoc) {
+                await this.analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory);
+                let observable = await this.pixelCheck();
+                if (observable) {
+                    await this.analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory);
+                    let observableSeperated = await this.pixelCheckSeparated();
+                    this.printVerified(file, observableSeperated, range, viewport);
+                    if (observableSeperated) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
+            return false;
         }
-        return false;
+        catch (e) {
+            console.log('Error in getting elements for viewport failure: ' + e);
+            return false;
+        }
     }
 
     async analysisContainedAOC(child, parent, driver, viewport, snapshotDirectory) {

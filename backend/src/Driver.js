@@ -232,10 +232,14 @@ driver.goto = async function goto(uri) {
 };
 
 driver.getElementByXPath = async function getElementByXPath(xpath) {
-  // Get an element by XPath
-  await driver.page.waitForXPath(xpath);
-  const element = await driver.page.$x(xpath);
-  return element;
+  try {
+    // Get an element by XPath
+    await driver.page.waitForXPath(xpath); 
+    const element = await driver.page.$x(xpath);
+    return element[0];
+  } catch (error) {
+    console.error('Error in getElementByXPath:', error);
+  }
 }
 
 driver.getElementBySelector = async function getElementBySelector(selector) {

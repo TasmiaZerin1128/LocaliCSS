@@ -41,48 +41,54 @@ class CollisionFailure extends Failure {
 
     // Return true if there is an overlap between two nodes
     async isFailing(driver, viewport, file, range) {
-        let node = await driver.getElementBySelector(this.node.getSelector());
-        let sibling = await driver.getElementBySelector(this.sibling.getSelector());
+        try {
+            let node = await driver.getElementBySelector(this.node.getSelector());
+            let sibling = await driver.getElementBySelector(this.sibling.getSelector());
 
-        let nodeRect = new Rectangle(await driver.getRectangle(node));
-        let siblingRect = new Rectangle(await driver.getRectangle(sibling));
-        if (nodeRect.visible === false || nodeRect.validSize === false || nodeRect.positiveCoordinates == false) {
+            let nodeRect = new Rectangle(await driver.getRectangle(node));
+            let siblingRect = new Rectangle(await driver.getRectangle(sibling));
+            if (nodeRect.visible === false || nodeRect.validSize === false || nodeRect.positiveCoordinates == false) {
+                return false;
+            }
+            if (siblingRect.visible === false || siblingRect.validSize === false || siblingRect.positiveCoordinates == false) {
+                return false;
+            }
+
+            let collisionRBush = new RBush();
+            nodeRect.minX += settings.tolerance.collision;
+            nodeRect.maxX -= settings.tolerance.collision;
+            nodeRect.minY += settings.tolerance.collision;
+            nodeRect.maxY -= settings.tolerance.collision;
+
+
+            collisionRBush.insert(siblingRect);
+            let overlappingRectangles = collisionRBush.search(nodeRect);
+            let result = overlappingRectangles.length > 0;
+
+            // store the collision portion
+            this.collision = this.calculateOverlap(siblingRect, nodeRect);
+        
+            if (file !== undefined) {
+                let classification = result ? 'TP' : 'FP';
+                let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
+                utils.printToFile(file, text);
+                text = '|  |--[ Overlap-X: ' + this.collision.xToClear + ' Overlap-Y: ' + this.collision.yToClear + ' ]';
+                utils.printToFile(file, text);
+                text = '|--[ Node: ' + this.node.xpath + ' ]';
+                utils.printToFile(file, text);
+                text = '|  |--[ minX: ' + nodeRect.minX + ' maxX: ' + nodeRect.maxX + ' minY: ' + nodeRect.minY + ' maxY: ' + nodeRect.maxY + ' ]';
+                utils.printToFile(file, text);
+                text = '|--[ Sibling: ' + this.sibling.xpath + ' ]';
+                utils.printToFile(file, text);
+                text = '|  |--[ minX: ' + siblingRect.minX + ' maxX: ' + siblingRect.maxX + ' minY: ' + siblingRect.minY + ' maxY: ' + siblingRect.maxY + ' ]';
+                utils.printToFile(file, text);
+            }
+            return result;
+        }
+        catch (e) {
+            console.log('Error in getting elements for collision failure: ' + e);
             return false;
         }
-        if (siblingRect.visible === false || siblingRect.validSize === false || siblingRect.positiveCoordinates == false) {
-            return false;
-        }
-
-        let collisionRBush = new RBush();
-        nodeRect.minX += settings.tolerance.collision;
-        nodeRect.maxX -= settings.tolerance.collision;
-        nodeRect.minY += settings.tolerance.collision;
-        nodeRect.maxY -= settings.tolerance.collision;
-
-
-        collisionRBush.insert(siblingRect);
-        let overlappingRectangles = collisionRBush.search(nodeRect);
-        let result = overlappingRectangles.length > 0;
-
-        // store the collision portion
-        this.collision = this.calculateOverlap(siblingRect, nodeRect);
-    
-        if (file !== undefined) {
-            let classification = result ? 'TP' : 'FP';
-            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
-            utils.printToFile(file, text);
-            text = '|  |--[ Overlap-X: ' + this.collision.xToClear + ' Overlap-Y: ' + this.collision.yToClear + ' ]';
-            utils.printToFile(file, text);
-            text = '|--[ Node: ' + this.node.xpath + ' ]';
-            utils.printToFile(file, text);
-            text = '|  |--[ minX: ' + nodeRect.minX + ' maxX: ' + nodeRect.maxX + ' minY: ' + nodeRect.minY + ' maxY: ' + nodeRect.maxY + ' ]';
-            utils.printToFile(file, text);
-            text = '|--[ Sibling: ' + this.sibling.xpath + ' ]';
-            utils.printToFile(file, text);
-            text = '|  |--[ minX: ' + siblingRect.minX + ' maxX: ' + siblingRect.maxX + ' minY: ' + siblingRect.minY + ' maxY: ' + siblingRect.maxY + ' ]';
-            utils.printToFile(file, text);
-        }
-        return result;
     }
 
     async findAreasOfConcern() {
@@ -94,32 +100,38 @@ class CollisionFailure extends Failure {
         return true;
     }
 
+    // Return true if there is an observable overlap between two nodes
     async isObservable(driver, viewport, file, snapshotDirectory, range) {
         let xpaths = this.getXPaths();
         if (xpaths[0] === xpaths[1]) {
             console.log("Something went wrong, program went to compare the same element to self");
             return;
         } 
-        console.log("Viewport " + viewport);
-        let node = await driver.getElementBySelector(this.node.getSelector());
-        let sibling = await driver.getElementBySelector(this.sibling.getSelector());
-        let nodeRect = new Rectangle(await driver.getRectangle(node));
-        let siblingRect = new Rectangle(await driver.getRectangle(sibling));
+        try {
+            let node = await driver.getElementBySelector(this.node.getSelector());
+            let sibling = await driver.getElementBySelector(this.sibling.getSelector());
+            let nodeRect = new Rectangle(await driver.getRectangle(node));
+            let siblingRect = new Rectangle(await driver.getRectangle(sibling));
 
-        this.collision = this.calculateOverlap(siblingRect, nodeRect);
+            this.collision = this.calculateOverlap(siblingRect, nodeRect);
 
-        let aoc = await this.findAreasOfConcern();
-        if(aoc) {
-            await this.takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory);
-            let observable = await this.pixelCheck();
-            this.printVerified(file, observable, range, viewport);
-            if (observable) {
-                return true;
-            } else {
-                return false;
+            let aoc = await this.findAreasOfConcern();
+            if(aoc) {
+                await this.takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory);
+                let observable = await this.pixelCheck();
+                this.printVerified(file, observable, range, viewport);
+                if (observable) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+            return false;
         }
-        return false;
+        catch (e) {
+            console.log('Error in getting elements for collision failure: ' + e);
+            return false;
+        }
     }
 
     async takeImages(node, sibling, nodeRect, siblingRect, driver, viewport, snapshotDirectory) {
