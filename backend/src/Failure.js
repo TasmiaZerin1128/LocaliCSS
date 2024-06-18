@@ -130,21 +130,25 @@ class Failure {
 
     // Layer based verification of the reported failures.
     async verify(driver, verificationFile, snapshotDirectory, bar, counter) {
-        this.durationFailureVerify = new Date();
-        let range = this.range;
+        try {
+            this.durationFailureVerify = new Date();
+            let range = this.range;
 
-        let minRange = range.getMinimum();
-        let maxRange = range.getMaximum();
+            let minRange = range.getMinimum();
+            let maxRange = range.getMaximum();
 
-        await driver.setViewport(range.getMinimum(), settings.testingHeight);
-        range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+            await driver.setViewport(range.getMinimum(), settings.testingHeight);
+            range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
-        await driver.setViewport(range.getMaximum(), settings.testingHeight);
-        range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+            await driver.setViewport(range.getMaximum(), settings.testingHeight);
+            range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
-        bar.tick();
-        sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
-        this.durationFailureVerify = new Date() - this.durationFailureVerify;
+            bar.tick();
+            sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
+            this.durationFailureVerify = new Date() - this.durationFailureVerify;
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     async getRectangles() {

@@ -221,7 +221,15 @@ driver.setViewport = async function setViewport(width, height) {
     deviceScaleFactor: 1,
   };
 
-  await driver.page.setViewport(options);
+  try {
+    await driver.page.setViewport(options);
+  } catch (error) {
+    if (error.code === 'EBUSY') {
+      console.log('Resource busy or locked');
+    } else {
+      throw error;
+    }
+  }
 }
 
 driver.goto = async function goto(uri) {
