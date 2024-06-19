@@ -6,7 +6,7 @@ const ProgressBar = require('progress');
 const RLG = require('./RLG');
 const { sendMessage } = require('../socket-connect');
 const utils = require('./utils');
-
+const pLimit = require('p-limit');
 
 class Webpage {
     constructor(uri, driver, testRange, testHeight, outputPath, pageName) {
@@ -61,6 +61,8 @@ class Webpage {
     }
 
     async testWebpage(navigate = true) {
+        let limit = pLimit(5);
+
         this.durationDOM = new Date();
         sendMessage("message", 'Testing---> ');
         this.setRunOutputPath();
@@ -74,16 +76,22 @@ class Webpage {
         // progress bar
         const bar = new ProgressBar('Extract RLG by capturing DOM  | [:bar] | :percent :etas | Viewports Completed :token1/' + totalTestViewports, { complete: '█', incomplete: '░', total: totalTestViewports, width: 25});
 
+        let tasks = [];
+
         for(let width = testRange.max; width >= testRange.min; width--) {
-            testCounter++;
-            await this.driver.setViewport(width, this.testHeight);
-            let newDom = new DOM(this.driver, width);
-            await newDom.captureDOM();
-            newDom.saveRBushData(this.domOutputPath);
-            this.rlg.extractRLG(newDom, width);
-            sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
-            bar.tick({'token1': testCounter});
+            tasks.push(limit(async () => {
+                testCounter++;
+                await this.driver.setViewport(width, this.testHeight);
+                let newDom = new DOM(this.driver, width);
+                await newDom.captureDOM();
+                newDom.saveRBushData(this.domOutputPath);
+                this.rlg.extractRLG(newDom, width);
+                sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
+                bar.tick({'token1': testCounter});
+            }));
         }
+
+        await Promise.all(tasks);
         this.durationDOM = new Date() - this.durationDOM;
         this.durationDetection = new Date();
         await this.rlg.detectFailures(this.driver);
