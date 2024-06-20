@@ -96,6 +96,8 @@ class Failure {
         this.durationFailureClassify = new Date();
         let range = this.range;
 
+        // await driver.start();
+
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
         range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotNarrower === true)
@@ -123,6 +125,8 @@ class Failure {
         if (settings.screenshotWider === true)
             await this.screenshotViewport(driver, range.getWider(), snapshotDirectory, true);
 
+        // await driver.close();
+
         bar.tick();
         sendMessage("Classify", {'counter': bar.curr, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
@@ -134,6 +138,8 @@ class Failure {
             this.durationFailureVerify = new Date();
             let range = this.range;
 
+            // await driver.start();
+
             let minRange = range.getMinimum();
             let maxRange = range.getMaximum();
 
@@ -142,6 +148,8 @@ class Failure {
 
             await driver.setViewport(range.getMaximum(), settings.testingHeight);
             range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+
+            // await driver.close();
 
             bar.tick();
             sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});

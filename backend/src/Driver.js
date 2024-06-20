@@ -244,7 +244,7 @@ driver.getElementByXPath = async function getElementByXPath(xpath) {
     // Get an element by XPath
     await driver.page.waitForXPath(xpath); 
     const element = await driver.page.$x(xpath);
-    return element[0];
+    return element;
   } catch (error) {
     console.error('Error in getElementByXPath:', error);
   }

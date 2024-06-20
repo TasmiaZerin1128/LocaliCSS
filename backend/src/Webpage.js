@@ -61,7 +61,7 @@ class Webpage {
     }
 
     async testWebpage(navigate = true) {
-        let limit = pLimit(5);
+        // let limit = pLimit(5);
 
         this.durationDOM = new Date();
         sendMessage("message", 'Testing---> ');
@@ -79,7 +79,7 @@ class Webpage {
         let tasks = [];
 
         for(let width = testRange.max; width >= testRange.min; width--) {
-            tasks.push(limit(async () => {
+            // tasks.push(limit(async () => {
                 testCounter++;
                 await this.driver.setViewport(width, this.testHeight);
                 let newDom = new DOM(this.driver, width);
@@ -88,10 +88,10 @@ class Webpage {
                 this.rlg.extractRLG(newDom, width);
                 sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
                 bar.tick({'token1': testCounter});
-            }));
+            // }));
         }
 
-        await Promise.all(tasks);
+        // await Promise.all(tasks);
         this.durationDOM = new Date() - this.durationDOM;
         this.durationDetection = new Date();
         await this.rlg.detectFailures(this.driver);

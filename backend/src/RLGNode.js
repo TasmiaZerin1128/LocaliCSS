@@ -607,13 +607,19 @@ class RLGNode {
 
     async verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter) {
         for (let viewportProtrusion of this.viewportProtrusions) {
-            await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            if (viewportProtrusion.range.minClassification === 'TP' || viewportProtrusion.range.maxClassification === 'TP') {
+                await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
         }
         for (let protrusion of this.elementProtrusions) {
-            await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
+                await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
         }
         for (let collision of this.elementCollisions) {
-            await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
+                await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
         }
         // No wrapping and small range verification for now
     }
@@ -648,7 +654,8 @@ class RLGNode {
 
     async checkIfCarousel(driver) {
         try {
-            const element = await driver.getElementByXPath(this.xpath);
+            const elements = await driver.getElementByXPath(this.xpath);
+            const element = elements[0];
             const style = await driver.getComputedStyle(element);
             if (( style.position === 'absolute' || style.overflow === 'hidden' )
                 && ( style.transform !== 'none' || style.transition !== 'none' || style['transition-duration'] !== '0s' )) {
