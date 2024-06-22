@@ -242,7 +242,7 @@ driver.goto = async function goto(uri) {
 driver.getElementByXPath = async function getElementByXPath(xpath) {
   try {
     // Get an element by XPath
-    await driver.page.waitForXPath(xpath); 
+    await driver.page.waitForSelector('xpath/' + xpath); 
     const element = await driver.page.$x(xpath);
     return element;
   } catch (error) {
