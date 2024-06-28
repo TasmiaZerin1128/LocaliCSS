@@ -157,9 +157,8 @@ class utils {
         if (url.includes("http://") || url.includes("https://")) {
         let name = new URL(url).hostname.replace(/^https?:\/\//, "");
         return name;
-        } else {   // it is a file directory path
-            let name = path.basename(url);
-            return name;
+        } else {
+        return url;
         }
     }
 

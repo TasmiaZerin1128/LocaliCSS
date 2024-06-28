@@ -505,26 +505,22 @@ class RLG {
         return false;
     }
 
-    async detectFailures(driver, progress = true) {
+    detectFailures(progress = true) {
         let counter = 0;
         let bar = new ProgressBar('Find RLFs  | [:bar] | :etas |  Node: :current' + "/" + this.map.size, { complete: '█', incomplete: '░', total: this.map.size, width: 25 })
         let bodyNode = this.map.get('/HTML/BODY');
         let nodesWithFailures = [];
-        for (let node of this.map.values()) {
-            let isCarousel = await node.checkIfCarousel(driver);
-            if (isCarousel) console.log("Carousel ------------- " + isCarousel + " " + node.xpath);
-            if (!isCarousel && !node.xpath.includes('IMG')) {
-                node.detectFailures(bodyNode);
-                if (node.hasFailure()) {
-                    nodesWithFailures.push(node);
-                }
+        this.map.forEach((node) => {
+            node.detectFailures(bodyNode);
+            if (node.hasFailure()) {
+                nodesWithFailures.push(node);
             }
             if (progress) {
                 counter++;
                 bar.tick();
                 sendMessage("Find RLFs", {'counter': counter, 'total': this.map.size});
             }
-        }
+        });
         this.nodesWithFailures = nodesWithFailures;
     }
 
@@ -536,17 +532,6 @@ class RLG {
         let counter = 0;
         for (const node of this.nodesWithFailures) {
             await node.classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter);
-        }
-    }
-
-    // Verify the failure to omit false positives
-    async verifyFailures(driver, verificationFile, snapshotDirectory) {
-        let bar = new ProgressBar('Verify RLFs  | [:bar] | :percent :etas | Verification Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
-        console.log("Verification going on");
-        sendMessage("Verify", {'counter': 0, 'total': utils.failureCount});
-        let counter = 0;
-        for (const node of this.nodesWithFailures) {
-            await node.verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter);
         }
     }
 

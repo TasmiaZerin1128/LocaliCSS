@@ -21,14 +21,6 @@ async function isWebpage(url) {
 }
 
 exports.startTool = async (req, res) => {
-
-  let cookies = [
-    // {
-    //   name: "storefront_digest",
-    //   value: "568f8bf7a2b890ebc69c326b5177a99637ec7c6f5ef0776a4ac1e998ebef6b00",
-    // }
-  ]
-  
   try {
     await driver.start();
     const page = await driver.createPage();
@@ -36,7 +28,6 @@ exports.startTool = async (req, res) => {
     let url = req.query.url;
     console.log(url);
 
-    if (cookies.length !== 0) await driver.page.setCookie(...cookies);
     await driver.goto(url);
     // take all hrefs
     // let hrefs = await page.evaluate(() => {
@@ -70,8 +61,7 @@ exports.startTool = async (req, res) => {
       await newWebpage.classifyFailures();
       newWebpage.printRLG();
       newWebpage.printFailures();
-      await newWebpage.verifyFailures();
-      // await newWebpage.repairFailures();
+      await newWebpage.repairFailures();
     // }
 
     console.log('completed ');

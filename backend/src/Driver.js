@@ -43,10 +43,12 @@ driver.highlight = async function (rectangles, screenshot, drawViewportWidthLine
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");
             let image = new Image();
-            let imgLoadPromise = new Promise((resolve, reject) => {
-              image.onload = () => { resolve(); };
-              image.onerror = reject;
-            });
+            let imgLoadPromise = async function () {
+                return new Promise((resolve, reject) => {
+                    image.onload = () => { return resolve };
+                    image.onerror = reject;
+                });
+            }
             image.src = 'data:image/png;base64,' + screenshot;
             await imgLoadPromise;
             canvas.width = image.naturalWidth;
@@ -140,16 +142,6 @@ driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = fa
         return clippedScreenshot;
 };
 
-driver.clipSmallImage = async function (rectangle) {
-  let options = {
-      clip: rectangle,
-      encoding: 'base64' // Ensure the screenshot is returned as a base64 string
-  };
-  let screenshot = await driver.page.screenshot(options);
-  return screenshot;
-};
-
-
 driver.cropImage = async function (screenshot, top = 0, bottom = 0, left = 0, right = 0) {
         let croppedScreenshot = await driver.page.evaluate(async function (screenshot, top, bottom, left, right) {
             let canvas = document.createElement("CANVAS");
@@ -179,25 +171,6 @@ driver.cropImage = async function (screenshot, top = 0, bottom = 0, left = 0, ri
         return croppedScreenshot;
 };
 
-driver.scroll = async function scroll(elementHandle) {
-  await this.page.evaluate((element) => {
-    if (element) element.scrollIntoView();
-  }, elementHandle);
-};
-
-driver.getOpacity = async function getOpacity(elementHandle) {
-  return await this.page.evaluate((element) => {
-    const style = window.getComputedStyle(element);
-    return style.getPropertyValue('opacity');
-  }, elementHandle);
-}
-
-driver.setOpacity = async function setOpacity(elementHandle, opacityValue) {
-  await this.page.evaluate((element, opacityValue) => {
-    element.style.opacity = opacityValue;
-  }, elementHandle, opacityValue);
-};
-
 driver.getBodyElement = async function getBodyElement() {
   // Get the body element from the page
   const body = await driver.page.$('body');
@@ -221,15 +194,7 @@ driver.setViewport = async function setViewport(width, height) {
     deviceScaleFactor: 1,
   };
 
-  try {
-    await driver.page.setViewport(options);
-  } catch (error) {
-    if (error.code === 'EBUSY') {
-      console.log('Resource busy or locked');
-    } else {
-      throw error;
-    }
-  }
+  await driver.page.setViewport(options);
 }
 
 driver.goto = async function goto(uri) {
@@ -240,14 +205,10 @@ driver.goto = async function goto(uri) {
 };
 
 driver.getElementByXPath = async function getElementByXPath(xpath) {
-  try {
-    // Get an element by XPath
-    await driver.page.waitForSelector('xpath/' + xpath); 
-    const element = await driver.page.$x(xpath);
-    return element;
-  } catch (error) {
-    console.error('Error in getElementByXPath:', error);
-  }
+  // Get an element by XPath
+  await driver.page.waitForXPath(xpath);
+  const element = await driver.page.$x(xpath);
+  return element;
 }
 
 driver.getElementBySelector = async function getElementBySelector(selector) {
