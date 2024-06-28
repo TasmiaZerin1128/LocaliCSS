@@ -1,6 +1,6 @@
 # ReDeFix
 
-## A tool to detect responsive layout failures and repair them
+## Automated Detection and Repair of Responsive Layout Failures
 
 **Tech stack:** React, TypeScript, Tailwind CSS, Node.js
 
