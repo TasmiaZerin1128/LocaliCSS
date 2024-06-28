@@ -12,6 +12,7 @@ const RepairConfirmed = utils.RepairConfirmed;
 const fs = require('fs');
 const driver = require('./Driver.js');
 const { sendMessage } = require('../socket-connect.js');
+const sharp = require("sharp");
 
 class Failure {
     constructor(webpage, run) {
@@ -31,6 +32,7 @@ class Failure {
         this.removeFailingRepair = true;
         this.repairCombinationResult = [];
         this.durationFailureClassify = undefined;
+        this.durationFailureVerify = undefined;
         this.durationFailureRepair = undefined;
         this.durationWiderRepair = undefined;
         this.durationNarrowerRepair = undefined;
@@ -78,25 +80,23 @@ class Failure {
      * @param {Range} range The range to add.
      */
     addRange(range) {
-        this.ranges.addRange(range);
+        this.range.addRange(range);
     }
     /**
      * Adds a set of ranges to the set of ranges belonging to this failures. Deprecated
      * @param {Ranges} ranges The set of ranges to add to this set of ranges.
      */
     addRanges(ranges) {
-        this.ranges.addRanges(ranges);
+        this.range.addRanges(ranges);
     }
     /**
      * Dom level verification of the reported failures.
-     * @param {Driver} driver Browser driver.
-     * @param {Path} classificationFile the classification output file.
-     * @param {Path} snapshotDirectory the snapshot output directory.
-     * @param {ProgressBar} bar Bar to update progress.
      */
     async classify(driver, classificationFile, snapshotDirectory, bar, counter) {
         this.durationFailureClassify = new Date();
         let range = this.range;
+
+        await driver.start();
 
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
         range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
@@ -125,13 +125,86 @@ class Failure {
         if (settings.screenshotWider === true)
             await this.screenshotViewport(driver, range.getWider(), snapshotDirectory, true);
 
+        await driver.close();
+
         bar.tick();
         sendMessage("Classify", {'counter': bar.curr, 'total': utils.failureCount});
         this.durationFailureClassify = new Date() - this.durationFailureClassify;
     }
-    /**
-     * Repair this failure.
-     */
+
+    // Layer based verification of the reported failures.
+    async verify(driver, verificationFile, snapshotDirectory, bar, counter) {
+        try {
+            this.durationFailureVerify = new Date();
+            let range = this.range;
+
+            await driver.start();
+
+            let minRange = range.getMinimum();
+            let maxRange = range.getMaximum();
+
+            await driver.setViewport(range.getMinimum(), settings.testingHeight);
+            range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+
+            await driver.setViewport(range.getMaximum(), settings.testingHeight);
+            range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+
+            await driver.close();
+
+            bar.tick();
+            sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
+            this.durationFailureVerify = new Date() - this.durationFailureVerify;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async getRectangles() {
+        let rectangles = [];
+        let elements = [];
+        let selectors = this.getSelectors();
+        for (let i = 0; i < selectors.length; i++) {
+            let currentSelector = selectors[i];
+            let element = undefined;
+            try {
+                element = await driver.getElementBySelector(currentSelector);
+                elements.push(element);
+            } catch (err) {
+                console.log(err);
+                elements.push(undefined);
+            }
+            if (element != undefined) {
+                try {
+                    let rectangle = new Rectangle(await driver.getRectangle(element));
+                    rectangle.selector = currentSelector;
+                    rectangles.push(rectangle);
+                } catch (err) {
+                    console.log(err);
+                    rectangles.push(undefined);
+                }
+            }
+            else
+                rectangles.push(undefined);
+        }
+        return rectangles;
+    }
+
+    wrappedArea(rectangles) {
+        if (wrapperBelowAllElements(rectangles)) {
+            wrapped = true;
+            return new Area(rectangles[0], 0, 0);
+        }
+    }
+
+    // Find Areas of Concern for the failure regions
+    // async findAreasOfConcern() {
+    //     let rectangles = this.getRectangles();
+    //     if (this.type === FailureType.WRAPPING) {
+    //         wrappedArea = this.wrappedArea(rectangles);
+    //     }
+    // }
+
+    // Repair this failure.
     async repair(driver, directory, bar, webpage, run, counter) {
         this.durationFailureRepair = new Date();
         await this.findRepair(driver, directory, bar, webpage, run, counter);
@@ -878,7 +951,7 @@ class Failure {
     /**
      * Takes a screenshot of at the given viewport.
      */
-    async screenshotViewport(driver, viewport, directory, includeClassification = false, clip = true) {
+    async screenshotViewport(driver, viewport, directory, includeClassification = false, clip = false) {
         await this.setViewportHeightBeforeSnapshots(viewport);
         let fullPage = true;
         if (settings.browserMode === utils.Mode.HEADLESS)
@@ -930,6 +1003,61 @@ class Failure {
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
     }
+
+    async screenshotViewportforVerification(driver, viewport, imgPath, directory, includeClassification = false) {
+        await this.setViewportHeightBeforeSnapshots(viewport);
+        let fullPage = true;
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            fullPage = false;
+        let rectangles = [];
+        let elements = [];
+        let selectors = this.getSelectors();
+        for (let i = 0; i < selectors.length; i++) {
+            let currentSelector = selectors[i];
+            let element = undefined;
+            try {
+                element = await driver.getElementBySelector(currentSelector);
+                elements.push(element);
+            } catch (err) {
+                console.log(err);
+                elements.push(undefined);
+            }
+            if (element != undefined) {
+                try {
+                    let rectangle = new Rectangle(await driver.getRectangle(element));
+                    rectangle.selector = currentSelector;
+                    rectangles.push(rectangle);
+                } catch (err) {
+                    console.log(err);
+                    rectangles.push(undefined);
+                }
+            }
+            else
+                rectangles.push(undefined);
+        }
+        let screenshot = await driver.screenshot(undefined, fullPage);
+        let removeHeader = false;
+        if (settings.screenshotHighlights) {
+            screenshot = await driver.highlight(rectangles, screenshot);
+            removeHeader = true;
+        }
+        if (!settings.screenshotFullpage)
+            screenshot = await this.clipScreenshot(rectangles, screenshot.split(',')[1], driver, true, viewport);
+        let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
+        let classification = this.range.getClassificationOfViewport(viewport);
+        if (includeClassification && classification !== '-')
+            imageFileName += '-' + classification + '.png';
+        else
+            imageFileName += '.png';
+        this.saveScreenshot(path.join(directory, imageFileName), screenshot, removeHeader);
+        for (let element of elements) {
+            if (element !== undefined)
+                element.dispose();
+        }
+        await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+        return imageFileName;
+    }
+
     /**
     * Takes a screenshot of the failure.
     */
@@ -956,10 +1084,28 @@ class Failure {
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
     }
+
+    async screenshotDetached(driver, viewport, rects, imgPath, directory) {
+        await this.setViewportHeightBeforeSnapshots(viewport);
+        let fullPage = true;
+        if (settings.browserMode === utils.Mode.HEADLESS)
+            fullPage = false;
+        let rectangles = rects;
+        let screenshot = await driver.screenshot(undefined, fullPage, true);
+
+        screenshot = await driver.clipSmallImage(rectangles[0]);
+        let imageFileName = 'FID-' + this.ID + '-' + this.type.toLowerCase() + '-verify-' + imgPath;
+        imageFileName += '.png';
+        this.saveScreenshot(path.join(directory, imageFileName), screenshot, false);
+        await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+        return imageFileName;
+    }
+
     async clipScreenshot(rectangles, screenshot, driver, fullViewportWidthClipping, viewport, problemArea = undefined) {
         try {
-            if (problemArea === undefined)
+            if (problemArea === undefined) {
                 problemArea = this.getClippingCoordinates(rectangles);
+            }
             if (problemArea.isMissingValues())
                 throw "== Begin Problem Area ==\n" +
                 "Missing size for cutting screenshot\n" +
@@ -1133,7 +1279,7 @@ class Failure {
             otherNodeRect = siblingRect;
         } else if (nodeRect.minX === siblingRect.minX) {
             if (nodeRect.minY < siblingRect.minY) {
-                nodeRectToBeCleared = siblingRect;
+                nodeRectToBeCleared = siblingRect; 
                 otherNodeRect = nodeRect;
             } else if (nodeRect.minY > siblingRect.minY) {
                 nodeRectToBeCleared = nodeRect;
@@ -1187,4 +1333,5 @@ class Failure {
 module.exports = Failure;
 const RLG = require('./RLG.js');
 const DOM = require('./DOM.js');
+const Area = require('./Area.js');
 

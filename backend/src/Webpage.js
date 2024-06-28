@@ -6,7 +6,7 @@ const ProgressBar = require('progress');
 const RLG = require('./RLG');
 const { sendMessage } = require('../socket-connect');
 const utils = require('./utils');
-
+const pLimit = require('p-limit');
 
 class Webpage {
     constructor(uri, driver, testRange, testHeight, outputPath, pageName) {
@@ -24,6 +24,7 @@ class Webpage {
         this.durationPage = new Date();
         this.durationDOM = undefined;
         this.durationDetection = undefined;
+        this.durationVerification = undefined;
         this.durationRepair = undefined;
         this.durationClassify = undefined;
     }
@@ -60,6 +61,8 @@ class Webpage {
     }
 
     async testWebpage(navigate = true) {
+        // let limit = pLimit(5);
+
         this.durationDOM = new Date();
         sendMessage("message", 'Testing---> ');
         this.setRunOutputPath();
@@ -73,19 +76,25 @@ class Webpage {
         // progress bar
         const bar = new ProgressBar('Extract RLG by capturing DOM  | [:bar] | :percent :etas | Viewports Completed :token1/' + totalTestViewports, { complete: '█', incomplete: '░', total: totalTestViewports, width: 25});
 
+        let tasks = [];
+
         for(let width = testRange.max; width >= testRange.min; width--) {
-            testCounter++;
-            await this.driver.setViewport(width, this.testHeight);
-            let newDom = new DOM(this.driver, width);
-            await newDom.captureDOM();
-            newDom.saveRBushData(this.domOutputPath);
-            this.rlg.extractRLG(newDom, width);
-            sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
-            bar.tick({'token1': testCounter});
+            // tasks.push(limit(async () => {
+                testCounter++;
+                await this.driver.setViewport(width, this.testHeight);
+                let newDom = new DOM(this.driver, width);
+                await newDom.captureDOM();
+                newDom.saveRBushData(this.domOutputPath);
+                this.rlg.extractRLG(newDom, width);
+                sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
+                bar.tick({'token1': testCounter});
+            // }));
         }
+
+        // await Promise.all(tasks);
         this.durationDOM = new Date() - this.durationDOM;
         this.durationDetection = new Date();
-        this.rlg.detectFailures();
+        await this.rlg.detectFailures(this.driver);
     }
 
     // Classify and Screenshot the failures
@@ -93,6 +102,13 @@ class Webpage {
         this.durationClassify = new Date();
         await this.rlg.classifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Classifications.txt', this.snapshotOutputPath);
         this.durationClassify = new Date() - this.durationClassify;
+    }
+
+    // Verify the failures
+    async verifyFailures() {
+        this.durationVerification = new Date();
+        await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Verifications.txt', this.snapshotOutputPath);
+        this.durationVerification = new Date() - this.durationVerification;
     }
     async screenshotFailures() {
         await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);

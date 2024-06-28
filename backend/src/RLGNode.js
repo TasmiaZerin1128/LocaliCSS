@@ -113,9 +113,7 @@ class RLGNode {
         return undefined;
     }
 
-    /**
-     * Adds a width/viewport to overlap RLGEdge or creates an RLGEdge between the two RLGNodes. 
-     */
+    // Adds a width/viewport to overlap RLGEdge or creates an RLGEdge between the two RLGNodes. 
     addOverlap(sibling, viewport) {
         let edge = this.updateEdge(sibling, this.overlapEdges, viewport, true);
         if (edge === undefined) {
@@ -607,6 +605,26 @@ class RLGNode {
         }
     }
 
+    async verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter) {
+        for (let viewportProtrusion of this.viewportProtrusions) {
+            if (viewportProtrusion.range.minClassification === 'TP' || viewportProtrusion.range.maxClassification === 'TP') {
+                await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
+        }
+        for (let protrusion of this.elementProtrusions) {
+            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
+                await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
+        }
+        for (let collision of this.elementCollisions) {
+            if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
+                await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            }
+        }
+        // No wrapping and small range verification for now
+    }
+    
+
     hasFailure() {
         if (this.smallranges.length === 0 && this.elementCollisions.length === 0 && this.elementProtrusions.length === 0 && this.wrappings.length === 0 && this.viewportProtrusions.length === 0) {
             return false;
@@ -630,6 +648,41 @@ class RLGNode {
         }
         for (let smallrange of this.smallranges) {
             smallrange.printWorkingRepairs(file, webpage, run);
+        }
+    }
+
+
+    async checkIfCarousel(driver) {
+        try {
+            const elements = await driver.getElementByXPath(this.xpath);
+            const element = elements[0];
+            const style = await driver.getComputedStyle(element);
+            if (( style.position === 'absolute' || style.overflow === 'hidden' )
+                && ( style.transform !== 'none' || style.transition !== 'none' || style['transition-duration'] !== '0s' )) {
+                return new Promise(async (resolve) => {
+                    setTimeout(async () => {
+                        const currentStyle = await driver.getComputedStyle(element);
+                        if (JSON.stringify(currentStyle) !== JSON.stringify(style)) {
+                            console.log('Style changed:', currentStyle);
+                            resolve(true);
+                            return;
+                        }
+            
+                        setTimeout(async () => {
+                            const currentStyle = await driver.getComputedStyle(element);
+                            if (JSON.stringify(currentStyle) !== JSON.stringify(style)) {
+                                console.log('Style changed:', currentStyle);
+                                resolve(true);
+                            }
+                            resolve(false);
+                        }, 5000);
+                    }, 5000);
+                });
+            } else {
+                return false;
+            }
+        } catch (e) {
+            console.log(e);
         }
     }
 

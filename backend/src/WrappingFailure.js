@@ -52,67 +52,73 @@ class WrappingFailure extends Failure {
     }
 
     async isFailing(driver, viewport, file) {
-        if (this.row.length < settings.rowThreshold)
-            return true;
-        let rowXPaths = [];
-        for (let rowElement of this.row)
-            rowXPaths.push(rowElement.xpath);
-        let rowSelectors = [];
-        for (let rowElement of this.row)
-            rowSelectors.push(rowElement.getSelector());
+        try {
+            if (this.row.length < settings.rowThreshold)
+                return true;
+            let rowXPaths = [];
+            for (let rowElement of this.row)
+                rowXPaths.push(rowElement.xpath);
+            let rowSelectors = [];
+            for (let rowElement of this.row)
+                rowSelectors.push(rowElement.getSelector());
 
-        let wrappedElement = await driver.getElementBySelector(this.node.getSelector());
-        let rowElements = [];
-        for (let rowSelector of rowSelectors)
-            rowElements.push(await driver.getElementBySelector(rowSelector));
-        let wrappedRect = new Rectangle(await driver.getRectangle(wrappedElement));
-        let rowRectangles = [];
-        for (let rowElement of rowElements)
-            rowRectangles.push(new Rectangle(await driver.getRectangle(rowElement)));
-        let result = undefined;
-        if (wrappedRect.visible === false || wrappedRect.validSize === false || wrappedRect.positiveCoordinates == false)
-            result = false;
-        let ok = [];
-        for (let rowRect of rowRectangles) {
-            if (rowRect.visible === false || rowRect.validSize === false || rowRect.positiveCoordinates == false)
-                ok.push('no');
-            else {
-                ok.push('yes');
-                break;
+            let wrappedElement = await driver.getElementBySelector(this.node.getSelector());
+            let rowElements = [];
+            for (let rowSelector of rowSelectors)
+                rowElements.push(await driver.getElementBySelector(rowSelector));
+            let wrappedRect = new Rectangle(await driver.getRectangle(wrappedElement));
+            let rowRectangles = [];
+            for (let rowElement of rowElements)
+                rowRectangles.push(new Rectangle(await driver.getRectangle(rowElement)));
+            let result = undefined;
+            if (wrappedRect.visible === false || wrappedRect.validSize === false || wrappedRect.positiveCoordinates == false)
+                result = false;
+            let ok = [];
+            for (let rowRect of rowRectangles) {
+                if (rowRect.visible === false || rowRect.validSize === false || rowRect.positiveCoordinates == false)
+                    ok.push('no');
+                else {
+                    ok.push('yes');
+                    break;
+                }
             }
-        }
-        if (!ok.includes('yes'))
-            result = false;
-        if (result === undefined)
-            result = this.isBelowOrAboveRow(wrappedRect, rowRectangles);
+            if (!ok.includes('yes'))
+                result = false;
+            if (result === undefined)
+                result = this.isBelowOrAboveRow(wrappedRect, rowRectangles);
 
 
-        if (file !== undefined) {
-            let classification = result ? 'TP' : 'FP';
-            let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + this.range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
-            utils.printToFile(file, text);
-            text = '|--[ Wrapped-Element: ' + this.node.xpath + ' ]';
-            utils.printToFile(file, text);
-            if (wrappedRect.visible === false || wrappedRect.validSize === false || wrappedRect.positiveCoordinates == false) {
-                text = '|  |--[ Visible: ' + (wrappedRect.visible ? 'True' : 'False') + ' Valid-Size: ' + (wrappedRect.validSize ? 'True' : 'False') + ' Positive-Coordinates: ' + (wrappedRect.positiveCoordinates ? 'True' : 'False') + ' ]';
+            if (file !== undefined) {
+                let classification = result ? 'TP' : 'FP';
+                let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + this.range.toString() + ' Viewport:' + viewport + ' Classification: ' + classification;
                 utils.printToFile(file, text);
-            }
-            text = '|  |--[ minX: ' + wrappedRect.minX + ' maxX: ' + wrappedRect.maxX + ' minY: ' + wrappedRect.minY + ' maxY: ' + wrappedRect.maxY + ' width: ' + wrappedRect.width + ' height: ' + wrappedRect.height + ' ]';
-            utils.printToFile(file, text);
-            for (let i = 0; i < rowElements.length; i++) {
-                let xpath = rowXPaths[i];
-                let rowRect = rowRectangles[i];
-                text = '|--[ Row Element: ' + xpath + ' ]';
+                text = '|--[ Wrapped-Element: ' + this.node.xpath + ' ]';
                 utils.printToFile(file, text);
-                if (rowRect.visible === false || rowRect.validSize === false || rowRect.positiveCoordinates == false) {
-                    text = '|  |--[ Visible: ' + (rowRect.visible ? 'True' : 'False') + ' Valid-Size: ' + (rowRect.validSize ? 'True' : 'False') + ' Positive-Coordinates: ' + (rowRect.positiveCoordinates ? 'True' : 'False') + ' ]';
+                if (wrappedRect.visible === false || wrappedRect.validSize === false || wrappedRect.positiveCoordinates == false) {
+                    text = '|  |--[ Visible: ' + (wrappedRect.visible ? 'True' : 'False') + ' Valid-Size: ' + (wrappedRect.validSize ? 'True' : 'False') + ' Positive-Coordinates: ' + (wrappedRect.positiveCoordinates ? 'True' : 'False') + ' ]';
                     utils.printToFile(file, text);
                 }
-                text = '|  |--[ minX: ' + rowRect.minX + ' maxX: ' + rowRect.maxX + ' minY: ' + rowRect.minY + ' maxY: ' + rowRect.maxY + ' width: ' + rowRect.width + ' height: ' + rowRect.height + ' ]';
+                text = '|  |--[ minX: ' + wrappedRect.minX + ' maxX: ' + wrappedRect.maxX + ' minY: ' + wrappedRect.minY + ' maxY: ' + wrappedRect.maxY + ' width: ' + wrappedRect.width + ' height: ' + wrappedRect.height + ' ]';
                 utils.printToFile(file, text);
+                for (let i = 0; i < rowElements.length; i++) {
+                    let xpath = rowXPaths[i];
+                    let rowRect = rowRectangles[i];
+                    text = '|--[ Row Element: ' + xpath + ' ]';
+                    utils.printToFile(file, text);
+                    if (rowRect.visible === false || rowRect.validSize === false || rowRect.positiveCoordinates == false) {
+                        text = '|  |--[ Visible: ' + (rowRect.visible ? 'True' : 'False') + ' Valid-Size: ' + (rowRect.validSize ? 'True' : 'False') + ' Positive-Coordinates: ' + (rowRect.positiveCoordinates ? 'True' : 'False') + ' ]';
+                        utils.printToFile(file, text);
+                    }
+                    text = '|  |--[ minX: ' + rowRect.minX + ' maxX: ' + rowRect.maxX + ' minY: ' + rowRect.minY + ' maxY: ' + rowRect.maxY + ' width: ' + rowRect.width + ' height: ' + rowRect.height + ' ]';
+                    utils.printToFile(file, text);
+                }
             }
+            return result;
         }
-        return result;
+        catch (e) {
+            console.log('Error in getting elements for wrapping failure: ' + e);
+            return false;
+        }
     }
 
     isBelowOrAboveRow(wrappedRectangle, rowRectangles) {
