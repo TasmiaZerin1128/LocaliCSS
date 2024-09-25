@@ -609,16 +609,26 @@ class RLGNode {
         for (let viewportProtrusion of this.viewportProtrusions) {
             if (viewportProtrusion.range.minClassification === 'TP' || viewportProtrusion.range.maxClassification === 'TP') {
                 await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
         }
         for (let protrusion of this.elementProtrusions) {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
                 await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
+            
         }
         for (let collision of this.elementCollisions) {
             if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
                 await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
         }
         // No wrapping and small range verification for now
@@ -655,6 +665,7 @@ class RLGNode {
     async checkIfCarousel(driver) {
         try {
             const elements = await driver.getElementByXPath(this.xpath);
+            if (elements) {
             const element = elements[0];
             const style = await driver.getComputedStyle(element);
             if (( style.position === 'absolute' || style.overflow === 'hidden' )
@@ -681,6 +692,9 @@ class RLGNode {
             } else {
                 return false;
             }
+        } else {
+            return false;
+        }
         } catch (e) {
             console.log(e);
         }

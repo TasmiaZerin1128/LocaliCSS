@@ -41,6 +41,11 @@ export default function TestPage({ socket }) {
   const [totalClassify, setTotalClassify] = useState(0);
   const [classifyProgress, setClassifyProgress] = useState(0);
 
+  // Verify RLFs
+  const [completedVerification, setCompletedVerification] = useState(0);
+  const [totalVerification, setTotalVerification] = useState(0);
+  const [verifyProgress, setVerifyProgress] = useState(0);
+
 
   // Repair RLFs
   const [completedRepair, setCompletedRepair] = useState(0);
@@ -77,7 +82,7 @@ export default function TestPage({ socket }) {
         setFailureNodes(0);
         setClassifyProgress(100);
         setRepairProgress(100);
-        setStep(5);
+        setStep(6);
       } else {
       setTotalClassify(arg.total);
       setFailureNodes(arg.total);
@@ -87,8 +92,23 @@ export default function TestPage({ socket }) {
     });
 
     // Step 4
+    socket.on("Verify", (arg) => {
+      console.log(arg.counter);
+      if(arg.total === 0) {
+        setFailureNodes(0);
+        setVerifyProgress(100);
+        setRepairProgress(100);
+        setStep(6);
+      } else {
+      setTotalVerification(arg.total);
+      setFailureNodes(arg.total);
+      setCompletedVerification(arg.counter);
+      setVerifyProgress(Math.ceil((arg.counter / arg.total) * 100));
+      }
+    });
+
+    // Step 4
     socket.on("Repair RLFs", (arg) => {
-      // setStep(4);
       setTotalRepair(arg.total);
       setCompletedRepair(arg.counter);
       if(arg.counter > arg.total) {
@@ -125,8 +145,8 @@ export default function TestPage({ socket }) {
 
           { step >= 2 && 
             <div className="my-8">
-              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 2: Finding RLFs</h1>
-              <ProgressBar progress={failureProgress} completed={completedFailures} total={totalNode} type={"Failure Detection"} />
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 2: Creating RLG</h1>
+              <ProgressBar progress={failureProgress} completed={completedFailures} total={totalNode} type={"RLG Generation"} />
             </div>
           }
 
@@ -139,7 +159,15 @@ export default function TestPage({ socket }) {
 
           { step >= 4 && 
             <div className="my-8">
-              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Repairing RLFs</h1>
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 4: Verifying RLFs</h1>
+              <ProgressBar progress={verifyProgress} completed={completedVerification} total={totalVerification} type={"Verification of RLFs"} />
+            </div>
+          }
+
+
+          { step >= 5 && 
+            <div className="my-8">
+              <h1 className="font-title text-lg lg:text-xl my-4 font-bold text-primary">Step 5: Repairing RLFs</h1>
               <ProgressBar progress={repairProgress} completed={completedRepair} total={totalRepair} type={"Generate Repairs"} />
             </div>
           }

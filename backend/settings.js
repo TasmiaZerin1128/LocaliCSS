@@ -2,8 +2,8 @@ const path = require('path');
 const utils = require('./src/utils');
 
 const settings = {
-  testWidthMin: 370, //320
-  testWidthMax: 420, //1400
+  testWidthMin: 400, //320
+  testWidthMax: 500, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
@@ -36,7 +36,7 @@ const settings = {
   screenshotMid: false,
   screenshotMax: false,
   screenshotWider: true,
-  screenshotFullpage: false,
+  screenshotFullpage: true,
   screenshotFailingRepairs: true,
   screenshotHighlights: true,
   skipCopyingCSSProperties: [],

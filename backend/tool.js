@@ -23,10 +23,16 @@ async function isWebpage(url) {
 exports.startTool = async (req, res) => {
 
   let cookies = [
-    // {
-    //   name: "storefront_digest",
-    //   value: "568f8bf7a2b890ebc69c326b5177a99637ec7c6f5ef0776a4ac1e998ebef6b00",
-    // }
+    {
+      url: "https://tasmia-test-1.myshopify.com/products/the-3p-fulfilled-snowboard",
+      name: "storefront_digest",
+      value: "891c158394eb0849690c2d22a27f0082976d5daa59fc8b2c9c6eaf85e09d4c07",
+    },
+    {
+      url: "https://tasmia-test-1.myshopify.com/cart",
+      name: "cart_sig",
+      value: "5b16ba76792a86d436ce835e45ffe13b",
+    }
   ]
   
   try {
@@ -71,7 +77,7 @@ exports.startTool = async (req, res) => {
       newWebpage.printRLG();
       newWebpage.printFailures();
       await newWebpage.verifyFailures();
-      // await newWebpage.repairFailures();
+      await newWebpage.repairFailures();
     // }
 
     console.log('completed ');

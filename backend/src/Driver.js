@@ -100,28 +100,26 @@ driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = fa
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");
             let image = new Image();
-            let imgLoadPromise = async function () {
-                return new Promise((resolve, reject) => {
-                    image.onload = () => { return resolve };
-                    image.onerror = reject;
-                });
-            }
+            let imgLoadPromise = function () {
+              return new Promise((resolve, reject) => {
+                  image.onload = () => { resolve(); }; // Corrected promise resolution
+                  image.onerror = reject;
+              });
+            };
             image.src = 'data:image/png;base64,' + screenshot;
-            await imgLoadPromise;
+            await imgLoadPromise();
+
+            rectangle.minX = Math.max(0, rectangle.minX);
+            rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
+            rectangle.minY = Math.max(0, rectangle.minY);
+            rectangle.maxY = Math.min(image.naturalHeight, rectangle.maxY);
+
             let originalAreaRequested = "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height;
             if (fullViewportWidth) {
                 rectangle.minX = 0;
-                if (viewportWidth !== undefined)
-                    rectangle.maxX = viewportWidth;
-                else
-                    rectangle.maxX = image.naturalWidth
-            } else {
-                rectangle.minX = Math.max(0, rectangle.minX);
-                rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
+                rectangle.maxX = viewportWidth !== Infinity ? viewportWidth : image.naturalWidth;
             }
 
-            rectangle.minY = Math.max(0, rectangle.minY);
-            rectangle.maxY = Math.min(image.naturalHeight, rectangle.maxY);
             rectangle.width = rectangle.maxX - rectangle.minX;
             rectangle.height = rectangle.maxY - rectangle.minY;
             if (rectangle.width <= 0 || rectangle.height <= 0) {
@@ -200,6 +198,7 @@ driver.setOpacity = async function setOpacity(elementHandle, opacityValue) {
 
 driver.getBodyElement = async function getBodyElement() {
   // Get the body element from the page
+  await driver.page.waitForSelector('body'); 
   const body = await driver.page.$('body');
   return body;
 };

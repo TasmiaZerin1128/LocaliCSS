@@ -134,28 +134,38 @@ class Failure {
 
     // Layer based verification of the reported failures.
     async verify(driver, verificationFile, snapshotDirectory, bar, counter) {
-        try {
-            this.durationFailureVerify = new Date();
+        const executeVerification = async (driver) => {
             let range = this.range;
-
+    
             await driver.start();
-
+    
             let minRange = range.getMinimum();
             let maxRange = range.getMaximum();
-
-            await driver.setViewport(range.getMinimum(), settings.testingHeight);
-            range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
-
-            await driver.setViewport(range.getMaximum(), settings.testingHeight);
-            range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+    
+            await driver.setViewport(minRange, settings.testingHeight);
+            range.minVerification = await this.isObservable(driver, minRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+    
+            await driver.setViewport(maxRange, settings.testingHeight);
+            range.maxVerification = await this.isObservable(driver, maxRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
             await driver.close();
-
+        };
+    
+        try {
+            this.durationFailureVerify = new Date();
+            await executeVerification(driver);
             bar.tick();
             sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             this.durationFailureVerify = new Date() - this.durationFailureVerify;
         } catch (err) {
-            console.log(err);
+            if (err.name === 'TargetCloseError') {
+                console.log('Session closed, restarting driver...');
+                await driver.close();
+                await driver.start();
+                await executeVerification(driver);
+            } else {
+                console.log(err);
+            }
         }
     }
 
@@ -330,7 +340,7 @@ class Failure {
         let dir = directory;
         if (miniRLGDirectory !== undefined)
             dir = miniRLGDirectory;
-        let rlg = await this.getNewRLG(undefined, undefined, dir);
+        let rlg = await this.getNewRLG(undefined, undefined, dir, driver);
         //rlg.printGraph(directory + path.sep + this.ID + '-RLG-' + this.repairApproach + '.txt');
         let failureExists = rlg.hasFailure(this);
         if (failureExists === false) {
@@ -531,7 +541,7 @@ class Failure {
     /**
      * Returns new RLG specific to the range of this failure with failures detected
     **/
-    async getNewRLG(testingRangeMin = undefined, testingRangeMax = undefined, directory = undefined) {
+    async getNewRLG(testingRangeMin = undefined, testingRangeMax = undefined, directory = undefined, driver) {
         let rlg = new RLG(this.outputDirectory);
         let visit = [];
         if (testingRangeMin === undefined || testingRangeMax === undefined) {
@@ -560,7 +570,7 @@ class Failure {
                 rlg.extractRLG(dom, width);
             // dom.disposeAllElementHandles();
         }
-        rlg.detectFailures(false);
+        rlg.detectFailures(driver, false);
         if (directory !== undefined)
             rlg.printGraph(path.join(directory, 'mini-RLG.txt'));
         return rlg;
