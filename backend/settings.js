@@ -2,14 +2,15 @@ const path = require('path');
 const utils = require('./src/utils');
 
 const settings = {
-  testWidthMin: 400, //320
-  testWidthMax: 500, //1400
+  URLs: [],
+  testWidthMin: 320, //320
+  testWidthMax: 1200, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
   browserMode: 'Headless',
   loadDirectory: 'saved-doms-headless',
-  webpagesDirectory: 'subjects',
+  webpagesDirectory: path.join(__dirname, 'subjects'),
   mainOutputFile: 'output',
   repairDelay: 0.4,
   loadDelay: 0.4,
