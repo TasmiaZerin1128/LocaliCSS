@@ -79,7 +79,6 @@ exports.startTool = async (req, res) => {
     let webpages = [];
 
     settings.URLs.forEach(async (url) => {
-      console.log('URL: ', url);
       let pageName = undefined;
         if (url.includes(settings.webpagesDirectory.replace(/\\/g, "/"))) {
             pageName = url.split(settings.webpagesDirectory.replace(/\\/g, "/") + '/')[1].replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");;
@@ -97,7 +96,7 @@ exports.startTool = async (req, res) => {
       await newWebpage.classifyFailures();
       newWebpage.printRLG();
       newWebpage.printFailures();
-      await newWebpage.verifyFailures();
+      // await newWebpage.verifyFailures();
       // await newWebpage.repairFailures();
     }
 

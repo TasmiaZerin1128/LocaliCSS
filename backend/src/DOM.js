@@ -38,6 +38,9 @@ async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = []
     let domNode = traversalStackDOM.shift();
     domNode.rectangle = new Rectangle(await this.driver.getRectangle(domNode.element));
     domNode.rectangle.xpath = domNode.xpath;
+
+    await domNode.getExplicitlyDefinedStyle(this.driver, domNode.element);
+
     if (getComputedStyle) {
       domNode.setComputedStyle(await this.driver.getComputedStyle(domNode.element));
       for (let pseudoElement of pseudoElements) {

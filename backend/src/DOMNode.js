@@ -1,5 +1,6 @@
 const fs = require('fs');
 const utils = require('./utils');
+const CSSNode = require('./CSSNode');
 
 class DOMNode {
   constructor(element) {
@@ -67,6 +68,13 @@ class DOMNode {
         this.xpath = this.parent.xpath + '/' + this.xptagName;;
       }
     }
+  }
+
+  async getExplicitlyDefinedStyle(driver, element) {
+    this.cssNode = new CSSNode(element, this.xpath, driver);
+    await this.cssNode.findProperties();
+    console.log("Defined Styles:")
+    console.log(this.cssNode.developerCssProperties);
   }
 
   setComputedStyle(computedStyles) {

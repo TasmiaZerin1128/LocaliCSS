@@ -110,6 +110,11 @@ class Webpage {
         await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Verifications.txt', this.snapshotOutputPath);
         this.durationVerification = new Date() - this.durationVerification;
     }
+
+    async localizeCSS() {
+        await this.rlg.localizeCSS(this.driver, this.pageRunOutputPath + path.sep + 'Localization.txt');
+    }
+
     async screenshotFailures() {
         await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);
     }

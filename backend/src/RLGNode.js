@@ -14,6 +14,7 @@ const SmallRangeFailure = require("./SmallRangeFailure");
 const CollisionFailure = require("./CollisionFailure");
 const WrappingFailure = require("./WrappingFailure");
 const { sendMessage } = require('../socket-connect.js');
+const CSSNode = require('./CSSNode.js');
 
 class RLGNode {
      /**
@@ -47,6 +48,8 @@ class RLGNode {
         this.smallranges = [];
         this.wrappings = [];
         this.viewportProtrusions = [];
+
+        this.cssNode = rectangle.cssNode;
 
         this.collisionRepairStats = new RepairStatistics();
         this.protrusionRepairStats = new RepairStatistics();
@@ -641,6 +644,10 @@ class RLGNode {
         } else {
             return true;
         }
+    }
+
+    localizeCSS(driver, localizationFile) {
+        console.log("I'm relaxing");
     }
 
     printWorkingRepairs(file, webpage, run) {
