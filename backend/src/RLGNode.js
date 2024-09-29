@@ -646,8 +646,15 @@ class RLGNode {
         }
     }
 
-    localizeCSS(driver, localizationFile) {
-        
+    async localizeCSS(driver, localizationFile) {
+        for (let protrusion of this.elementProtrusions) {
+            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
+                await protrusion.localizeCSS(driver, localizationFile, protrusion.node, protrusion.parent, this.parentEdges);
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
         console.log("I'm relaxing");
     }
 
