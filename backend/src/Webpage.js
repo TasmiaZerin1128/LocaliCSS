@@ -61,7 +61,7 @@ class Webpage {
     }
 
     async testWebpage(navigate = true) {
-        // let limit = pLimit(5);
+        let limit = pLimit(5);
 
         this.durationDOM = new Date();
         sendMessage("message", 'Testing---> ');
@@ -76,7 +76,7 @@ class Webpage {
         // progress bar
         const bar = new ProgressBar('Extract RLG by capturing DOM  | [:bar] | :percent :etas | Viewports Completed :token1/' + totalTestViewports, { complete: '█', incomplete: '░', total: totalTestViewports, width: 25});
 
-        let tasks = [];
+        // let tasks = [];
 
         for(let width = testRange.max; width >= testRange.min; width--) {
             // tasks.push(limit(async () => {

@@ -31,4 +31,3 @@ tests/*.png
 *.json
 !package.json
 src/log.txt
-subjects

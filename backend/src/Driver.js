@@ -287,72 +287,66 @@ driver.getComputedStyle = async function getComputedStyle(element, pseudoElement
   return styles;
 }
 
-driver.getStyleSheetProperties = async function getStyleSheetProperties(element) {  
-  const definedStyles = await element.evaluate((el) => {
+driver.getAllStyles = async function getAllStyles(element) {
+  const allStyles = await element.evaluate((el) => {
     const stylesheets = document.styleSheets;
-    const definedStyles = {};
+    const result = {
+      definedStyles: {},
+      inlineStyles: {},
+      defaultStyles: {}
+    };
 
+    // 1. Get developer-defined styles from stylesheets
     const addStylesFromRule = (style) => {
       for (let i = 0; i < style.length; i++) {
         const property = style[i];
+        // Skip Tailwind CSS variables like --tw-*
         if (!property.startsWith('--tw-')) {
-          definedStyles[property] = style.getPropertyValue(property);
+          result.definedStyles[property] = style.getPropertyValue(property);
         }
       }
     };
 
     for (const sheet of stylesheets) {
       try {
-        if (!sheet.href && !sheet.ownerNode.tagName === 'STYLE') continue;
+        if (!sheet.href && sheet.ownerNode.tagName !== 'STYLE') continue; // Skip certain sheets
         for (const rule of sheet.cssRules) {
-          if (rule instanceof CSSStyleRule) { // CSSStyleRule
+          if (rule instanceof CSSStyleRule) {
             if (!rule.selectorText.includes('::before') && !rule.selectorText.includes('::after')) {
-            if (el.matches(rule.selectorText)) {
-              addStylesFromRule(rule.style);
+              if (el.matches(rule.selectorText)) {
+                addStylesFromRule(rule.style);
+              }
             }
           }
-        }
         }
       } catch (e) {
         // Handle cross-origin stylesheets or inaccessible rules
         console.warn('Skipping stylesheet due to cross-origin restriction:', e);
       }
     }
-    return definedStyles;
-  });
 
-  return definedStyles;
-};
-
-driver.getInlineProperties = async function getInlineProperties(element) {
-  let inlineStyles = await element.evaluate(el => {
-    const inlineStyles = el.style; 
-    const stylesObject = {};
+    // 2. Get inline styles
+    const inlineStyles = el.style;
     for (let i = 0; i < inlineStyles.length; i++) {
       const property = inlineStyles[i];
-      stylesObject[property] = inlineStyles.getPropertyValue(property);
+      result.inlineStyles[property] = inlineStyles.getPropertyValue(property);
     }
-    return stylesObject;
-  }, element);
-  return inlineStyles;
-}
 
-driver.getDefaultStyles = async function getDefaultStyles(element) {
-  const tagName = await element.evaluate(el => el.tagName, this.elementHandle);
-  defaultStyles = await this.page.evaluate(tagName => {
-      const defaultStylesElement = document.createElement(tagName);
-      document.body.appendChild(defaultStylesElement);
+    // 3. Get default styles for the element
+    const defaultStylesElement = document.createElement(el.tagName);
+    document.body.appendChild(defaultStylesElement);
+    const defaultStyles = window.getComputedStyle(defaultStylesElement);
+    for (let i = 0; i < defaultStyles.length; i++) {
+      const property = defaultStyles[i];
+      result.defaultStyles[property] = defaultStyles.getPropertyValue(property);
+    }
+    document.body.removeChild(defaultStylesElement); // Clean up default element
 
-      const styles = window.getComputedStyle(defaultStylesElement);
-      const stylesObject = {};
-      for (let i = 0; i < styles.length; i++) {
-          const property = styles[i];
-          stylesObject[property] = styles.getPropertyValue(property);
-      }
-      return stylesObject;
-  }, tagName);
-  return defaultStyles;
-}
+    return result;
+  });
+
+  return allStyles;
+};
 
 driver.getVisibilityProperties = async function (element) {
   let properties = await element.evaluate((element) => {

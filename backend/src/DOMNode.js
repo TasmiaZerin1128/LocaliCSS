@@ -27,6 +27,8 @@ class DOMNode {
     this.transform = undefined;
     this.overflow = undefined;
     this.clipPath = undefined;
+
+    this.cssNode = undefined;
   }
 
   setXPath(tagName, addHTML = true) {
@@ -73,12 +75,13 @@ class DOMNode {
   async getExplicitlyDefinedStyle(driver, element) {
     this.cssNode = new CSSNode(element, this.xpath, driver);
     await this.cssNode.findProperties();
-    console.log("Defined Styles:")
-    console.log(this.cssNode.developerCssProperties);
+    this.rectangle.cssNode = this.cssNode;
+    this.computedStyles = this.cssNode.computedStyles;
   }
 
   setComputedStyle(computedStyles) {
     this.computedStyles = computedStyles;
+    this.cssNode.computedStyles = computedStyles;
   }
 
   getComputedStyle() {

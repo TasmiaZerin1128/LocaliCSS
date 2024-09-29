@@ -13,11 +13,10 @@ class CSSNode {
     }
 
     async findProperties() {
-        console.log("Finding properties for element: " + this.xpath);
-        this.styleSheetStyles = await this.driver.getStyleSheetProperties(this.elementHandle);
-        this.inlineProperties = await this.driver.getInlineProperties(this.elementHandle);
-        this.defaultStyles = await this.driver.getDefaultStyles(this.elementHandle);   // get the default styles of that element
-        this.computedStyles = await this.driver.getComputedStyle(this.elementHandle);
+        const allStyles = this.driver.getAllStyles(this.elementHandle);
+        this.styleSheetStyles = allStyles.definedStyles;
+        this.inlineProperties = allStyles.inlineStyles;
+        this.defaultStyles = allStyles.defaultStyles;  // get the default styles of that element
         await this.getDeveloperDefinedProperties();
     }
 

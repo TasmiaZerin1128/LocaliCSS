@@ -19,7 +19,7 @@ class DOM {
     return this.map.get(xpath);
 }
 
-async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = [], rootElement = undefined, xpath = undefined) {
+async captureDOM(allNodes = false, getComputedStyle = true, pseudoElements = [], rootElement = undefined, xpath = undefined) {
   if (rootElement !== undefined) {
     this.root = new DOMNode(rootElement);
     if (xpath === undefined)

@@ -647,6 +647,7 @@ class RLGNode {
     }
 
     localizeCSS(driver, localizationFile) {
+        
         console.log("I'm relaxing");
     }
 
@@ -671,10 +672,9 @@ class RLGNode {
 
     async checkIfCarousel(driver) {
         try {
-            const elements = await driver.getElementByXPath(this.xpath);
-            if (elements) {
-            const element = elements[0];
-            const style = await driver.getComputedStyle(element);
+            const element = await driver.getElementByXPath(this.xpath);
+            if (element) {
+            const style = this.cssNode.computedStyles;
             if (( style.position === 'absolute' || style.overflow === 'hidden' )
                 && ( style.transform !== 'none' || style.transition !== 'none' || style['transition-duration'] !== '0s' )) {
                 return new Promise(async (resolve) => {
