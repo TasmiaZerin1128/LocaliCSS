@@ -536,6 +536,38 @@ class RLGNode {
         }
     }
 
+    // start localization of CSS for each failure
+    async localizeCSS(driver, localizationFile) {
+        for (let protrusion of this.elementProtrusions) {
+            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
+                let siblings = protrusion.parent.childrenEdges;
+                for (let oneSibling of siblings) {
+                    console.log(oneSibling.child);
+                    console.log(oneSibling.child.xpath);
+                }
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        console.log("I'm relaxing");
+    }
+
+    async findCulpritCSS() {
+        try {
+            let child = await driver.getElementBySelector(this.node.getSelector());
+            let parent = await driver.getElementBySelector(this.parent.getSelector());
+            let childRect = new Rectangle(await driver.getRectangle(child));
+            let parentRect = new Rectangle(await driver.getRectangle(parent));
+            const siblings = Array.from(parent.children).filter(sib => sib !== element);
+            
+        } catch (e) {
+            console.log('Error in getting elements for protrusion failure: ' + e);
+            return false;
+        }
+    }
+
+
     // Repair each 
     async repairFailures(driver, directory, bar, webpage, run, counter) {
         let repairCSSFile = path.join(directory, "repairs.css");
@@ -644,18 +676,6 @@ class RLGNode {
         } else {
             return true;
         }
-    }
-
-    async localizeCSS(driver, localizationFile) {
-        for (let protrusion of this.elementProtrusions) {
-            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
-                await protrusion.localizeCSS(driver, localizationFile, protrusion.node, protrusion.parent, this.parentEdges);
-            } else {
-                bar.tick();
-                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
-            }
-        }
-        console.log("I'm relaxing");
     }
 
     printWorkingRepairs(file, webpage, run) {

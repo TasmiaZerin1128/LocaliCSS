@@ -296,26 +296,6 @@ class ProtrusionFailure extends Failure {
         }
     }
 
-    async localizeCSS(driver, localizationFile, node, parent, parentEdges) {
-       let siblings = parent.childrenEdges;
-       console.log(siblings);
-    }
-
-
-    async findCulpritCSS() {
-        try {
-            let child = await driver.getElementBySelector(this.node.getSelector());
-            let parent = await driver.getElementBySelector(this.parent.getSelector());
-            let childRect = new Rectangle(await driver.getRectangle(child));
-            let parentRect = new Rectangle(await driver.getRectangle(parent));
-            const siblings = Array.from(parent.children).filter(sib => sib !== element);
-            
-        } catch (e) {
-            console.log('Error in getting elements for protrusion failure: ' + e);
-            return false;
-        }
-    }
-
 
     printVerified(file, observable, range, viewport) {
         let text = 'ID: ' + this.ID + ' Type: ' + this.type + ' Range:' + range.toString() + ' Viewport:' + viewport + ' Observable Issue: ' + observable;
