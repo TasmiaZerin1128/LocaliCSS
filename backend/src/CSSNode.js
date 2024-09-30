@@ -13,14 +13,14 @@ class CSSNode {
     }
 
     async findProperties() {
-        const allStyles = this.driver.getAllStyles(this.elementHandle);
+        const allStyles = await this.driver.getAllStyles(this.elementHandle);
         this.styleSheetStyles = allStyles.definedStyles;
         this.inlineProperties = allStyles.inlineStyles;
         this.defaultStyles = allStyles.defaultStyles;  // get the default styles of that element
-        await this.getDeveloperDefinedProperties();
+        this.getDeveloperDefinedProperties();
     }
 
-    async getDeveloperDefinedProperties() {
+    getDeveloperDefinedProperties() {
         for (const property in this.styleSheetStyles) {
             this.developerCssProperties[property] = this.styleSheetStyles[property];
         }

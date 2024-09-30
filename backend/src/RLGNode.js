@@ -15,6 +15,7 @@ const CollisionFailure = require("./CollisionFailure");
 const WrappingFailure = require("./WrappingFailure");
 const { sendMessage } = require('../socket-connect.js');
 const CSSNode = require('./CSSNode.js');
+const ProtrusionLocalize = require('./ProtrusionLocalize.js');
 
 class RLGNode {
      /**
@@ -540,11 +541,8 @@ class RLGNode {
     async localizeCSS(driver, localizationFile) {
         for (let protrusion of this.elementProtrusions) {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
-                let siblings = protrusion.parent.childrenEdges;
-                for (let oneSibling of siblings) {
-                    console.log(oneSibling.child);
-                    console.log(oneSibling.child.xpath);
-                }
+                let protrusionCSS = new ProtrusionLocalize(protrusion, this.outputDirectory);
+                protrusionCSS.searchLayer();
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});

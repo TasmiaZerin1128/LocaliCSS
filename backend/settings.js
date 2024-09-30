@@ -3,8 +3,8 @@ const utils = require('./src/utils');
 
 const settings = {
   URLs: [],
-  testWidthMin: 320, //320
-  testWidthMax: 500, //1400
+  testWidthMin: 550, //320
+  testWidthMax: 650, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',

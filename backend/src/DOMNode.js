@@ -76,7 +76,6 @@ class DOMNode {
     this.cssNode = new CSSNode(element, this.xpath, driver);
     await this.cssNode.findProperties();
     this.rectangle.cssNode = this.cssNode;
-    this.computedStyles = this.cssNode.computedStyles;
   }
 
   setComputedStyle(computedStyles) {
