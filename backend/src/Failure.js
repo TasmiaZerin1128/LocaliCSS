@@ -26,6 +26,7 @@ class Failure {
         this.ID = utils.getNewFailureID(); //unique to entire run and all webpages
         utils.incrementFailureCount(); //counts failures of the current web page.
         this.horizontalOrVertical = null;
+        this.direction = null;
         this.repairElementHandle = undefined; //Style Element used to inject
         this.repairCSS = undefined; //CSS code for repair
         this.repairCSSComments = undefined; //CSS comments for repair
@@ -1253,19 +1254,23 @@ class Failure {
         }
         if (childRect.minX < parentRect.minX) {
             protruding.left = parentRect.minX - childRect.minX;
-            this.horizontalOrVertical = 'horizontal-left';
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'left';
         }
         if (childRect.maxX > parentRect.maxX) {
             protruding.right = childRect.maxX - parentRect.maxX;
-            this.horizontalOrVertical = 'horizontal-right';
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'right';
         }
         if (childRect.minY < parentRect.minY) {
             protruding.top = parentRect.minY - childRect.minY;
-            this.horizontalOrVertical = 'vertical-top';
+            this.horizontalOrVertical = 'vertical';
+            this.direction = 'top';
         }
         if (childRect.maxY > parentRect.maxY) {
             protruding.bottom = childRect.maxY - parentRect.maxY;
-            this.horizontalOrVertical = 'vertical-bottom';
+            this.horizontalOrVertical = 'vertical';
+            this.direction = 'bottom';
         }
         return protruding;
     }
@@ -1289,38 +1294,46 @@ class Failure {
         if (nodeRect.minX < siblingRect.minX) {
             nodeRectToBeCleared = siblingRect;
             otherNodeRect = nodeRect;
-            this.horizontalOrVertical = 'horizontal-left';
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'left';
         } else if (nodeRect.minX > siblingRect.minX) {
             nodeRectToBeCleared = nodeRect;
             otherNodeRect = siblingRect;
-            this.horizontalOrVertical = 'horizontal-right';
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'right';
         } else if (nodeRect.minX === siblingRect.minX) {
             if (nodeRect.minY < siblingRect.minY) {
                 nodeRectToBeCleared = siblingRect; 
                 otherNodeRect = nodeRect;
-                this.horizontalOrVertical = 'vertical-top';
+                this.horizontalOrVertical = 'vertical';
+                this.direction = 'top';
             } else if (nodeRect.minY > siblingRect.minY) {
                 nodeRectToBeCleared = nodeRect;
                 otherNodeRect = siblingRect;
-                this.horizontalOrVertical = 'vertical-bottom';
+                this.horizontalOrVertical = 'vertical';
+                this.direction = 'bottom';
             } else if (nodeRect.minY === siblingRect.minY) {
                 if (nodeRect.maxX < siblingRect.maxX) {
                     nodeRectToBeCleared = siblingRect;
                     otherNodeRect = nodeRect;
-                    this.horizontalOrVertical = 'horizontal-left';
+                    this.horizontalOrVertical = 'horizontal';
+                    this.direction = 'left';
                 } else if (nodeRect.maxX > siblingRect.maxX) {
                     nodeRectToBeCleared = nodeRect;
                     otherNodeRect = siblingRect;
-                    this.horizontalOrVertical = 'horizontal-right';
+                    this.horizontalOrVertical = 'horizontal';
+                    this.direction = 'right';
                 } else if (nodeRect.maxX === siblingRect.maxX) {
                     if (nodeRect.maxY < siblingRect.maxY) {
                         nodeRectToBeCleared = siblingRect;
                         otherNodeRect = nodeRect;
-                        this.horizontalOrVertical = 'vertical-top';
+                        this.horizontalOrVertical = 'vertical';
+                        this.direction = 'top';
                     } else if (nodeRect.maxY > siblingRect.maxY) {
                         nodeRectToBeCleared = nodeRect;
                         otherNodeRect = siblingRect;
-                        this.horizontalOrVertical = 'vertical-bottom';
+                        this.horizontalOrVertical = 'vertical';
+                        this.direction = 'bottom';
                     } else if (nodeRect.maxY === siblingRect.maxY) {
                         this.horizontalOrVertical = null;
                         /**
