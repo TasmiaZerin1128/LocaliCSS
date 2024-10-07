@@ -1,0 +1,2 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+CoveredCalendar-index-html,1,1,Wrapping,350,376,/HTML/BODY/DIV[6]/UL/LI[3],/HTML/BODY/DIV[6]/UL/LI,TP,TP,TP,TP,FP

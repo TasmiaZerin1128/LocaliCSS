@@ -1,0 +1,12 @@
+*
+|  |--[ Element-Protrusion (74): 480-480(FP,FP,FP,FP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[6]/DIV[2] ]
+|  |--[ Element-Protrusion (75): 480-480(FP,FP,FP,FP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[6]/DIV ]
+|  |--[ Element-Protrusion (76): 480-480(FP,FP,FP,FP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[4] ]
+|  |--[ Element-Protrusion (77): 480-480(FP,FP,FP,FP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[4]/DIV ]
+|  |--[ Element-Protrusion (78): 480-480(FP,FP,FP,FP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[4] ]
+78 Responsive Layout Failures Found.

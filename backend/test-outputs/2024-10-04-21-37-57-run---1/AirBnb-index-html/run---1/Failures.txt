@@ -1,0 +1,14 @@
+*
+|  |--[ Wrapping (58): 350-356(TP,TP,TP,TP,FP) ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI[6] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI[4] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI[5] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI[3] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[3]/UL/LI[2] ]
+|  |--[ Wrapping (59): 350-379(TP,TP,TP,TP,FP) ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[2]/UL/LI[2] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[2]/UL/LI[3] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[2]/UL/LI[4] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[5]/FOOTER/DIV[2]/UL/LI ]
+59 Responsive Layout Failures Found.

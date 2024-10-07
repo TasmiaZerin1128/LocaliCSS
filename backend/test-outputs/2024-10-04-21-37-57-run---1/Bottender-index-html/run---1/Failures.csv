@@ -1,0 +1,7 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+Bottender-index-html,1,62,Viewport-Protrusion,350,414,/HTML/BODY/DIV/DIV/HEADER/DIV/NAV/UL/SPAN,/HTML/BODY,TP,TP,TP,TP,FP
+Bottender-index-html,1,63,Viewport-Protrusion,350,718,/HTML/BODY/DIV[2]/FOOTER/DIV,/HTML/BODY,TP,TP,TP,TP,FP
+Bottender-index-html,1,65,Element-Protrusion,563,604,/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[4]/DIV/DIV[2]/A,/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[4]/DIV,TP,TP,TP,TP,FP
+Bottender-index-html,1,64,Viewport-Protrusion,391,408,/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[4]/DIV/DIV[2]/A,/HTML/BODY,TP,TP,TP,TP,FP
+Bottender-index-html,1,67,Element-Protrusion,468,507,/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[3]/DIV/DIV[2],/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[3]/DIV,TP,TP,TP,TP,FP
+Bottender-index-html,1,66,Viewport-Protrusion,350,467,/HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[3]/DIV/DIV[2],/HTML/BODY,TP,TP,TP,TP,FP

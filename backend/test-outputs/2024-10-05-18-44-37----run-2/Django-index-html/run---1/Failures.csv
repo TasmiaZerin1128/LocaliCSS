@@ -1,0 +1,15 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+Django-index-html,1,2,Element-Protrusion,350,357,/HTML/BODY/DIV[5]/DIV[2]/DIV/DIV/A,/HTML/BODY/DIV[5]/DIV[2]/DIV/DIV,TP,TP,TP,TP,FP
+Django-index-html,1,3,Element-Protrusion,767,767,/HTML/BODY/DIV[5]/DIV,/HTML/BODY/DIV[5],FP,FP,FP,FP,FP
+Django-index-html,1,4,Element-Protrusion,767,767,/HTML/BODY/DIV[5]/DIV/DIV,/HTML/BODY/DIV[5]/DIV,FP,FP,FP,FP,FP
+Django-index-html,1,5,Element-Protrusion,767,767,/HTML/BODY/DIV[5]/DIV/DIV,/HTML/BODY/DIV[5],FP,FP,FP,FP,FP
+Django-index-html,1,6,Element-Protrusion,767,767,/HTML/BODY/DIV[5]/DIV[2]/DIV,/HTML/BODY/DIV[5]/DIV[2],FP,FP,FP,FP,FP
+Django-index-html,1,7,Element-Protrusion,350,385,/HTML/BODY/DIV[4]/DIV/DIV[2]/DIV/DIV[2]/FORM/INPUT,/HTML/BODY/DIV[4]/DIV/DIV[2],TP,TP,TP,TP,FP
+Django-index-html,1,8,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/DIV/DIV,/HTML/BODY/DIV[4]/DIV[2]/H3,FP,FP,FP,FP,FP
+Django-index-html,1,9,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/UL/LI,/HTML/BODY/DIV[4]/DIV[2]/UL,FP,FP,FP,FP,FP
+Django-index-html,1,10,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/DIV/H2,/HTML/BODY/DIV[4]/DIV[2]/DIV,FP,FP,FP,FP,FP
+Django-index-html,1,11,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/A,/HTML/BODY/DIV[4]/DIV[2],FP,FP,FP,FP,FP
+Django-index-html,1,12,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/UL[3]/LI,/HTML/BODY/DIV[4]/DIV[2]/UL[3],FP,FP,FP,FP,FP
+Django-index-html,1,13,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV[2]/UL[2]/LI,/HTML/BODY/DIV[4]/DIV[2]/UL[2],FP,FP,FP,FP,FP
+Django-index-html,1,14,Element-Protrusion,350,385,/HTML/BODY/DIV[4]/DIV/DIV[2]/DIV/DIV/FORM/INPUT,/HTML/BODY/DIV[4]/DIV/DIV[2],TP,TP,TP,TP,FP
+Django-index-html,1,15,Element-Protrusion,767,767,/HTML/BODY/DIV[4]/DIV/DIV[2]/H1,/HTML/BODY/DIV[4]/DIV/DIV[2],FP,FP,FP,FP,FP
