@@ -538,10 +538,10 @@ class RLGNode {
     }
 
     // start localization of CSS for each failure
-    async localizeCSS(driver, localizationFile) {
+    async localizeCSS(bar, localizationFile) {
         for (let protrusion of this.elementProtrusions) {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
-                let protrusionCSS = new ProtrusionLocalize(protrusion, this.outputDirectory);
+                let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile);
                 protrusionCSS.searchLayer();
             } else {
                 bar.tick();

@@ -1,16 +1,16 @@
 const settings = require('../settings.js');
 const utils = require('./utils.js');
-const Rectangle = require('./Rectangle.js');
+const path = require('path');
 
 class ProtrusionLocalize {
-    constructor(failure, outputDirectory) {
+    constructor(failure, file) {
         this.failure = failure;
         this.node = failure.node;
         this.parent = failure.parent;
         this.newParent = failure.newParent;
         this.range = failure.range;
         this.type = utils.FailureType.PROTRUSION;
-        this.outputDirectory = outputDirectory;
+        this.file = file;
         this.faultyCSSProperties = [];
     }
 
@@ -53,10 +53,10 @@ class ProtrusionLocalize {
             if (property == 'width' && childComputedStyles[property] > parentComputedStyles[property]) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
-            if (protrusionDirection == 'left' && (property == 'margin-left' || property == 'padding-left')) {
+            if (protrusionDirection == 'left' && (property == 'margin-right' || property == 'padding-right')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
-            if (protrusionDirection == 'right' && (property == 'margin-right' || property == 'padding-right')) {
+            if (protrusionDirection == 'right' && (property == 'margin-left' || property == 'padding-left')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
         }
@@ -68,10 +68,10 @@ class ProtrusionLocalize {
             if (property == 'height' && childComputedStyles[property] > parentComputedStyles[property]) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
-            if (protrusionDirection == 'top' && (property == 'margin-top' || property == 'padding-top')) {
+            if (protrusionDirection == 'top' && (property == 'margin-bottom' || property == 'padding-bottom')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
-            if (protrusionDirection == 'bottom' && (property == 'margin-bottom' || property == 'padding-bottom')) {
+            if (protrusionDirection == 'bottom' && (property == 'margin-top' || property == 'padding-top')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
             }
         }
@@ -97,8 +97,17 @@ class ProtrusionLocalize {
         }
 
         for (let faulty of this.faultyCSSProperties) {
-            console.log(faulty);
+            this.printLocalization(faulty);
         }
+    }
+
+    printLocalization(faultyProperty) {
+        let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Parent:' + this.parent.xpath + ' Child: ' + this.node.xpath;
+        utils.printToFile(this.file, text);
+        text = '|  |  |--[ Property: ' +faultyProperty['property'] + ' ]';
+        utils.printToFile(this.file, text);
+        text = '|  |  |--[ Element: ' + faultyProperty['element'] + ' ]';
+        utils.printToFile(this.file, text);
     }
 }
 

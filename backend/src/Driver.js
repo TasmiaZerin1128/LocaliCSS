@@ -196,10 +196,10 @@ driver.setOpacity = async function setOpacity(elementHandle, opacityValue) {
   }, elementHandle, opacityValue);
 };
 
-driver.getBodyElement = async function getBodyElement() {
+driver.getBodyElement = async function getBodyElement(page) {
   // Get the body element from the page
-  await driver.page.waitForSelector('body'); 
-  const body = await driver.page.$('body');
+  await this.page.waitForSelector('body'); 
+  const body = await this.page.$('body');
   return body;
 };
 
@@ -373,7 +373,7 @@ driver.getVisibilityProperties = async function (element) {
   return properties;
 };
 
-driver.getChildren = async function getChildren(element) {
+driver.getChildren = async function getChildren(page, element) {
   const listHandle = await this.page.evaluateHandle((element) => element.children, element);
   const properties = await listHandle.getProperties();
   const children = [];

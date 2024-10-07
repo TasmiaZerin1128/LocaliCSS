@@ -556,7 +556,7 @@ class RLG {
         sendMessage("Localize", {'counter': 0, 'total': utils.failureCount});
         let counter = 0;
         for (const node of this.nodesWithFailures) {
-            await node.localizeCSS(driver, localizationFile, bar, counter);
+            await node.localizeCSS(bar, localizationFile, bar, counter);
         }
     }
 

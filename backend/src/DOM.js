@@ -7,6 +7,7 @@ const settings = require('../settings');
 
 class DOM {
   constructor(driver, viewport) {
+    // this.page = page;
     this.driver = driver;
     this.viewport = viewport;
     this.report = undefined;
@@ -32,8 +33,8 @@ async captureDOM(allNodes = false, getComputedStyle = true, pseudoElements = [],
     this.root.setXPath(await this.driver.getTagName(this.root.element));
   }
 
-  const traversalStackDOM = [];
-  traversalStackDOM.push(this.root);
+  const traversalStackDOM = [this.root];
+
   while (traversalStackDOM.length > 0) {
     let domNode = traversalStackDOM.shift();
     domNode.rectangle = new Rectangle(await this.driver.getRectangle(domNode.element));
@@ -58,7 +59,7 @@ async captureDOM(allNodes = false, getComputedStyle = true, pseudoElements = [],
     }
 
     this.map.set(domNode.xpath, domNode);
-    const children = await this.driver.getChildren(domNode.element);
+    const children = await this.driver.getChildren(this.page, domNode.element);
     for (let i = 0; i < children.length; i++) {
       const childNode = domNode.addChild(children[i]);
       childNode.addDescendantsToRLG = domNode.addDescendantsToRLG;
