@@ -72,9 +72,21 @@ async captureDOM(allNodes = false, getComputedStyle = true, pseudoElements = [],
   saveRBushData(writeDirectory) {
     const fileName = 'viewport-' + this.viewport + '-rbush.json';
     try{ 
-      fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(this.rbush.toJSON(), null, 2));
+      const filterData = JSON.parse(JSON.stringify(this.rbush.all()));
+      this.removeCssNode(filterData);
+      fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(filterData, null, 2));
     } catch (err) {
       console.log(err);
+    }
+  }
+
+  // Recursive function to remove cssNode property from saving in file
+  removeCssNode(obj) {
+    if (Array.isArray(obj)) {
+      obj.forEach(item => this.removeCssNode(item));
+    } else if (obj !== null && typeof obj === 'object') {
+      delete obj.cssNode;
+      Object.values(obj).forEach(item => this.removeCssNode(item));
     }
   }
 }
