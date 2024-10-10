@@ -29,6 +29,7 @@ class RLGNode {
         this.rlg = rlgPointer;
         this.outputDirectory = outputDir;
         this.webpage = webpage;
+        this.rect = rectangle;
         this.run = run;
         this.parentEdges = []; //RLGEdges
         this.containerEdges = []; //Not for parent-child edges. Added to remove FP protrusions

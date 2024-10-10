@@ -27,6 +27,10 @@ driver.createPage = async function createPage() {
   return driver.page;
 };
 
+driver.createNewPages = async function createNewPages() {
+  return await driver.browser.newPage();
+}
+
 driver.screenshot = async function (savePath, fullPage = false, encoding64 = true) {
     let options = {
         path: savePath,
@@ -272,6 +276,18 @@ driver.getRectangle = async function getRectangle(element, traverseUP = false) {
   return rect;
 };
 
+driver.getRectangleMultiThread = async function getRectangleMultiThread(page, element, traverseUP = false) {
+  let rect = await element.boundingBox();
+  if (traverseUP && rect === null) {
+    while (rect === null) {
+      element = await element.getProperty('parentNode');
+      if (element === undefined || element === null) { throw new Error('No more elements in the DOM'); }
+      rect = await element.boundingBox();
+    }
+  }
+  return rect;
+};
+
 driver.getComputedStyle = async function getComputedStyle(element, pseudoElement = undefined) {
   let styles = await element.evaluate(
     (element, pseudoElement) => {
@@ -313,7 +329,7 @@ driver.getAllStyles = async function getAllStyles(element) {
         for (const rule of sheet.cssRules) {
           if (rule instanceof CSSStyleRule) {
             if (!rule.selectorText.includes('::before') && !rule.selectorText.includes('::after')) {
-              if (el.matches(rule.selectorText)) {
+              if (el.closest(rule.selectorText)) {
                 addStylesFromRule(rule.style);
               }
             }

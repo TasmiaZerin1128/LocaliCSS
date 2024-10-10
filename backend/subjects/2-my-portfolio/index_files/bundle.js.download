@@ -303,10 +303,10 @@ function Portfolio() {
                     class: "info",
                     bis_skin_checked: "1",
                     children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
-                      className: "w-36",
                       children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("img", {
                         src: "https://ssl.du.ac.bd/fontView/images/leader/1725617523padmin.jpg",
-                        className: "w-full h-full",
+                        height: "170",
+                        width: "166",
                         alt: "Pro Vice Chancellor",
                         srcset: ""
                       }, void 0, false, {
@@ -541,7 +541,8 @@ function Portfolio() {
         columnNumber: 9
       }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
         style: {
-          display: 'inline-flex'
+          display: 'inline-flex',
+          width: '100%'
         },
         children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
           className: "p-4 m-2 bg-purple-300",
@@ -43213,7 +43214,7 @@ module.exports = parent;
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("abc3f92a419aa89bff35")
+/******/ 		__webpack_require__.h = () => ("c5ac7939a2a60f0753e2")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */

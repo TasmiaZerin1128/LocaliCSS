@@ -8,38 +8,50 @@ class ProtrusionLocalize {
         this.node = failure.node;
         this.parent = failure.parent;
         this.newParent = failure.newParent;
+        this.immediateParent = null;
         this.range = failure.range;
         this.type = utils.FailureType.PROTRUSION;
         this.file = file;
         this.faultyCSSProperties = [];
+        this.protrusionDirection = failure.horizontalOrVertical;
+        this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
     localizeFaultyProperties(node, parent, isParent = false) {
-        let type = this.failure.horizontalOrVertical;
         if (!isParent) {
             let childDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
 
             let childComputedStyles = node.cssNode.computedStyles;
             let parentComputedStyles = parent.cssNode.computedStyles;
 
-            if (type == 'horizontal') {
+            if (this.protrusionDirection == 'horizontal') {
                 this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles, parentComputedStyles);
-            } else if (type == 'vertical') {
+            } else if (this.protrusionDirection == 'vertical') {
                 this.localizeForVertical(node, childDefinedStyles, childComputedStyles, parentComputedStyles);
             }
-        } else {
+        } else { // do not check height or width or margin for the parent
             let childDefinedStyles = node.cssNode.developerCssProperties;
-            if (type == 'horizontal') {
+            if (this.protrusionDirection == 'horizontal') {
                 for (let property in childDefinedStyles) {
-                    if (property == 'padding-left' || property == 'padding-right') {
-                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
+                    if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                    }
+                    if (property == 'display' && childDefinedStyles[property].includes('flex')) {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                    }
+                }
+                if (childDefinedStyles.includes('display')) {
+                    if (childDefinedStyles['display'].includes('flex')) {
+                        if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
+                        }
                     }
                 }
             }
-            if (type == 'vertical') {
+            if (this.protrusionDirection == 'vertical') {
                 for (let property in childDefinedStyles) {
-                    if (property == 'padding-topt' || property == 'padding-bottom') {
-                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property});
+                    if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                     }
                 }
             }
@@ -47,32 +59,73 @@ class ProtrusionLocalize {
     }
 
     localizeForHorizontal(node, childDefinedStyles, childComputedStyles, parentComputedStyles) {
-        let protrusionDirection = this.failure.direction;
         for (let property in childDefinedStyles) {
             // checking computed width as if it is greater, then it means developer has defined it explicitly
-            if (property == 'width' && childComputedStyles[property] > parentComputedStyles[property]) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'width' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
-            if (protrusionDirection == 'left' && (property == 'margin-right' || property == 'padding-right')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
-            if (protrusionDirection == 'right' && (property == 'margin-left' || property == 'padding-left')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'margin-left' && childComputedStyles[property] != "0px" || property == 'padding-left' && childComputedStyles[property] != "0px") {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'font-size') {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'float') {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
         }
     }
 
     localizeForVertical(node, childDefinedStyles, childComputedStyles, parentComputedStyles) {
-        let protrusionDirection = this.failure.direction;
         for (let property in childDefinedStyles) {
-            if (property == 'height' && childComputedStyles[property] > parentComputedStyles[property]) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'height' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
-            if (protrusionDirection == 'top' && (property == 'margin-bottom' || property == 'padding-bottom')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'margin-bottom' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
-            if (protrusionDirection == 'bottom' && (property == 'margin-top' || property == 'padding-top')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            if (property == 'margin-top' && childComputedStyles[property] != "0px" || property == 'padding-top' && childComputedStyles[property] != "0px") {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'font-size' && childDefinedStyles[property] != 'inherit') {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'float') {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+        }
+    }
+
+    isLayoutResponsible(sibling, node) {
+        if (this.protrusionDirection == 'horizontal') {
+            if (this.directionAxis == 'right') {
+                if (node.rect.isToMyLeft(sibling.rect)) {
+                    return true;
+                }
+                return false;
+            }
+            if (this.directionAxis == 'left') {
+                if (node.rect.isToMyRight(sibling.rect)) {
+                    return true;
+                }
+                return false;
+            }
+        }
+        if (this.protrusionDirection == 'vertical') {
+            if (this.directionAxis == 'bottom') {
+                if (node.rect.isAboveMe(sibling.rect)) {
+                    return true;
+                }
+                return false;
+            }
+            if (this.directionAxis == 'top') {
+                if (node.rect.isBelowMe(sibling.rect)) {
+                    return true;
+                }
+                return false;
             }
         }
     }
@@ -90,23 +143,59 @@ class ProtrusionLocalize {
         // Now check the parent
         this.localizeFaultyProperties(this.parent, null, true);
 
-        // if no style found, check the node's siblings
-        for (let edge of this.parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of protrusion direction
-            let sibling = edge.child;
-            this.localizeFaultyProperties(sibling, this.parent, false);
+        if (this.node.parentEdges.length != 0) {
+            for (let edge of this.node.parentEdges) {
+                if (this.immediateParent == null) {
+                    this.immediateParent = edge.getParent();
+                } else {
+                    if (this.immediateParent.xpath.length < edge.getParent().xpath.length) {
+                        this.immediateParent = edge.getParent();
+                    }
+                }
+            }
         }
 
-        this.faultyCSSProperties.sort((a, b) => (a['value'] < b['value']) ? 1 : -1);
+        // if no style found, check the node's siblings
+        this.localizeSiblingChilds(this.immediateParent)
+
+        this.faultyCSSProperties.sort((a, b) => {
+            const getNumericValue = (str) => {
+              const match = str.match(/(\d+(\.\d+)?)/);
+              return match ? parseFloat(match[0]) : 0;
+            };
+
+            if (a['property'] === 'display') return -1;
+            if (b['property'] === 'display') return 1;
+          
+            const aValue = getNumericValue(a['value']);
+            const bValue = getNumericValue(b['value']);
+          
+            return aValue < bValue ? 1 : -1;
+          });
 
         for (let faulty of this.faultyCSSProperties) {
             this.printLocalization(faulty);
         }
     }
 
+    localizeSiblingChilds(parent) {
+        if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
+
+        for (let edge of parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of protrusion direction
+            let sibling = edge.getChild();
+            if (this.isLayoutResponsible(sibling, this.node)) { 
+                this.localizeFaultyProperties(sibling, parent, false);
+                this.localizeSiblingChilds(sibling);
+            }
+        }
+    }
+
     printLocalization(faultyProperty) {
         let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Parent:' + this.parent.xpath + ' Child: ' + this.node.xpath;
         utils.printToFile(this.file, text);
-        text = '|  |  |--[ Property: ' +faultyProperty['property'] + ' ]';
+        text = '|  |  |--[ Property: ' + faultyProperty['property'] + ' ]';
+        utils.printToFile(this.file, text);
+        text = '|  |  |--[ Value: ' + faultyProperty['value'] + ' ]';
         utils.printToFile(this.file, text);
         text = '|  |  |--[ Element: ' + faultyProperty['element'] + ' ]';
         utils.printToFile(this.file, text);
