@@ -10,7 +10,7 @@ const settings = {
   run: 'repair',
   browserMode: 'Headless',
   loadDirectory: 'saved-doms-headless',
-  webpagesDirectory: path.join(__dirname, 'subjects-minimized'),
+  webpagesDirectory: path.join(__dirname, 'subjects'),
   mainOutputFile: 'output',
   repairDelay: 0.4,
   loadDelay: 0.4,
