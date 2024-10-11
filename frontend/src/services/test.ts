@@ -10,4 +10,13 @@ const testUrl = async (url: string) => {
     }
 }
 
-export { testUrl };
+const testLocally = async () => {
+    try {
+        const response = await api.get(`/testLocal`);
+        return response;
+    } catch (err: any) {
+        return err.response;
+    }
+}
+
+export { testUrl, testLocally };

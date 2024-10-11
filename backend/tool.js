@@ -20,6 +20,42 @@ async function isWebpage(url) {
   return false;
 }
 
+runTool = async () => {
+  let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
+  let currentDateTime = utils.getDateTime();
+
+  let webpages = [];
+
+  settings.URLs.forEach(async (url) => {
+    let pageName = undefined;
+      if (url.includes(settings.webpagesDirectory.replace(/\\/g, "/"))) {
+          pageName = url.split(settings.webpagesDirectory.replace(/\\/g, "/") + '/')[1].replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");;
+      } else {
+          if (isWebpage(url)) {
+            pageName = utils.parseName(url);
+          } else {
+            pageName = url.replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");
+          }
+      }
+    let testOutputPath = path.join(settings.runOutputFile, pageName);
+    webpages.push(new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName));
+  });
+
+  for(let newWebpage of webpages) {
+    newWebpage.createMainOutputFile();
+    await newWebpage.navigateToPage();
+    await newWebpage.testWebpage();
+    await newWebpage.classifyFailures();
+    newWebpage.printRLG();
+    newWebpage.printFailures();
+    newWebpage.localizeCSS();
+    // await newWebpage.verifyFailures();
+    // await newWebpage.repairFailures();
+  }
+
+  console.log('completed ');
+}
+
 async function load_subjects() {
   console.log('loading subjects');
   if (settings.URLs.length === 0) {
@@ -60,6 +96,24 @@ async function load_subjects() {
 }
 }
 
+exports.startLocal = async (req, res) => {
+  try {
+    await driver.start();
+    const page = await driver.createPage();
+
+    load_subjects();
+    await runTool();
+
+    await driver.close();
+    return res.status(200).json('completed');
+
+  } catch (err) {
+    console.log('Error: ', err);
+    await driver.close();
+    return res.status(500).json('Something went wrong');
+  }
+}
+
 exports.startTool = async (req, res) => {
 
   let cookies = []
@@ -68,40 +122,12 @@ exports.startTool = async (req, res) => {
     await driver.start();
     const page = await driver.createPage();
 
-    // let url = req.query.url;
-    // console.log(url);
+    let url = req.query.url;
+    console.log(url);
 
-    load_subjects();
-
-    let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
-    let currentDateTime = utils.getDateTime();
-
-    let webpages = [];
-
-    settings.URLs.forEach(async (url) => {
-      let pageName = undefined;
-        if (url.includes(settings.webpagesDirectory.replace(/\\/g, "/"))) {
-            pageName = url.split(settings.webpagesDirectory.replace(/\\/g, "/") + '/')[1].replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");;
-        } else {
-            pageName = url.replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");;
-        }
-      let testOutputPath = path.join(settings.runOutputFile, pageName);
-      webpages.push(new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName));
-    });
-
-    for(let newWebpage of webpages) {
-      newWebpage.createMainOutputFile();
-      await newWebpage.navigateToPage();
-      await newWebpage.testWebpage();
-      await newWebpage.classifyFailures();
-      newWebpage.printRLG();
-      newWebpage.printFailures();
-      newWebpage.localizeCSS();
-      // await newWebpage.verifyFailures();
-      // await newWebpage.repairFailures();
-    }
-
-    console.log('completed ');
+    settings.URLs.push(url);
+    await driver.goto(url);
+    await runTool();
 
     await driver.close();
     return res.status(200).json('completed');

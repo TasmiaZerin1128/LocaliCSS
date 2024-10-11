@@ -5,7 +5,7 @@ const { createServer } = require("http");
 const socketIO = require("socket.io");
 const cors = require('cors');
 const { socketConnection } = require('./socket-connect');
-const { startTool } = require('./tool');
+const { startLocal } = require('./tool');
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ const globalErrorHandler = (err, req, res, next) => {
 
 app.use('/api/v1', router);
 
-app.get('/start', startTool);
+app.get('/startLocal', startLocal);
 
 app.use(globalErrorHandler);
 
