@@ -156,6 +156,7 @@ class utils {
     static parseName(url) {
         if (url.includes("http://") || url.includes("https://")) {
             let name = url.replace(/^https?:\/\//, "");
+            name = name.replace(/:\d+/, "");
             return name;
         } else {   // it is a file directory path
             let name = path.basename(url);

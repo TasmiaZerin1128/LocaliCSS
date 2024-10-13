@@ -238,7 +238,7 @@ driver.setViewport = async function setViewport(width, height) {
 driver.goto = async function goto(uri) {
   // Navigate to the webpage URI
   this.setViewport();
-  const gotoUri = await driver.page.goto(uri);
+  const gotoUri = await driver.page.goto(uri, { waitUntil: 'networkidle2' });
   return gotoUri;
 };
 
@@ -325,11 +325,11 @@ driver.getAllStyles = async function getAllStyles(element) {
 
     for (const sheet of stylesheets) {
       try {
-        if (!sheet.href && sheet.ownerNode.tagName !== 'STYLE') continue; // Skip certain sheets
+        if (!sheet.href && sheet.ownerNode.tagName !== 'STYLE') continue; // Skip certain sheets, sheet.href means it's a linked stylesheet, tagName is "LINK"; else if no href, tagName will be "STYLE"
         for (const rule of sheet.cssRules) {
           if (rule instanceof CSSStyleRule) {
             if (!rule.selectorText.includes('::before') && !rule.selectorText.includes('::after')) {
-              if (el.closest(rule.selectorText)) {
+              if (el.matches(rule.selectorText)) {
                 addStylesFromRule(rule.style);
               }
             }

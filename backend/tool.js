@@ -14,7 +14,6 @@ async function isWebpage(url) {
 
   const response = await axios.head(url, { validateStatus: () => true });
   const contentType = response.headers['content-type'];
-  console.log(contentType);
 
   if(contentType.startsWith('text/html')) return true;
   return false;

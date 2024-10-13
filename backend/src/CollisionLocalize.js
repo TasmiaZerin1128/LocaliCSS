@@ -2,66 +2,60 @@ const settings = require('../settings.js');
 const utils = require('./utils.js');
 const path = require('path');
 
-class ProtrusionLocalize {
+class CollisionLocalize {
     constructor(failure, file) {
         this.failure = failure;
         this.node = failure.node;
+        this.sibling = failure.sibling;
         this.parent = failure.parent;
-        this.newParent = failure.newParent;
-        this.immediateParent = null;
-        this.visitedNodes = new Set();
         this.range = failure.range;
-        this.type = utils.FailureType.PROTRUSION;
+        this.type = utils.FailureType.COLLISION;
+        this.visitedNodes = new Set();
+        this.overlapping = failure.overlapping;
         this.file = file;
         this.faultyCSSProperties = [];
-        this.protrusionDirection = failure.horizontalOrVertical;
+        this.collisionDirection = failure.horizontalOrVertical;
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
     localizeFaultyProperties(node, parent, isParent = false) {
-        try {
-
+        if (!isParent) {
             let childDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
 
             let childComputedStyles = node.cssNode.computedStyles;
             // let parentComputedStyles = parent.cssNode.computedStyles;
 
-            if (!isParent) {
-                if (this.protrusionDirection == 'horizontal') {
-                    this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles);
-                } else if (this.protrusionDirection == 'vertical') {
-                    this.localizeForVertical(node, childDefinedStyles, childComputedStyles);
-                }
-            } else { // do not check height or width or margin for the parent
-                let childDefinedStyles = node.cssNode.developerCssProperties;
-                if (this.protrusionDirection == 'horizontal') {
-                    for (let property in childDefinedStyles) {
-                        if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
-                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
-                        }
-                        if (property == 'display' && childDefinedStyles[property].includes('flex')) {
-                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
-                        }
+            if (this.collisionDirection == 'horizontal') {
+                this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles);
+            } else if (this.collisionDirection == 'vertical') {
+                this.localizeForVertical(node, childDefinedStyles, childComputedStyles);
+            }
+        } else { // do not check height or width or margin for the parent
+            let childDefinedStyles = node.cssNode.developerCssProperties;
+            if (this.collisionDirection == 'horizontal') {
+                for (let property in childDefinedStyles) {
+                    if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                     }
-                    if (childDefinedStyles.includes('display')) {   // if child includes display 'flex', or 'inline-flex' but does not have flex-wrap: wrap
-                        if (childDefinedStyles['display'].includes('flex')) {
-                            if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
-                                this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
-                            }
-                        }
+                    if (property == 'display' && childDefinedStyles[property].includes('flex')) {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                     }
                 }
-                if (this.protrusionDirection == 'vertical') {
-                    for (let property in childDefinedStyles) {
-                        if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
-                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                if (childDefinedStyles.includes('display')) {
+                    if (childDefinedStyles['display'].includes('flex')) {
+                        if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
                         }
                     }
                 }
             }
-        } catch (e) {
-            console.log(e);
-            return;
+            if (this.collisionDirection == 'vertical') {
+                for (let property in childDefinedStyles) {
+                    if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                    }
+                }
+            }
         }
     }
 
@@ -69,9 +63,6 @@ class ProtrusionLocalize {
         for (let property in childDefinedStyles) {
             // checking computed width as if it is greater, then it means developer has defined it explicitly
             if (property == 'width' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
-            }
-            if (property == 'max-width' && (childDefinedStyles[property] == 'none' || childDefinedStyles[property] != '100%')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
             if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
@@ -110,7 +101,7 @@ class ProtrusionLocalize {
     }
 
     isLayoutResponsible(sibling, node) {
-        if (this.protrusionDirection == 'horizontal') {
+        if (this.collisionDirection == 'horizontal') {
             if (this.directionAxis == 'right') {
                 if (node.rect.isToMyLeft(sibling.rect)) {
                     return true;
@@ -124,7 +115,7 @@ class ProtrusionLocalize {
                 return false;
             }
         }
-        if (this.protrusionDirection == 'vertical') {
+        if (this.collisionDirection == 'vertical') {
             if (this.directionAxis == 'bottom') {
                 if (node.rect.isAboveMe(sibling.rect)) {
                     return true;
@@ -142,7 +133,7 @@ class ProtrusionLocalize {
 
     searchLayer() {
         // check the affected node first
-        this.localizeFaultyProperties(this.node, this.parent, false);
+        this.localizeFaultyProperties(this.node, this.sibling, false);
 
         // if no style found, check it's children
         for (let edge of this.node.childrenEdges) {
@@ -150,8 +141,8 @@ class ProtrusionLocalize {
             this.localizeFaultyProperties(nodeChild, this.node, false);
         }
 
-        // Now check the parent
-        this.localizeFaultyProperties(this.parent, null, true);
+        // Now check the sibling
+        this.localizeFaultyProperties(this.sibling, null, true);
 
         if (this.node.parentEdges.length != 0) {
             for (let edge of this.node.parentEdges) {
@@ -199,7 +190,7 @@ class ProtrusionLocalize {
     localizeSiblingChilds(parent) {
         if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
 
-        for (let edge of parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of protrusion direction
+        for (let edge of parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of collision direction
             let sibling = edge.getChild();
             if (this.visitedNodes.has(sibling)) {
                 continue;
@@ -224,4 +215,4 @@ class ProtrusionLocalize {
     }
 }
 
-module.exports = ProtrusionLocalize;
+module.exports = CollisionLocalize;

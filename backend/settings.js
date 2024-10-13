@@ -3,14 +3,14 @@ const utils = require('./src/utils');
 
 const settings = {
   URLs: [],
-  testWidthMin: 320, //320
-  testWidthMax: 1200, //1400
+  testWidthMin: 650, //320
+  testWidthMax: 850, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',
   browserMode: 'Headless',
   loadDirectory: 'saved-doms-headless',
-  webpagesDirectory: path.join(__dirname, 'subjects'),
+  webpagesDirectory: path.join(__dirname, 'subjects-minimized'),
   mainOutputFile: 'output',
   repairDelay: 0.4,
   loadDelay: 0.4,

@@ -16,6 +16,7 @@ const WrappingFailure = require("./WrappingFailure");
 const { sendMessage } = require('../socket-connect.js');
 const CSSNode = require('./CSSNode.js');
 const ProtrusionLocalize = require('./ProtrusionLocalize.js');
+const CollisionLocalize = require('./CollisionLocalize.js');
 
 class RLGNode {
      /**
@@ -335,10 +336,10 @@ class RLGNode {
                 let secondNodeParentAtMax = overlapEdge.node2.getParentAtViewport(maxViewport);
                 if (firstNodeParentAtWider === undefined || secondNodeParentAtWider === undefined)
                     continue; // one of the elements is not contained in wider viewport
-                if (settings.detectElementProtrusion)
-                    this.detectProtrusion(overlapEdge, maxViewport, firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, range);
                 if (settings.detectElementCollision)
                     this.detectCollision(firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, overlapEdge, range);
+                if (settings.detectElementProtrusion)
+                    this.detectProtrusion(overlapEdge, maxViewport, firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, range);
             }
         }
     }
@@ -544,6 +545,15 @@ class RLGNode {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
                 let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile);
                 protrusionCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let collision of this.elementCollisions) {
+            if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
+                let collisionCSS = new CollisionLocalize(collision, localizationFile);
+                collisionCSS.searchLayer();
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
