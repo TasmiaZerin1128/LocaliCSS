@@ -514,7 +514,7 @@ class RLG {
             let isCarousel = false;
             // let isCarousel = await node.checkIfCarousel(driver);
             // if (isCarousel) console.log("Carousel ------------- " + isCarousel + " " + node.xpath);
-            if (!isCarousel) {  // && !node.xpath.includes('IMG')
+            if (!isCarousel && !node.xpath.includes('IMG')) {
                 node.detectFailures(bodyNode);
                 if (node.hasFailure()) {
                     nodesWithFailures.push(node);
