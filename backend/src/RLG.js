@@ -511,9 +511,10 @@ class RLG {
         let bodyNode = this.map.get('/HTML/BODY');
         let nodesWithFailures = [];
         for (let node of this.map.values()) {
-            let isCarousel = await node.checkIfCarousel(driver);
-            if (isCarousel) console.log("Carousel ------------- " + isCarousel + " " + node.xpath);
-            if (!isCarousel && !node.xpath.includes('IMG')) {
+            let isCarousel = false;
+            // let isCarousel = await node.checkIfCarousel(driver);
+            // if (isCarousel) console.log("Carousel ------------- " + isCarousel + " " + node.xpath);
+            if (!isCarousel) {  // && !node.xpath.includes('IMG')
                 node.detectFailures(bodyNode);
                 if (node.hasFailure()) {
                     nodesWithFailures.push(node);

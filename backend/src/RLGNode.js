@@ -17,6 +17,7 @@ const { sendMessage } = require('../socket-connect.js');
 const CSSNode = require('./CSSNode.js');
 const ProtrusionLocalize = require('./ProtrusionLocalize.js');
 const CollisionLocalize = require('./CollisionLocalize.js');
+const ViewportLocalize = require('./ViewportLocalize.js');
 
 class RLGNode {
      /**
@@ -554,6 +555,15 @@ class RLGNode {
             if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
                 let collisionCSS = new CollisionLocalize(collision, localizationFile);
                 collisionCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let viewport of this.viewportProtrusions) {
+            if (viewport.range.minClassification === 'TP' || viewport.range.maxClassification === 'TP') {
+                let viewportCSS = new ViewportLocalize(viewport, localizationFile);
+                viewportCSS.searchLayer();
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});

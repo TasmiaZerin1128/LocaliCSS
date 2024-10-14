@@ -1,0 +1,4 @@
+*
+|  |--[ Element-Protrusion (15): 350-358(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV ]
+15 Responsive Layout Failures Found.

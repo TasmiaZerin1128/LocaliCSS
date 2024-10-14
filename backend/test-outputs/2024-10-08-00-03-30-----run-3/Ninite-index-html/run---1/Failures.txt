@@ -1,0 +1,9 @@
+*
+|  |--[ Wrapping (16): 350-390(TP,TP,TP,TP,FP) ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI[3] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI[4] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI[5] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI[6] ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI ]
+|  |  |--[ Row Element: /HTML/BODY/DIV[3]/DIV/UL/LI[2] ]
+16 Responsive Layout Failures Found.

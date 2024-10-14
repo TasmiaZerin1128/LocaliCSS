@@ -11,6 +11,7 @@ class ViewportLocalize {
         this.immediateParent = null;
         this.range = failure.range;
         this.type = utils.FailureType.VIEWPORT;
+        this.visitedNodes = new Set();
         this.file = file;
         this.faultyCSSProperties = [];
         this.viewportProtrusionDirection = failure.horizontalOrVertical;
@@ -18,50 +19,61 @@ class ViewportLocalize {
     }
 
     localizeFaultyProperties(node, parent, isParent = false) {
-        let childDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
+        try {
 
-        let childComputedStyles = node.cssNode.computedStyles;
-        let parentComputedStyles = parent.cssNode.computedStyles;
+            let childDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
 
-        if (!isParent) {
-            if (this.viewportProtrusionDirection == 'horizontal') {
-                this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles, parentComputedStyles);
-            } else if (this.viewportProtrusionDirection == 'vertical') {
-                this.localizeForVertical(node, childDefinedStyles, childComputedStyles, parentComputedStyles);
-            }
-        } else { // do not check height or width or margin for the parent
-            let childDefinedStyles = node.cssNode.developerCssProperties;
-            if (this.viewportProtrusionDirection == 'horizontal') {
-                for (let property in childDefinedStyles) {
-                    if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
-                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            let childComputedStyles = node.cssNode.computedStyles;
+            // let parentComputedStyles = parent.cssNode.computedStyles;
+
+            if (!isParent) {
+                if (this.protrusionDirection == 'horizontal') {
+                    this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles);
+                } else if (this.protrusionDirection == 'vertical') {
+                    this.localizeForVertical(node, childDefinedStyles, childComputedStyles);
+                }
+            } else { // do not check height or width or margin for the parent
+                if (this.protrusionDirection == 'horizontal') {
+                    for (let property in childDefinedStyles) {
+                        if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                        }
+                        if (property == 'display' && childDefinedStyles[property].includes('flex')) {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                        }
                     }
-                    if (property == 'display' && childDefinedStyles[property].includes('flex')) {
-                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+                    if (childDefinedStyles.includes('display')) {   // if child includes display 'flex', or 'inline-flex' but does not have flex-wrap: wrap
+                        if (childDefinedStyles['display'].includes('flex')) {
+                            if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
+                                this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
+                            }
+                        }
                     }
                 }
-                if (childDefinedStyles.includes('display')) {   // if child includes display 'flex', or 'inline-flex' but does not have flex-wrap: wrap
-                    if (childDefinedStyles['display'].includes('flex')) {
-                        if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
-                            this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
+                if (this.protrusionDirection == 'vertical') {
+                    for (let property in childDefinedStyles) {
+                        if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                         }
                     }
                 }
             }
-            if (this.viewportProtrusionDirection == 'vertical') {
-                for (let property in childDefinedStyles) {
-                    if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
-                        this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
-                    }
-                }
-            }
+        } catch (e) {
+            console.log(e);
+            return;
         }
     }
 
-    localizeForHorizontal(node, childDefinedStyles, childComputedStyles, parentComputedStyles) {
+    localizeForHorizontal(node, childDefinedStyles, childComputedStyles) {
         for (let property in childDefinedStyles) {
             // checking computed width as if it is greater, then it means developer has defined it explicitly
             if (property == 'width' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'max-width' && (childDefinedStyles[property] == 'none' || childDefinedStyles[property] != '100%')) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
             if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
@@ -79,9 +91,12 @@ class ViewportLocalize {
         }
     }
 
-    localizeForVertical(node, childDefinedStyles, childComputedStyles, parentComputedStyles) {
+    localizeForVertical(node, childDefinedStyles, childComputedStyles) {
         for (let property in childDefinedStyles) {
             if (property == 'height' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+            }
+            if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
             }
             if (property == 'margin-bottom' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
@@ -100,7 +115,7 @@ class ViewportLocalize {
     }
 
     isLayoutResponsible(sibling, node) {
-        if (this.viewportProtrusionDirection == 'horizontal') {
+        if (this.protrusionDirection == 'horizontal') {
             if (this.directionAxis == 'right') {
                 if (node.rect.isToMyLeft(sibling.rect)) {
                     return true;
@@ -114,7 +129,7 @@ class ViewportLocalize {
                 return false;
             }
         }
-        if (this.viewportProtrusionDirection == 'vertical') {
+        if (this.protrusionDirection == 'vertical') {
             if (this.directionAxis == 'bottom') {
                 if (node.rect.isAboveMe(sibling.rect)) {
                     return true;
@@ -140,7 +155,8 @@ class ViewportLocalize {
             this.localizeFaultyProperties(nodeChild, this.node, false);
         }
 
-        // No need to check parent
+        // Now check the parent
+        this.localizeFaultyProperties(this.parent, null, true);
 
         if (this.node.parentEdges.length != 0) {
             for (let edge of this.node.parentEdges) {
@@ -167,6 +183,9 @@ class ViewportLocalize {
             if (a['property'] === 'display' && b['property'] !== 'display') return -1;
             if (b['property'] === 'display' && a['property'] !== 'display') return 1;
 
+            if (a['property'] === 'position' && b['property'] !== 'position') return -1;
+            if (b['property'] === 'position' && a['property'] !== 'position') return 1;
+
             if (a['property'] === 'float' && b['property'] !== 'float') return -1;
             if (b['property'] === 'float' && a['property'] !== 'float') return 1;
           
@@ -183,13 +202,19 @@ class ViewportLocalize {
         for (let faulty of this.faultyCSSProperties) {
             this.printLocalization(faulty);
         }
+        let text = '---------------------------------------------';
+        utils.printToFile(this.file, text);
     }
 
     localizeSiblingChilds(parent) {
         if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
 
-        for (let edge of parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of viewportProtrusion direction
+        for (let edge of parent.childrenEdges) {    // we have to check where the sibling is, if it is on the left or right, or top or bottom. Filter on the basis of protrusion direction
             let sibling = edge.getChild();
+            if (this.visitedNodes.has(sibling)) {
+                continue;
+            }
+            this.visitedNodes.add(sibling);
             if (this.isLayoutResponsible(sibling, this.node)) { 
                 this.localizeFaultyProperties(sibling, parent, false);
                 this.localizeSiblingChilds(sibling);
@@ -205,6 +230,8 @@ class ViewportLocalize {
         text = '|  |  |--[ Value: ' + faultyProperty['value'] + ' ]';
         utils.printToFile(this.file, text);
         text = '|  |  |--[ Element: ' + faultyProperty['element'] + ' ]';
+        utils.printToFile(this.file, text);
+        text = '-----------------';
         utils.printToFile(this.file, text);
     }
 }
