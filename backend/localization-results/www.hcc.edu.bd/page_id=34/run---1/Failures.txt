@@ -1,0 +1,14 @@
+*
+|  |--[ Viewport-Protrusion (1): 900-958(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (2): 900-1097(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (3): 900-958(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (4): 900-961(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (5): 900-978(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Element-Protrusion (6): 900-968(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[2] ]
+6 Responsive Layout Failures Found.
