@@ -1,0 +1,135 @@
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[2]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV/A/IMG ]
+-----------------
+---------------------------------------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[10] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[9]/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[10] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[10] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[9]/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[2]/DIV Child: /HTML/BODY/DIV[2]/DIV/DIV[10]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[2]/DIV/DIV[9]/A/IMG ]
+-----------------
+---------------------------------------------
+Type: Element-Protrusion Range:320-324 Parent:/HTML/BODY/DIV[4] Child: /HTML/BODY/DIV[4]/DIV[4]/A
+|  |  |--[ Property: display ]
+|  |  |--[ Value: flex ]
+|  |  |--[ Element: /HTML/BODY/DIV[4] ]
+-----------------
+Type: Element-Protrusion Range:320-324 Parent:/HTML/BODY/DIV[4] Child: /HTML/BODY/DIV[4]/DIV[4]/A
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 200px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[4]/A/DIV ]
+-----------------
+Type: Element-Protrusion Range:320-324 Parent:/HTML/BODY/DIV[4] Child: /HTML/BODY/DIV[4]/DIV[4]/A
+|  |  |--[ Property: margin-right ]
+|  |  |--[ Value: 60px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[4]/A/DIV ]
+-----------------
+---------------------------------------------
+Type: Element-Protrusion Range:320-331 Parent:/HTML/BODY/DIV[6] Child: /HTML/BODY/DIV[6]/DIV
+|  |  |--[ Property: padding-top ]
+|  |  |--[ Value: 60px ]
+|  |  |--[ Element: /HTML/BODY/DIV[6] ]
+-----------------
+Type: Element-Protrusion Range:320-331 Parent:/HTML/BODY/DIV[6] Child: /HTML/BODY/DIV[6]/DIV
+|  |  |--[ Property: padding-bottom ]
+|  |  |--[ Value: 60px ]
+|  |  |--[ Element: /HTML/BODY/DIV[6] ]
+-----------------
+Type: Element-Protrusion Range:320-331 Parent:/HTML/BODY/DIV[6] Child: /HTML/BODY/DIV[6]/DIV
+|  |  |--[ Property: font-size ]
+|  |  |--[ Value: 32px ]
+|  |  |--[ Element: /HTML/BODY/DIV[6]/DIV/H2 ]
+-----------------
+Type: Element-Protrusion Range:320-331 Parent:/HTML/BODY/DIV[6] Child: /HTML/BODY/DIV[6]/DIV
+|  |  |--[ Property: font-size ]
+|  |  |--[ Value: 22px ]
+|  |  |--[ Element: /HTML/BODY/DIV[6]/DIV/H3 ]
+-----------------
+Type: Element-Protrusion Range:320-331 Parent:/HTML/BODY/DIV[6] Child: /HTML/BODY/DIV[6]/DIV
+|  |  |--[ Property: padding-top ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[6]/DIV ]
+-----------------
+---------------------------------------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 228px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: padding-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV/A/IMG ]
+-----------------
+Type: Element-Collision Range:320-380 Parent:/HTML/BODY/DIV[3]/DIV Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: padding-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV/A/IMG ]
+-----------------
+---------------------------------------------
