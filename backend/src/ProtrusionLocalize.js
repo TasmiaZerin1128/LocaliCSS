@@ -68,25 +68,25 @@ class ProtrusionLocalize {
         for (let property in childDefinedStyles) {
             // checking computed width as if it is greater, then it means developer has defined it explicitly
             if (property == 'width' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'max-width' && (childDefinedStyles[property] == 'none' || childDefinedStyles[property] != '100%')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'margin-left' && childComputedStyles[property] != "0px" || property == 'padding-left' && childComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'font-size') {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'float') {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
         }
     }
@@ -94,22 +94,22 @@ class ProtrusionLocalize {
     localizeForVertical(node, childDefinedStyles, childComputedStyles) {
         for (let property in childDefinedStyles) {
             if (property == 'height' && (childDefinedStyles[property] != 'max-content' || childDefinedStyles[property] != '100%')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'margin-bottom' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'margin-top' && childComputedStyles[property] != "0px" || property == 'padding-top' && childComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'font-size' && childDefinedStyles[property] != 'inherit') {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'float') {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childComputedStyles[property]});
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
         }
     }
@@ -158,16 +158,12 @@ class ProtrusionLocalize {
         // Now check the parent
         this.localizeFaultyProperties(this.parent, null, true);
 
-        if (this.node.parentEdges.length != 0) {
-            for (let edge of this.node.parentEdges) {
-                if (this.immediateParent == null) {
-                    this.immediateParent = edge.getParent();
-                } else {
-                    if (this.immediateParent.xpath.length < edge.getParent().xpath.length) {
-                        this.immediateParent = edge.getParent();
-                    }
-                }
-            }
+        // find the immediate parent
+        this.immediateParent = this.findImmediateParent(this.node);
+
+        // if parent and immediate parent are not same, check from the immediate until the parent
+        if (this.immediateParent.xpath != this.parent.xpath) {
+            this.localizeIntermediateParents(this.immediateParent);
         }
 
         // if no style found, check the node's siblings
@@ -183,11 +179,11 @@ class ProtrusionLocalize {
             if (a['property'] === 'display' && b['property'] !== 'display') return -1;
             if (b['property'] === 'display' && a['property'] !== 'display') return 1;
 
-            if (a['property'] === 'position' && b['property'] !== 'position') return -1;
-            if (b['property'] === 'position' && a['property'] !== 'position') return 1;
+            if (a['property'] === 'position' && a['element'] === this.node.xpath && b['property'] !== 'position') return -1;
+            if (b['property'] === 'position' && b['element'] === this.node.xpath && a['property'] !== 'position') return 1;
 
-            if (a['property'] === 'float' && b['property'] !== 'float') return -1;
-            if (b['property'] === 'float' && a['property'] !== 'float') return 1;
+            if (a['property'] === 'float' && a['element'] === this.node.xpath && b['property'] !== 'float') return -1;
+            if (b['property'] === 'float' && b['element'] === this.node.xpath && a['property'] !== 'float') return 1;
           
             const aValue = getNumericValue(a['value']);
             const bValue = getNumericValue(b['value']);
@@ -206,6 +202,14 @@ class ProtrusionLocalize {
         utils.printToFile(this.file, text);
     }
 
+    localizeIntermediateParents(parent) {
+        if (parent.xpath == this.parent.xpath) return;
+
+        this.localizeFaultyProperties(parent, null, false);
+        parent = this.findImmediateParent(parent);
+        this.localizeIntermediateParents(parent);
+    }
+
     localizeSiblingChilds(parent) {
         if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
 
@@ -220,6 +224,22 @@ class ProtrusionLocalize {
                 this.localizeSiblingChilds(sibling);
             }
         }
+    }
+
+    findImmediateParent(node) {
+        let immediateParent = null;
+        if (node.parentEdges.length != 0) {
+            for (let edge of node.parentEdges) {
+                if (immediateParent == null) {
+                    immediateParent = edge.getParent();
+                } else {
+                    if (immediateParent.xpath.length < edge.getParent().xpath.length) {
+                        immediateParent = edge.getParent();
+                    }
+                }
+            }
+        }
+        return immediateParent;
     }
 
     printLocalization(faultyProperty) {

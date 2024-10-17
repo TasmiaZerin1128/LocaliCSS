@@ -2,20 +2,17 @@ const settings = require('../settings.js');
 const utils = require('./utils.js');
 const path = require('path');
 
-class ViewportLocalize {
+class WrappingLocalize {
     constructor(failure, file) {
         this.failure = failure;
         this.node = failure.node;
-        this.parent = failure.parent;
-        this.newParent = failure.newParent;
         this.immediateParent = null;
+        this.row = failure.row;
         this.range = failure.range;
-        this.type = utils.FailureType.VIEWPORT;
+        this.type = utils.FailureType.WRAPPING;
         this.visitedNodes = new Set();
         this.file = file;
         this.faultyCSSProperties = [];
-        this.viewportProtrusionDirection = 'horizontal';  // it will always be horizontal
-        this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
     localizeFaultyProperties(node, parent, isParent = false) {
@@ -35,13 +32,10 @@ class ViewportLocalize {
                         this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                     }
                 }
-                if (childComputedStyles['width'] != '100%' || childComputedStyles['width'] < this.settings.testWidthMax) {
-                    this.faultyCSSProperties.push({'element': node.xpath, 'property': 'width', 'value': 'width smaller than viewport size!'});
-                }
                 if (childDefinedStyles.includes('display')) {   // if child includes display 'flex', or 'inline-flex' but does not have flex-wrap: wrap
                     if (childDefinedStyles['display'].includes('flex')) {
-                        if (!childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] != 'wrap') {
-                            this.faultyCSSProperties.push({'element': node.xpath, 'property': `'flex-wrap' missing`, 'value': 'wrap'});
+                        if (childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] == 'wrap') {
+                            this.faultyCSSProperties.push({'element': node.xpath, 'property': 'flex-wrap', 'value': childDefinedStyles['flex-wrap']});
                         }
                     }
                 }
@@ -79,35 +73,9 @@ class ViewportLocalize {
         }
     }
 
-    isLayoutResponsible(sibling, node) {
-        if (this.protrusionDirection == 'horizontal') {
-            if (this.directionAxis == 'right') {
-                if (node.rect.isToMyLeft(sibling.rect)) {
-                    return true;
-                }
-                return false;
-            }
-            if (this.directionAxis == 'left') {
-                if (node.rect.isToMyRight(sibling.rect)) {
-                    return true;
-                }
-                return false;
-            }
-        }
-    }
-
     searchLayer() {
         // check the affected node first
         this.localizeFaultyProperties(this.node, this.parent, false);
-
-        // if no style found, check it's children
-        for (let edge of this.node.childrenEdges) {
-            let nodeChild = edge.child;
-            this.localizeFaultyProperties(nodeChild, this.node, false);
-        }
-
-        // Now check the parent
-        this.localizeFaultyProperties(this.parent, null, true);
 
         if (this.node.parentEdges.length != 0) {
             for (let edge of this.node.parentEdges) {
@@ -121,6 +89,9 @@ class ViewportLocalize {
             }
         }
 
+        // Now check the immediate parent
+        this.localizeFaultyProperties(this.immediateParent, null, true);
+
         // if no style found, check the node's siblings
         this.localizeSiblingChilds(this.immediateParent)
 
@@ -133,12 +104,6 @@ class ViewportLocalize {
             // non value properties are kept at first
             if (a['property'] === 'display' && b['property'] !== 'display') return -1;
             if (b['property'] === 'display' && a['property'] !== 'display') return 1;
-
-            if (a['property'] === 'position' && a['element'] === this.node.xpath && b['property'] !== 'position') return -1;
-            if (b['property'] === 'position' && b['element'] === this.node.xpath && a['property'] !== 'position') return 1;
-
-            if (a['property'] === 'float' && a['element'] === this.node.xpath && b['property'] !== 'float') return -1;
-            if (b['property'] === 'float' && b['element'] === this.node.xpath && a['property'] !== 'float') return 1;
           
             const aValue = getNumericValue(a['value']);
             const bValue = getNumericValue(b['value']);
@@ -166,15 +131,13 @@ class ViewportLocalize {
                 continue;
             }
             this.visitedNodes.add(sibling);
-            if (this.isLayoutResponsible(sibling, this.node)) { 
-                this.localizeFaultyProperties(sibling, parent, false);
-                this.localizeSiblingChilds(sibling);
-            }
+            this.localizeFaultyProperties(sibling, parent, false);
+            this.localizeSiblingChilds(sibling);
         }
     }
 
     printLocalization(faultyProperty) {
-        let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Parent:' + this.parent.xpath + ' Child: ' + this.node.xpath;
+        let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Node: ' + this.node.xpath;
         utils.printToFile(this.file, text);
         text = '|  |  |--[ Property: ' + faultyProperty['property'] + ' ]';
         utils.printToFile(this.file, text);
@@ -187,4 +150,4 @@ class ViewportLocalize {
     }
 }
 
-module.exports = ViewportLocalize;
+module.exports = WrappingLocalize;

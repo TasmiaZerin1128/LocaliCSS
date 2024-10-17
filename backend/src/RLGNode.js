@@ -18,6 +18,7 @@ const CSSNode = require('./CSSNode.js');
 const ProtrusionLocalize = require('./ProtrusionLocalize.js');
 const CollisionLocalize = require('./CollisionLocalize.js');
 const ViewportLocalize = require('./ViewportLocalize.js');
+const WrappingLocalize = require('./WrappingLocalize.js');
 
 class RLGNode {
      /**
@@ -564,6 +565,15 @@ class RLGNode {
             if (viewport.range.minClassification === 'TP' || viewport.range.maxClassification === 'TP') {
                 let viewportCSS = new ViewportLocalize(viewport, localizationFile);
                 viewportCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let wrapping of this.wrappings) {
+            if (wrapping.range.minClassification === 'TP' || wrapping.range.maxClassification === 'TP') {
+                let wrappingCSS = new WrappingLocalize(wrapping, localizationFile);
+                wrappingCSS.searchLayer();
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});

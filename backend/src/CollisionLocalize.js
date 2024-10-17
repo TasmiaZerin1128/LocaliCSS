@@ -108,16 +108,18 @@ class CollisionLocalize {
             if (a['property'] === 'position' && b['property'] !== 'position') return -1;
             if (b['property'] === 'position' && a['property'] !== 'position') return 1;
 
-            if (a['property'] === 'display' && b['property'] !== 'display') return -1;
-            if (b['property'] === 'display' && a['property'] !== 'display') return 1;
+            if (a['property'] === 'position' && a['element'] === this.node.xpath && b['property'] !== 'position') return -1;
+            if (b['property'] === 'position' && b['element'] === this.node.xpath && a['property'] !== 'position') return 1;
 
-            if (a['property'] === 'float' && b['property'] !== 'float') return -1;
-            if (b['property'] === 'float' && a['property'] !== 'float') return 1;
+            if (a['property'] === 'float' && a['element'] === this.node.xpath && b['property'] !== 'float') return -1;
+            if (b['property'] === 'float' && b['element'] === this.node.xpath && a['property'] !== 'float') return 1;
           
             const aValue = getNumericValue(a['value']);
             const bValue = getNumericValue(b['value']);
           
             if (aValue !== bValue) {
+                if (aValue < bValue && aValue < 0) return -1;
+                if (bValue < aValue && bValue < 0) return 1;
                 return aValue < bValue ? 1 : -1;
             }
 
