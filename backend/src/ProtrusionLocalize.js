@@ -76,10 +76,10 @@ class ProtrusionLocalize {
             if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
-            if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+            if (property == 'margin-right' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto" || property == 'padding-right' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto") {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
-            if (property == 'margin-left' && childComputedStyles[property] != "0px" || property == 'padding-left' && childComputedStyles[property] != "0px") {
+            if (property == 'margin-left' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto" || property == 'padding-left' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto") {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'font-size') {
@@ -203,6 +203,7 @@ class ProtrusionLocalize {
     }
 
     localizeIntermediateParents(parent) {
+        console.log('immediate: ' + parent.xpath + ' parent: ' + this.parent.xpath);
         if (parent.xpath == this.parent.xpath) return;
 
         this.localizeFaultyProperties(parent, null, false);

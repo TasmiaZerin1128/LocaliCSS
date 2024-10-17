@@ -31,7 +31,7 @@ class ViewportLocalize {
 
             } else { // have to check width of the parent as it is viewport failure
                 for (let property in childDefinedStyles) {
-                    if (property == 'margin-left' && childComputedStyles[property] != "0px" || property == 'margin-right' && childComputedStyles[property] != "0px") {
+                    if (property == 'margin-left' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto" || property == 'margin-right' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto") {
                         this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
                     }
                 }
@@ -64,10 +64,10 @@ class ViewportLocalize {
             if (property == 'position' && (childDefinedStyles[property] == 'absolute' || childDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
-            if (property == 'margin-right' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
+            if (property == 'margin-right' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto" || property == 'padding-right' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto") {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
-            if (property == 'margin-left' && childComputedStyles[property] != "0px" || property == 'padding-left' && childComputedStyles[property] != "0px") {
+            if (property == 'margin-left' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto" || property == 'padding-left' && childComputedStyles[property] != "0px" && childComputedStyles[property] != "auto") {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
             if (property == 'font-size') {
