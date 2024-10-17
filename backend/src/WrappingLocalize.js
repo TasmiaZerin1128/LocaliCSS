@@ -37,6 +37,8 @@ class WrappingLocalize {
                         if (childDefinedStyles.includes('flex-wrap') && childComputedStyles['flex-wrap'] == 'wrap') {
                             this.faultyCSSProperties.push({'element': node.xpath, 'property': 'flex-wrap', 'value': childDefinedStyles['flex-wrap']});
                         }
+                    } else {
+                        this.faultyCSSProperties.push({'element': node.xpath, 'property': 'flex', 'value': 'missing'});
                     }
                 }
             }
@@ -76,6 +78,12 @@ class WrappingLocalize {
     searchLayer() {
         // check the affected node first
         this.localizeFaultyProperties(this.node, this.parent, false);
+
+        // if no style found, check it's children
+        for (let edge of this.node.childrenEdges) {
+            let nodeChild = edge.child;
+            this.localizeFaultyProperties(nodeChild, this.node, false);
+        }
 
         if (this.node.parentEdges.length != 0) {
             for (let edge of this.node.parentEdges) {

@@ -163,7 +163,7 @@ class ProtrusionLocalize {
         this.immediateParent = this.findImmediateParent(this.node);
 
         // if parent and immediate parent are not same, check from the immediate until the parent
-        if (this.immediateParent.xpath != this.parent.xpath) {
+        if (this.immediateParent.xpath.length > this.parent.xpath.length) {
             this.localizeIntermediateParents(this.immediateParent);
         }
 
@@ -238,7 +238,7 @@ class ProtrusionLocalize {
                 if (immediateParent == null) {
                     immediateParent = edge.getParent();
                 } else {
-                    if (edge.getParent().xpath.length < immediateParent.xpath.length) {
+                    if (edge.getParent().xpath.length > immediateParent.xpath.length) {
                         immediateParent = edge.getParent();
                     }
                 }
