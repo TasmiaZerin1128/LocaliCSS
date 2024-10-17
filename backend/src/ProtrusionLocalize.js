@@ -10,6 +10,7 @@ class ProtrusionLocalize {
         this.newParent = failure.newParent;
         this.immediateParent = null;
         this.visitedNodes = new Set();
+        this.visitedParents = new Set();
         this.range = failure.range;
         this.type = utils.FailureType.PROTRUSION;
         this.file = file;
@@ -203,12 +204,12 @@ class ProtrusionLocalize {
     }
 
     localizeIntermediateParents(parent) {
+        if (parent.xpath == this.parent.xpath || parent == null) return;
         console.log('immediate: ' + parent.xpath + ' parent: ' + this.parent.xpath);
-        if (parent.xpath == this.parent.xpath) return;
 
         this.localizeFaultyProperties(parent, null, false);
         parent = this.findImmediateParent(parent);
-        this.localizeIntermediateParents(parent);
+        if (parent != null) this.localizeIntermediateParents(parent);
     }
 
     localizeSiblingChilds(parent) {
@@ -231,10 +232,13 @@ class ProtrusionLocalize {
         let immediateParent = null;
         if (node.parentEdges.length != 0) {
             for (let edge of node.parentEdges) {
+                if (edge.getParent().xpath == this.node.xpath) {
+                    continue;
+                }
                 if (immediateParent == null) {
                     immediateParent = edge.getParent();
                 } else {
-                    if (immediateParent.xpath.length < edge.getParent().xpath.length) {
+                    if (edge.getParent().xpath.length < immediateParent.xpath.length) {
                         immediateParent = edge.getParent();
                     }
                 }
