@@ -1359,6 +1359,8 @@ class Failure {
             xToClear = 0;
             yToClear = 0;
         }
+        if (xToClear != 0) this.horizontalOrVertical = 'horizontal';
+        if (yToClear != 0) this.horizontalOrVertical = 'vertical';
 
         overlap.nodeRectToBeCleared = nodeRectToBeCleared;
         overlap.otherNodeRect = otherNodeRect;

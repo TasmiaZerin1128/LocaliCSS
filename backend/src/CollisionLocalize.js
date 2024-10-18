@@ -105,9 +105,6 @@ class CollisionLocalize {
             };
 
             // non value properties are kept at first
-            if (a['property'] === 'position' && b['property'] !== 'position') return -1;
-            if (b['property'] === 'position' && a['property'] !== 'position') return 1;
-
             if (a['property'] === 'position' && a['element'] === this.node.xpath && b['property'] !== 'position') return -1;
             if (b['property'] === 'position' && b['element'] === this.node.xpath && a['property'] !== 'position') return 1;
 

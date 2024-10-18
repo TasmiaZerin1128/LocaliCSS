@@ -76,6 +76,9 @@ class ViewportLocalize {
             if (property == 'float') {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
             }
+            if ((property == 'border-right-width' && childComputedStyles[property] != "0px") || (property == 'border-left-width' && childComputedStyles[property] != "0px")) {
+                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
+            }
         }
     }
 
