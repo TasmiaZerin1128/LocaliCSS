@@ -1,117 +1,22 @@
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: position ]
-|  |  |--[ Value: absolute ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL ]
+Type: Element-Collision Range:600-680 Node 1:/HTML/BODY/HEADER Node 2: /HTML/BODY/DIV
+|  |  |--[ Property: margin-bottom ]
+|  |  |--[ Value: 20px ]
+|  |  |--[ Element: /HTML/BODY/HEADER ]
 -----------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: position ]
-|  |  |--[ Value: absolute ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/DIV/IMG ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: max-width ]
-|  |  |--[ Value: 1000px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: width ]
-|  |  |--[ Value: 800px ]
+Type: Element-Collision Range:600-680 Node 1:/HTML/BODY/HEADER Node 2: /HTML/BODY/DIV
+|  |  |--[ Property: margin-top ]
+|  |  |--[ Value: -20px ]
 |  |  |--[ Element: /HTML/BODY/DIV ]
 -----------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 360px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/DIV ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: width ]
-|  |  |--[ Value: 340px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/DIV/IMG ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[2]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[2]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[3]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[3]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[4]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 15px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[4]/A ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
+Type: Element-Collision Range:600-680 Node 1:/HTML/BODY/HEADER Node 2: /HTML/BODY/DIV
+|  |  |--[ Property: padding-bottom ]
 |  |  |--[ Value: 10px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV ]
+|  |  |--[ Element: /HTML/BODY/HEADER ]
 -----------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 10px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 5px ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/DIV/H3 ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-right ]
+Type: Element-Collision Range:600-680 Node 1:/HTML/BODY/HEADER Node 2: /HTML/BODY/DIV
+|  |  |--[ Property: padding-top ]
 |  |  |--[ Value: 4px ]
 |  |  |--[ Element: /HTML/BODY/DIV ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: padding-left ]
-|  |  |--[ Value: 4px ]
-|  |  |--[ Element: /HTML/BODY/DIV ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: float ]
-|  |  |--[ Value: left ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: float ]
-|  |  |--[ Value: left ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[2] ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: float ]
-|  |  |--[ Value: left ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[3] ]
------------------
-Type: Element-Collision Range:320-680 Parent:/HTML/BODY Child: /HTML/BODY/HEADER
-|  |  |--[ Property: float ]
-|  |  |--[ Value: left ]
-|  |  |--[ Element: /HTML/BODY/HEADER/DIV/UL/LI[4] ]
 -----------------
 ---------------------------------------------
 Type: Element-Protrusion Range:698-707 Parent:/HTML/BODY/HEADER/DIV/DIV Child: /HTML/BODY/HEADER/DIV/DIV/H1

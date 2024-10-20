@@ -1294,46 +1294,30 @@ class Failure {
         if (nodeRect.minX < siblingRect.minX) {
             nodeRectToBeCleared = siblingRect;
             otherNodeRect = nodeRect;
-            this.horizontalOrVertical = 'horizontal';
-            this.direction = 'left';
         } else if (nodeRect.minX > siblingRect.minX) {
             nodeRectToBeCleared = nodeRect;
             otherNodeRect = siblingRect;
-            this.horizontalOrVertical = 'horizontal';
-            this.direction = 'right';
         } else if (nodeRect.minX === siblingRect.minX) {
             if (nodeRect.minY < siblingRect.minY) {
                 nodeRectToBeCleared = siblingRect; 
                 otherNodeRect = nodeRect;
-                this.horizontalOrVertical = 'vertical';
-                this.direction = 'top';
             } else if (nodeRect.minY > siblingRect.minY) {
                 nodeRectToBeCleared = nodeRect;
                 otherNodeRect = siblingRect;
-                this.horizontalOrVertical = 'vertical';
-                this.direction = 'bottom';
             } else if (nodeRect.minY === siblingRect.minY) {
                 if (nodeRect.maxX < siblingRect.maxX) {
                     nodeRectToBeCleared = siblingRect;
                     otherNodeRect = nodeRect;
-                    this.horizontalOrVertical = 'horizontal';
-                    this.direction = 'left';
                 } else if (nodeRect.maxX > siblingRect.maxX) {
                     nodeRectToBeCleared = nodeRect;
                     otherNodeRect = siblingRect;
-                    this.horizontalOrVertical = 'horizontal';
-                    this.direction = 'right';
                 } else if (nodeRect.maxX === siblingRect.maxX) {
                     if (nodeRect.maxY < siblingRect.maxY) {
                         nodeRectToBeCleared = siblingRect;
                         otherNodeRect = nodeRect;
-                        this.horizontalOrVertical = 'vertical';
-                        this.direction = 'top';
                     } else if (nodeRect.maxY > siblingRect.maxY) {
                         nodeRectToBeCleared = nodeRect;
                         otherNodeRect = siblingRect;
-                        this.horizontalOrVertical = 'vertical';
-                        this.direction = 'bottom';
                     } else if (nodeRect.maxY === siblingRect.maxY) {
                         this.horizontalOrVertical = null;
                         /**
@@ -1352,6 +1336,7 @@ class Failure {
                 }
             }
         }
+        
         if (utils.areOverlapping(nodeRectToBeCleared, otherNodeRect)) {
             xToClear = otherNodeRect.maxX - nodeRectToBeCleared.minX + 1;
             yToClear = otherNodeRect.maxY - nodeRectToBeCleared.minY + 1;
@@ -1359,8 +1344,8 @@ class Failure {
             xToClear = 0;
             yToClear = 0;
         }
-        if (xToClear != 0) this.horizontalOrVertical = 'horizontal';
-        if (yToClear != 0) this.horizontalOrVertical = 'vertical';
+        if (xToClear < yToClear && xToClear != 0) this.horizontalOrVertical = 'horizontal';
+        if (yToClear < xToClear && yToClear != 0) this.horizontalOrVertical = 'vertical';
 
         overlap.nodeRectToBeCleared = nodeRectToBeCleared;
         overlap.otherNodeRect = otherNodeRect;

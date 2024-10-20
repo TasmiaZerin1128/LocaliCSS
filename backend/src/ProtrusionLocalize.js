@@ -213,7 +213,6 @@ class ProtrusionLocalize {
         if (this.visitedParents.has(parent)) return;
         this.visitedParents.add(parent);
         if (parent.xpath <= this.parent.xpath || parent == null) return;
-        console.log('immediate: ' + parent.xpath + ' parent: ' + this.parent.xpath);
 
         this.localizeFaultyProperties(parent, null, false);
         parent = this.findImmediateParent(parent);

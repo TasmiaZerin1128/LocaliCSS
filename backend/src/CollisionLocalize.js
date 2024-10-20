@@ -18,20 +18,20 @@ class CollisionLocalize {
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
-    localizeFaultyProperties(node) {
+    localizeFaultyProperties(node, nodeType) {
         let nodeDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
 
         let nodeComputedStyles = node.cssNode.computedStyles;
         // let parentComputedStyles = parent.cssNode.computedStyles;
 
         if (this.collisionDirection == 'horizontal') {
-            this.localizeForHorizontal(node, nodeDefinedStyles, nodeComputedStyles);
+            this.localizeForHorizontal(node, nodeType, nodeDefinedStyles, nodeComputedStyles);
         } else if (this.collisionDirection == 'vertical') {
-            this.localizeForVertical(node, nodeDefinedStyles, nodeComputedStyles);
+            this.localizeForVertical(node, nodeType, nodeDefinedStyles, nodeComputedStyles);
         }
     }
 
-    localizeForHorizontal(node, nodeDefinedStyles, nodeComputedStyles) {
+    localizeForHorizontal(node, nodeType, nodeDefinedStyles, nodeComputedStyles) {
         for (let property in nodeDefinedStyles) {
             if (property == 'width' && (nodeDefinedStyles[property] != 'max-content' || nodeDefinedStyles[property] != '100%')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
@@ -42,11 +42,15 @@ class CollisionLocalize {
             if (property == 'position' && (nodeDefinedStyles[property] == 'absolute' || nodeDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
             }
-            if (property == 'margin-right' && nodeComputedStyles[property] != "0px" || property == 'padding-right' && nodeComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+            if (nodeType == 'left') {
+                if (property == 'margin-right' && nodeComputedStyles[property] != "0px" || property == 'padding-right' && nodeComputedStyles[property] != "0px") {
+                    this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+                }
             }
-            if (property == 'margin-left' && nodeComputedStyles[property] != "0px" || property == 'padding-left' && nodeComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+            if (nodeType == 'right') {
+                if (property == 'margin-left' && nodeComputedStyles[property] != "0px" || property == 'padding-left' && nodeComputedStyles[property] != "0px") {
+                    this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+                }
             }
             if (property == 'float') {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
@@ -54,7 +58,7 @@ class CollisionLocalize {
         }
     }
 
-    localizeForVertical(node, nodeDefinedStyles, nodeComputedStyles) {
+    localizeForVertical(node, nodeType, nodeDefinedStyles, nodeComputedStyles) {
         for (let property in nodeDefinedStyles) {
             if (property == 'height' && (nodeDefinedStyles[property] != 'max-content' || nodeDefinedStyles[property] != '100%')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
@@ -65,11 +69,15 @@ class CollisionLocalize {
             if (property == 'position' && (nodeDefinedStyles[property] == 'absolute' || nodeDefinedStyles[property] == 'fixed')) {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
             }
-            if (property == 'margin-bottom' && nodeComputedStyles[property] != "0px" || property == 'padding-bottom' && nodeComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+            if (nodeType == 'top') {
+                if (property == 'margin-bottom' && nodeComputedStyles[property] != "0px" || property == 'padding-bottom' && nodeComputedStyles[property] != "0px") {
+                    this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+                }
             }
-            if (property == 'margin-top' && nodeComputedStyles[property] != "0px" || property == 'padding-top' && nodeComputedStyles[property] != "0px") {
-                this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+            if (nodeType == 'bottom') {
+                if (property == 'margin-top' && nodeComputedStyles[property] != "0px" || property == 'padding-top' && nodeComputedStyles[property] != "0px") {
+                    this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
+                }
             }
             if (property == 'float') {
                 this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': nodeComputedStyles[property]});
@@ -79,10 +87,18 @@ class CollisionLocalize {
 
     searchLayer() {
         // check the affected node first
-        this.localizeFaultyProperties(this.node);
+        if (this.collisionDirection == 'horizontal') {
+            this.localizeFaultyProperties(this.node, 'left');
 
-        // Now check the sibling
-        this.localizeFaultyProperties(this.sibling);
+            // Now check the sibling
+            this.localizeFaultyProperties(this.sibling, 'right');
+        }
+        if (this.collisionDirection == 'vertical') {
+            this.localizeFaultyProperties(this.node, 'top');
+
+            // Now check the sibling
+            this.localizeFaultyProperties(this.sibling, 'bottom');
+        }
 
         // Now check the parent
         let parentDefinedStyles = this.parent.cssNode.developerCssProperties;
@@ -95,8 +111,8 @@ class CollisionLocalize {
             }
         }
 
-        this.localizeChilds(this.node);
-        this.localizeChilds(this.sibling);
+        // this.localizeChilds(this.node);
+        // this.localizeChilds(this.sibling);
 
         this.faultyCSSProperties.sort((a, b) => {
             const getNumericValue = (str) => {
@@ -105,11 +121,11 @@ class CollisionLocalize {
             };
 
             // non value properties are kept at first
-            if (a['property'] === 'position' && a['element'] === this.node.xpath && b['property'] !== 'position') return -1;
-            if (b['property'] === 'position' && b['element'] === this.node.xpath && a['property'] !== 'position') return 1;
+            if (a['property'] === 'position' && (a['element'] === this.node.xpath || a['element'] === this.sibling.xpath) && b['property'] !== 'position') return -1;
+            if (b['property'] === 'position' && (b['element'] === this.node.xpath || b['element'] === this.sibling.xpath) && a['property'] !== 'position') return 1;
 
-            if (a['property'] === 'float' && a['element'] === this.node.xpath && b['property'] !== 'float') return -1;
-            if (b['property'] === 'float' && b['element'] === this.node.xpath && a['property'] !== 'float') return 1;
+            if (a['property'] === 'float' && (a['element'] === this.node.xpath || a['element'] === this.sibling.xpath) && b['property'] !== 'float') return -1;
+            if (b['property'] === 'float' && (b['element'] === this.node.xpath || b['element'] === this.sibling.xpath) && a['property'] !== 'float') return 1;
           
             const aValue = getNumericValue(a['value']);
             const bValue = getNumericValue(b['value']);
@@ -130,22 +146,22 @@ class CollisionLocalize {
         utils.printToFile(this.file, text);
     }
 
-    localizeChilds(parent) {
-        if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
+    // localizeChilds(parent) {
+    //     if (!parent.childrenEdges || parent.childrenEdges.length == 0) return;
 
-        for (let edge of parent.childrenEdges) {
-            let child = edge.getChild();
-            if (this.visitedNodes.has(child)) {
-                continue;
-            }
-            this.visitedNodes.add(child);
-            this.localizeFaultyProperties(child);
-            this.localizeChilds(child);
-        }
-    }
+    //     for (let edge of parent.childrenEdges) {
+    //         let child = edge.getChild();
+    //         if (this.visitedNodes.has(child)) {
+    //             continue;
+    //         }
+    //         this.visitedNodes.add(child);
+    //         this.localizeFaultyProperties(child);
+    //         this.localizeChilds(child);
+    //     }
+    // }
 
     printLocalization(faultyProperty) {
-        let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Parent:' + this.parent.xpath + ' Child: ' + this.node.xpath;
+        let text = 'Type: ' + this.type + ' Range:' + this.range.toString() + ' Node 1:' + this.node.xpath + ' Node 2: ' + this.sibling.xpath;
         utils.printToFile(this.file, text);
         text = '|  |  |--[ Property: ' + faultyProperty['property'] + ' ]';
         utils.printToFile(this.file, text);
