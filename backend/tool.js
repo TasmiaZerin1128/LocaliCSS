@@ -14,20 +14,108 @@ async function isWebpage(url) {
 
   const response = await axios.head(url, { validateStatus: () => true });
   const contentType = response.headers['content-type'];
-  console.log(contentType);
 
   if(contentType.startsWith('text/html')) return true;
   return false;
 }
 
+runTool = async () => {
+  let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
+  let currentDateTime = utils.getDateTime();
+
+  let webpages = [];
+
+  settings.URLs.forEach(async (url) => {
+    let pageName = undefined;
+      if (url.includes(settings.webpagesDirectory.replace(/\\/g, "/"))) {
+          pageName = url.split(settings.webpagesDirectory.replace(/\\/g, "/") + '/')[1].replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");;
+      } else {
+          if (isWebpage(url)) {
+            pageName = utils.parseName(url);
+          } else {
+            pageName = url.replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-");
+          }
+      }
+    let testOutputPath = path.join(settings.runOutputFile, pageName);
+    webpages.push(new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName));
+  });
+
+  for(let newWebpage of webpages) {
+    newWebpage.createMainOutputFile();
+    await newWebpage.navigateToPage();
+    await newWebpage.testWebpage();
+    await newWebpage.classifyFailures();
+    newWebpage.printRLG();
+    newWebpage.printFailures();
+    newWebpage.localizeCSS();
+    // await newWebpage.verifyFailures();
+    // await newWebpage.repairFailures();
+  }
+
+  console.log('completed ');
+}
+
+async function load_subjects() {
+  console.log('loading subjects');
+  if (settings.URLs.length === 0) {
+    let mainDirectory = settings.webpagesDirectory;
+    let allFiles = fs.readdirSync(mainDirectory);
+    while (allFiles.length > 0) {
+        let file = allFiles.shift();
+        if (file.toLowerCase().includes('index.html') && file.toLocaleLowerCase().includes('index.htm')) {
+            if (settings.not !== undefined && settings.not.length > 0) {
+                let testSubject = true;
+                for (let name of settings.not)
+                    if (file.toLocaleLowerCase().replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-").includes(name.toLocaleLowerCase())) {
+                        testSubject = false;
+                        break;
+                    }
+                if (testSubject) {
+                    settings.URLs.push('file://' + path.join(mainDirectory, file).replace(/\\/g, "/"));
+                }
+            }
+            else if (settings.only !== undefined && settings.only.length > 0) {
+                for (let name of settings.only) {
+                    if (file.toLocaleLowerCase().replace(/\\/g, "-").replace(/\//g, "-").replace(/\:/g, "-").replace(/\./g, "-").includes(name.toLocaleLowerCase())) {
+                        settings.URLs.push('file://' + path.join(mainDirectory, file).replace(/\\/g, "/"));
+                        break;
+                    }
+                }
+
+            } else {
+                settings.URLs.push('file://' + path.join(mainDirectory, file).replace(/\\/g, "/"));
+            }
+            //if (file.toLowerCase().includes('index.html') && file.toLocaleLowerCase().includes('index.htm')) {
+        } else if (fs.statSync(path.join(mainDirectory, file)).isDirectory()) {
+            let subFiles = fs.readdirSync(path.join(mainDirectory, file));
+            let extendedPathSubFiles = subFiles.map(newFile => { return file + path.sep + newFile; })
+            allFiles = [...allFiles, ...extendedPathSubFiles];
+        }
+    }
+}
+}
+
+exports.startLocal = async (req, res) => {
+  try {
+    await driver.start();
+    const page = await driver.createPage();
+
+    load_subjects();
+    await runTool();
+
+    await driver.close();
+    return res.status(200).json('completed');
+
+  } catch (err) {
+    console.log('Error: ', err);
+    await driver.close();
+    return res.status(500).json('Something went wrong');
+  }
+}
+
 exports.startTool = async (req, res) => {
 
-  let cookies = [
-    // {
-    //   name: "storefront_digest",
-    //   value: "568f8bf7a2b890ebc69c326b5177a99637ec7c6f5ef0776a4ac1e998ebef6b00",
-    // }
-  ]
+  let cookies = []
   
   try {
     await driver.start();
@@ -36,45 +124,9 @@ exports.startTool = async (req, res) => {
     let url = req.query.url;
     console.log(url);
 
-    if (cookies.length !== 0) await driver.page.setCookie(...cookies);
+    settings.URLs.push(url);
     await driver.goto(url);
-    // take all hrefs
-    // let hrefs = await page.evaluate(() => {
-    //   let Element = Array.from(document.body.querySelectorAll('a'), (el) => el.href);
-    //   return Array.from(new Set(Element));
-    // });
-    // // only select webpages with text/html
-    // let webpages = [];
-    // for (let i = 0; i < hrefs.length; i++) {
-    //   if(await isWebpage(hrefs[i])) {
-    //     webpages.push(hrefs[i]);
-    //   }
-    // }
-    // console.log(webpages);
-    //https://dshe.gov.bd
-    // https://acc.org.bd/
-    //https://teachers.gov.bd/
-    //http://www.dphe.gov.bd/
-    //https://tasmiazerin1128.github.io/my-minimalist-portfolio/
-    let testRange = new Range(settings.testWidthMin, settings.testWidthMax);
-    let currentDateTime = utils.getDateTime();
-
-    // for (let i = 0; i < webpages.length; i++) {
-      let pageName = utils.parseName(url);
-      let testOutputPath = path.join(path.join('output', currentDateTime), pageName);
-    
-      let newWebpage = new Webpage(url, driver, testRange, settings.testingHeight, testOutputPath, pageName);
-      newWebpage.createMainOutputFile();
-      await newWebpage.navigateToPage();
-      await newWebpage.testWebpage();
-      await newWebpage.classifyFailures();
-      newWebpage.printRLG();
-      newWebpage.printFailures();
-      await newWebpage.verifyFailures();
-      // await newWebpage.repairFailures();
-    // }
-
-    console.log('completed ');
+    await runTool();
 
     await driver.close();
     return res.status(200).json('completed');

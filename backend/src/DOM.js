@@ -7,6 +7,7 @@ const settings = require('../settings');
 
 class DOM {
   constructor(driver, viewport) {
+    // this.page = page;
     this.driver = driver;
     this.viewport = viewport;
     this.report = undefined;
@@ -19,7 +20,7 @@ class DOM {
     return this.map.get(xpath);
 }
 
-async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = [], rootElement = undefined, xpath = undefined) {
+async captureDOM(allNodes = false, getComputedStyle = true, pseudoElements = [], rootElement = undefined, xpath = undefined) {
   if (rootElement !== undefined) {
     this.root = new DOMNode(rootElement);
     if (xpath === undefined)
@@ -32,12 +33,15 @@ async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = []
     this.root.setXPath(await this.driver.getTagName(this.root.element));
   }
 
-  const traversalStackDOM = [];
-  traversalStackDOM.push(this.root);
+  const traversalStackDOM = [this.root];
+
   while (traversalStackDOM.length > 0) {
     let domNode = traversalStackDOM.shift();
     domNode.rectangle = new Rectangle(await this.driver.getRectangle(domNode.element));
     domNode.rectangle.xpath = domNode.xpath;
+
+    await domNode.getExplicitlyDefinedStyle(this.driver, domNode.element);
+
     if (getComputedStyle) {
       domNode.setComputedStyle(await this.driver.getComputedStyle(domNode.element));
       for (let pseudoElement of pseudoElements) {
@@ -55,7 +59,7 @@ async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = []
     }
 
     this.map.set(domNode.xpath, domNode);
-    const children = await this.driver.getChildren(domNode.element);
+    const children = await this.driver.getChildren(this.page, domNode.element);
     for (let i = 0; i < children.length; i++) {
       const childNode = domNode.addChild(children[i]);
       childNode.addDescendantsToRLG = domNode.addDescendantsToRLG;
@@ -68,9 +72,21 @@ async captureDOM(allNodes = false, getComputedStyle = false, pseudoElements = []
   saveRBushData(writeDirectory) {
     const fileName = 'viewport-' + this.viewport + '-rbush.json';
     try{ 
-      fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(this.rbush.toJSON(), null, 2));
+      const filterData = JSON.parse(JSON.stringify(this.rbush.all()));
+      this.removeCssNode(filterData);
+      fs.writeFileSync(path.join(writeDirectory, fileName), JSON.stringify(filterData, null, 2));
     } catch (err) {
       console.log(err);
+    }
+  }
+
+  // Recursive function to remove cssNode property from saving in file
+  removeCssNode(obj) {
+    if (Array.isArray(obj)) {
+      obj.forEach(item => this.removeCssNode(item));
+    } else if (obj !== null && typeof obj === 'object') {
+      delete obj.cssNode;
+      Object.values(obj).forEach(item => this.removeCssNode(item));
     }
   }
 }

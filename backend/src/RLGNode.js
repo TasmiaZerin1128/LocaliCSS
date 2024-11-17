@@ -1,7 +1,7 @@
 const path = require('path');
 const { Ranges } = require("./Range");
 const RepairStatistics = require('./RepairStatistics.js');
-const PCEdge = require('./PCedge.js');
+const PCEdge = require('./PCEdge.js');
 const OverlapEdge = require("./OverlapEdge");
 const AboveBelowEdge = require("./AboveBelowEdge");
 const RightLeftEdge = require("./RightLeftEdge");
@@ -14,6 +14,11 @@ const SmallRangeFailure = require("./SmallRangeFailure");
 const CollisionFailure = require("./CollisionFailure");
 const WrappingFailure = require("./WrappingFailure");
 const { sendMessage } = require('../socket-connect.js');
+const CSSNode = require('./CSSNode.js');
+const ProtrusionLocalize = require('./ProtrusionLocalize.js');
+const CollisionLocalize = require('./CollisionLocalize.js');
+const ViewportLocalize = require('./ViewportLocalize.js');
+const WrappingLocalize = require('./WrappingLocalize.js');
 
 class RLGNode {
      /**
@@ -27,6 +32,7 @@ class RLGNode {
         this.rlg = rlgPointer;
         this.outputDirectory = outputDir;
         this.webpage = webpage;
+        this.rect = rectangle;
         this.run = run;
         this.parentEdges = []; //RLGEdges
         this.containerEdges = []; //Not for parent-child edges. Added to remove FP protrusions
@@ -47,6 +53,8 @@ class RLGNode {
         this.smallranges = [];
         this.wrappings = [];
         this.viewportProtrusions = [];
+
+        this.cssNode = rectangle.cssNode;
 
         this.collisionRepairStats = new RepairStatistics();
         this.protrusionRepairStats = new RepairStatistics();
@@ -330,10 +338,10 @@ class RLGNode {
                 let secondNodeParentAtMax = overlapEdge.node2.getParentAtViewport(maxViewport);
                 if (firstNodeParentAtWider === undefined || secondNodeParentAtWider === undefined)
                     continue; // one of the elements is not contained in wider viewport
-                if (settings.detectElementProtrusion)
-                    this.detectProtrusion(overlapEdge, maxViewport, firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, range);
                 if (settings.detectElementCollision)
                     this.detectCollision(firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, overlapEdge, range);
+                if (settings.detectElementProtrusion)
+                    this.detectProtrusion(overlapEdge, maxViewport, firstNodeParentAtMax, firstNodeParentAtWider, secondNodeParentAtMax, secondNodeParentAtWider, range);
             }
         }
     }
@@ -533,6 +541,62 @@ class RLGNode {
         }
     }
 
+    // start localization of CSS for each failure
+    async localizeCSS(bar, localizationFile) {
+        for (let protrusion of this.elementProtrusions) {
+            if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
+                let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile);
+                protrusionCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let collision of this.elementCollisions) {
+            if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
+                let collisionCSS = new CollisionLocalize(collision, localizationFile);
+                collisionCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let viewport of this.viewportProtrusions) {
+            if (viewport.range.minClassification === 'TP' || viewport.range.maxClassification === 'TP') {
+                let viewportCSS = new ViewportLocalize(viewport, localizationFile);
+                viewportCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        for (let wrapping of this.wrappings) {
+            if (wrapping.range.minClassification === 'TP' || wrapping.range.maxClassification === 'TP') {
+                let wrappingCSS = new WrappingLocalize(wrapping, localizationFile);
+                wrappingCSS.searchLayer();
+            } else {
+                bar.tick();
+                sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
+            }
+        }
+        console.log("I'm relaxing");
+    }
+
+    async findCulpritCSS() {
+        try {
+            let child = await driver.getElementBySelector(this.node.getSelector());
+            let parent = await driver.getElementBySelector(this.parent.getSelector());
+            let childRect = new Rectangle(await driver.getRectangle(child));
+            let parentRect = new Rectangle(await driver.getRectangle(parent));
+            const siblings = Array.from(parent.children).filter(sib => sib !== element);
+            
+        } catch (e) {
+            console.log('Error in getting elements for protrusion failure: ' + e);
+            return false;
+        }
+    }
+
+
     // Repair each 
     async repairFailures(driver, directory, bar, webpage, run, counter) {
         let repairCSSFile = path.join(directory, "repairs.css");
@@ -609,16 +673,26 @@ class RLGNode {
         for (let viewportProtrusion of this.viewportProtrusions) {
             if (viewportProtrusion.range.minClassification === 'TP' || viewportProtrusion.range.maxClassification === 'TP') {
                 await viewportProtrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
         }
         for (let protrusion of this.elementProtrusions) {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
                 await protrusion.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
+            
         }
         for (let collision of this.elementCollisions) {
             if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
                 await collision.verify(driver, verificationFile, snapshotDirectory, bar, counter);
+            } else {
+                bar.tick();
+                sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             }
         }
         // No wrapping and small range verification for now
@@ -654,9 +728,9 @@ class RLGNode {
 
     async checkIfCarousel(driver) {
         try {
-            const elements = await driver.getElementByXPath(this.xpath);
-            const element = elements[0];
-            const style = await driver.getComputedStyle(element);
+            const element = await driver.getElementByXPath(this.xpath);
+            if (element) {
+            const style = this.cssNode.computedStyles;
             if (( style.position === 'absolute' || style.overflow === 'hidden' )
                 && ( style.transform !== 'none' || style.transition !== 'none' || style['transition-duration'] !== '0s' )) {
                 return new Promise(async (resolve) => {
@@ -681,6 +755,9 @@ class RLGNode {
             } else {
                 return false;
             }
+        } else {
+            return false;
+        }
         } catch (e) {
             console.log(e);
         }

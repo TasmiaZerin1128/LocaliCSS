@@ -1,0 +1,4 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+Django-index-html,1,2,Element-Protrusion,350,357,/HTML/BODY/DIV[5]/DIV[2]/DIV/DIV/A,/HTML/BODY/DIV[5]/DIV[2]/DIV/DIV,TP,TP,TP,TP,FP
+Django-index-html,1,7,Element-Protrusion,350,385,/HTML/BODY/DIV[4]/DIV/DIV[2]/DIV/DIV[2]/FORM/INPUT,/HTML/BODY/DIV[4]/DIV/DIV[2],TP,TP,TP,TP,FP
+Django-index-html,1,14,Element-Protrusion,350,385,/HTML/BODY/DIV[4]/DIV/DIV[2]/DIV/DIV/FORM/INPUT,/HTML/BODY/DIV[4]/DIV/DIV[2],TP,TP,TP,TP,FP

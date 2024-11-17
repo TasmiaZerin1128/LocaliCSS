@@ -36,7 +36,7 @@ class RLG {
      * @param {number} viewport The viewport where the dom is extracted.
      */
 
-    extractRLG(dom, viewport) {
+    async extractRLG(dom, viewport) {
         let rlg = this;
         let domRectangles = dom.rbush.all();
         for(let rect of domRectangles){
@@ -547,6 +547,16 @@ class RLG {
         let counter = 0;
         for (const node of this.nodesWithFailures) {
             await node.verifyFailures(driver, verificationFile, snapshotDirectory, bar, counter);
+        }
+    }
+
+    async localizeCSS(driver, localizationFile) {
+        let bar = new ProgressBar('Localize RLFs  | [:bar] | :percent :etas | Localization Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
+        console.log("CSS Localization going on");
+        sendMessage("Localize", {'counter': 0, 'total': utils.failureCount});
+        let counter = 0;
+        for (const node of this.nodesWithFailures) {
+            await node.localizeCSS(bar, localizationFile, bar, counter);
         }
     }
 

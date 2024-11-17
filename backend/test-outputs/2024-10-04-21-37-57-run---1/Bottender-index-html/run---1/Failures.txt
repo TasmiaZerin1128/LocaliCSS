@@ -1,0 +1,14 @@
+*
+|  |--[ Viewport-Protrusion (62): 350-414(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (63): 350-718(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Viewport-Protrusion (64): 391-408(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Element-Protrusion (65): 563-604(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[4]/DIV ]
+|  |--[ Viewport-Protrusion (66): 350-467(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY ]
+|  |--[ Element-Protrusion (67): 468-507(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV[2]/DIV/DIV[2]/DIV[3]/DIV ]
+67 Responsive Layout Failures Found.

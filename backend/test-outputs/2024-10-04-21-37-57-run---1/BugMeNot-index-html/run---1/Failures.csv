@@ -1,0 +1,4 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+BugMeNot-index-html,1,71,Element-Protrusion,350,671,/HTML/BODY/DIV/HEADER/DIV/FORM,/HTML/BODY/DIV/HEADER,TP,TP,TP,TP,FP
+BugMeNot-index-html,1,72,Element-Protrusion,350,420,/HTML/BODY/FOOTER/UL/LI[4],/HTML/BODY/FOOTER,TP,TP,TP,TP,FP
+BugMeNot-index-html,1,73,Element-Protrusion,350,529,/HTML/BODY/FOOTER/UL/LI[5],/HTML/BODY/FOOTER,TP,TP,TP,TP,FP

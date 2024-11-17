@@ -26,6 +26,7 @@ dist-ssr
 
 #OUTPUT AND TESTING
 output
+subjects-minimized
 tests/images/*.png
 tests/*.png
 *.json

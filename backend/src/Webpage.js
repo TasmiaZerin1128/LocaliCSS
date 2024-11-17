@@ -7,6 +7,7 @@ const RLG = require('./RLG');
 const { sendMessage } = require('../socket-connect');
 const utils = require('./utils');
 const pLimit = require('p-limit');
+const driver = require('./Driver');
 
 class Webpage {
     constructor(uri, driver, testRange, testHeight, outputPath, pageName) {
@@ -61,7 +62,7 @@ class Webpage {
     }
 
     async testWebpage(navigate = true) {
-        // let limit = pLimit(5);
+        let limit = pLimit(10);
 
         this.durationDOM = new Date();
         sendMessage("message", 'Testing---> ');
@@ -80,14 +81,18 @@ class Webpage {
 
         for(let width = testRange.max; width >= testRange.min; width--) {
             // tasks.push(limit(async () => {
+                // const page = await this.driver.createPage();
                 testCounter++;
-                await this.driver.setViewport(width, this.testHeight);
+                let height = this.testHeight;
+                await this.driver.setViewport(width, height);
                 let newDom = new DOM(this.driver, width);
                 await newDom.captureDOM();
                 newDom.saveRBushData(this.domOutputPath);
                 this.rlg.extractRLG(newDom, width);
                 sendMessage("Extract RLG", {'counter': testCounter, 'total': totalTestViewports});
                 bar.tick({'token1': testCounter});
+
+                // await page.close();
             // }));
         }
 
@@ -110,6 +115,11 @@ class Webpage {
         await this.rlg.verifyFailures(this.driver, this.pageRunOutputPath + path.sep + 'Verifications.txt', this.snapshotOutputPath);
         this.durationVerification = new Date() - this.durationVerification;
     }
+
+    async localizeCSS() {
+        await this.rlg.localizeCSS(this.driver, this.pageRunOutputPath + path.sep + 'Localization.txt');
+    }
+
     async screenshotFailures() {
         await this.rlg.screenshotFailures(this.driver, this.pageRunOutputPath);
     }

@@ -25,6 +25,8 @@ class Failure {
         this.repairStats = new RepairStatistics();
         this.ID = utils.getNewFailureID(); //unique to entire run and all webpages
         utils.incrementFailureCount(); //counts failures of the current web page.
+        this.horizontalOrVertical = null;
+        this.direction = null;
         this.repairElementHandle = undefined; //Style Element used to inject
         this.repairCSS = undefined; //CSS code for repair
         this.repairCSSComments = undefined; //CSS comments for repair
@@ -134,28 +136,38 @@ class Failure {
 
     // Layer based verification of the reported failures.
     async verify(driver, verificationFile, snapshotDirectory, bar, counter) {
-        try {
-            this.durationFailureVerify = new Date();
+        const executeVerification = async (driver) => {
             let range = this.range;
-
+    
             await driver.start();
-
+    
             let minRange = range.getMinimum();
             let maxRange = range.getMaximum();
-
-            await driver.setViewport(range.getMinimum(), settings.testingHeight);
-            range.minVerification = await this.isObservable(driver, range.getMinimum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
-
-            await driver.setViewport(range.getMaximum(), settings.testingHeight);
-            range.maxVerification = await this.isObservable(driver, range.getMaximum(), verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+    
+            await driver.setViewport(minRange, settings.testingHeight);
+            range.minVerification = await this.isObservable(driver, minRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
+    
+            await driver.setViewport(maxRange, settings.testingHeight);
+            range.maxVerification = await this.isObservable(driver, maxRange, verificationFile, snapshotDirectory, range) ? 'TP' : 'FP';
 
             await driver.close();
-
+        };
+    
+        try {
+            this.durationFailureVerify = new Date();
+            await executeVerification(driver);
             bar.tick();
             sendMessage("Verify", {'counter': bar.curr, 'total': utils.failureCount});
             this.durationFailureVerify = new Date() - this.durationFailureVerify;
         } catch (err) {
-            console.log(err);
+            if (err.name === 'TargetCloseError') {
+                console.log('Session closed, restarting driver...');
+                await driver.close();
+                await driver.start();
+                await executeVerification(driver);
+            } else {
+                console.log(err);
+            }
         }
     }
 
@@ -330,7 +342,7 @@ class Failure {
         let dir = directory;
         if (miniRLGDirectory !== undefined)
             dir = miniRLGDirectory;
-        let rlg = await this.getNewRLG(undefined, undefined, dir);
+        let rlg = await this.getNewRLG(undefined, undefined, dir, driver);
         //rlg.printGraph(directory + path.sep + this.ID + '-RLG-' + this.repairApproach + '.txt');
         let failureExists = rlg.hasFailure(this);
         if (failureExists === false) {
@@ -531,7 +543,7 @@ class Failure {
     /**
      * Returns new RLG specific to the range of this failure with failures detected
     **/
-    async getNewRLG(testingRangeMin = undefined, testingRangeMax = undefined, directory = undefined) {
+    async getNewRLG(testingRangeMin = undefined, testingRangeMax = undefined, directory = undefined, driver) {
         let rlg = new RLG(this.outputDirectory);
         let visit = [];
         if (testingRangeMin === undefined || testingRangeMax === undefined) {
@@ -560,7 +572,7 @@ class Failure {
                 rlg.extractRLG(dom, width);
             // dom.disposeAllElementHandles();
         }
-        rlg.detectFailures(false);
+        rlg.detectFailures(driver, false);
         if (directory !== undefined)
             rlg.printGraph(path.join(directory, 'mini-RLG.txt'));
         return rlg;
@@ -1242,15 +1254,23 @@ class Failure {
         }
         if (childRect.minX < parentRect.minX) {
             protruding.left = parentRect.minX - childRect.minX;
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'left';
         }
         if (childRect.maxX > parentRect.maxX) {
             protruding.right = childRect.maxX - parentRect.maxX;
+            this.horizontalOrVertical = 'horizontal';
+            this.direction = 'right';
         }
         if (childRect.minY < parentRect.minY) {
             protruding.top = parentRect.minY - childRect.minY;
+            this.horizontalOrVertical = 'vertical';
+            this.direction = 'top';
         }
         if (childRect.maxY > parentRect.maxY) {
             protruding.bottom = childRect.maxY - parentRect.maxY;
+            this.horizontalOrVertical = 'vertical';
+            this.direction = 'bottom';
         }
         return protruding;
     }
@@ -1299,6 +1319,7 @@ class Failure {
                         nodeRectToBeCleared = nodeRect;
                         otherNodeRect = siblingRect;
                     } else if (nodeRect.maxY === siblingRect.maxY) {
+                        this.horizontalOrVertical = null;
                         /**
                          * If they are equal rectangles break the tie by xpath length.
                          */
@@ -1315,6 +1336,7 @@ class Failure {
                 }
             }
         }
+        
         if (utils.areOverlapping(nodeRectToBeCleared, otherNodeRect)) {
             xToClear = otherNodeRect.maxX - nodeRectToBeCleared.minX + 1;
             yToClear = otherNodeRect.maxY - nodeRectToBeCleared.minY + 1;
@@ -1322,6 +1344,8 @@ class Failure {
             xToClear = 0;
             yToClear = 0;
         }
+        if (xToClear < yToClear && xToClear != 0) this.horizontalOrVertical = 'horizontal';
+        if (yToClear < xToClear && yToClear != 0) this.horizontalOrVertical = 'vertical';
 
         overlap.nodeRectToBeCleared = nodeRectToBeCleared;
         overlap.otherNodeRect = otherNodeRect;

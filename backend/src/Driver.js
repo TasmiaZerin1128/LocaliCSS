@@ -27,6 +27,10 @@ driver.createPage = async function createPage() {
   return driver.page;
 };
 
+driver.createNewPages = async function createNewPages() {
+  return await driver.browser.newPage();
+}
+
 driver.screenshot = async function (savePath, fullPage = false, encoding64 = true) {
     let options = {
         path: savePath,
@@ -100,28 +104,26 @@ driver.clipImage = async function (screenshot, rectangle, fullViewportWidth = fa
             let canvas = document.createElement("CANVAS");
             let context = canvas.getContext("2d");
             let image = new Image();
-            let imgLoadPromise = async function () {
-                return new Promise((resolve, reject) => {
-                    image.onload = () => { return resolve };
-                    image.onerror = reject;
-                });
-            }
+            let imgLoadPromise = function () {
+              return new Promise((resolve, reject) => {
+                  image.onload = () => { resolve(); }; // Corrected promise resolution
+                  image.onerror = reject;
+              });
+            };
             image.src = 'data:image/png;base64,' + screenshot;
-            await imgLoadPromise;
+            await imgLoadPromise();
+
+            rectangle.minX = Math.max(0, rectangle.minX);
+            rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
+            rectangle.minY = Math.max(0, rectangle.minY);
+            rectangle.maxY = Math.min(image.naturalHeight, rectangle.maxY);
+
             let originalAreaRequested = "minX:" + rectangle.minX + " maxX:" + rectangle.maxX + " minY:" + rectangle.minY + " maxY:" + rectangle.maxY + " width:" + rectangle.width + " height:" + rectangle.height;
             if (fullViewportWidth) {
                 rectangle.minX = 0;
-                if (viewportWidth !== undefined)
-                    rectangle.maxX = viewportWidth;
-                else
-                    rectangle.maxX = image.naturalWidth
-            } else {
-                rectangle.minX = Math.max(0, rectangle.minX);
-                rectangle.maxX = Math.min(image.naturalWidth, rectangle.maxX);
+                rectangle.maxX = viewportWidth !== Infinity ? viewportWidth : image.naturalWidth;
             }
 
-            rectangle.minY = Math.max(0, rectangle.minY);
-            rectangle.maxY = Math.min(image.naturalHeight, rectangle.maxY);
             rectangle.width = rectangle.maxX - rectangle.minX;
             rectangle.height = rectangle.maxY - rectangle.minY;
             if (rectangle.width <= 0 || rectangle.height <= 0) {
@@ -198,9 +200,11 @@ driver.setOpacity = async function setOpacity(elementHandle, opacityValue) {
   }, elementHandle, opacityValue);
 };
 
-driver.getBodyElement = async function getBodyElement() {
+
+driver.getBodyElement = async function getBodyElement(page) {
   // Get the body element from the page
-  const body = await driver.page.$('body');
+  await this.page.waitForSelector('body'); 
+  const body = await this.page.$('body');
   return body;
 };
 
@@ -235,15 +239,16 @@ driver.setViewport = async function setViewport(width, height) {
 driver.goto = async function goto(uri) {
   // Navigate to the webpage URI
   this.setViewport();
-  const gotoUri = await driver.page.goto(uri);
+  const gotoUri = await driver.page.goto(uri, { waitUntil: 'networkidle2' });
   return gotoUri;
 };
 
 driver.getElementByXPath = async function getElementByXPath(xpath) {
   try {
     // Get an element by XPath
-    await driver.page.waitForSelector('xpath/' + xpath); 
-    const element = await driver.page.$x(xpath);
+    // await driver.page.waitForSelector('xpath/' + xpath); 
+    await driver.page.waitForXPath(xpath);
+    const [element] = await driver.page.$x(xpath);
     return element;
   } catch (error) {
     console.error('Error in getElementByXPath:', error);
@@ -272,6 +277,18 @@ driver.getRectangle = async function getRectangle(element, traverseUP = false) {
   return rect;
 };
 
+driver.getRectangleMultiThread = async function getRectangleMultiThread(page, element, traverseUP = false) {
+  let rect = await element.boundingBox();
+  if (traverseUP && rect === null) {
+    while (rect === null) {
+      element = await element.getProperty('parentNode');
+      if (element === undefined || element === null) { throw new Error('No more elements in the DOM'); }
+      rect = await element.boundingBox();
+    }
+  }
+  return rect;
+};
+
 driver.getComputedStyle = async function getComputedStyle(element, pseudoElement = undefined) {
   let styles = await element.evaluate(
     (element, pseudoElement) => {
@@ -286,6 +303,67 @@ driver.getComputedStyle = async function getComputedStyle(element, pseudoElement
     }, element, pseudoElement)
   return styles;
 }
+
+driver.getAllStyles = async function getAllStyles(element) {
+  const allStyles = await element.evaluate((el) => {
+    const stylesheets = document.styleSheets;
+    const result = {
+      definedStyles: {},
+      inlineStyles: {},
+      defaultStyles: {}
+    };
+
+    // 1. Get developer-defined styles from stylesheets
+    const addStylesFromRule = (style) => {
+      for (let i = 0; i < style.length; i++) {
+        const property = style[i];
+        // Skip Tailwind CSS variables like --tw-*
+        if (!property.startsWith('--tw-')) {
+          result.definedStyles[property] = style.getPropertyValue(property);
+        }
+      }
+    };
+
+    for (const sheet of stylesheets) {
+      try {
+        if (!sheet.href && sheet.ownerNode.tagName !== 'STYLE') continue; // Skip certain sheets, sheet.href means it's a linked stylesheet, tagName is "LINK"; else if no href, tagName will be "STYLE"
+        for (const rule of sheet.cssRules) {
+          if (rule instanceof CSSStyleRule) {
+            if (!rule.selectorText.includes('::before') && !rule.selectorText.includes('::after')) {
+              if (el.matches(rule.selectorText)) {
+                addStylesFromRule(rule.style);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Handle cross-origin stylesheets or inaccessible rules
+        console.warn('Skipping stylesheet due to cross-origin restriction:', e);
+      }
+    }
+
+    // 2. Get inline styles
+    const inlineStyles = el.style;
+    for (let i = 0; i < inlineStyles.length; i++) {
+      const property = inlineStyles[i];
+      result.inlineStyles[property] = inlineStyles.getPropertyValue(property);
+    }
+
+    // 3. Get default styles for the element
+    const defaultStylesElement = document.createElement(el.tagName);
+    document.body.appendChild(defaultStylesElement);
+    const defaultStyles = window.getComputedStyle(defaultStylesElement);
+    for (let i = 0; i < defaultStyles.length; i++) {
+      const property = defaultStyles[i];
+      result.defaultStyles[property] = defaultStyles.getPropertyValue(property);
+    }
+    document.body.removeChild(defaultStylesElement); // Clean up default element
+
+    return result;
+  });
+
+  return allStyles;
+};
 
 driver.getVisibilityProperties = async function (element) {
   let properties = await element.evaluate((element) => {
@@ -312,7 +390,7 @@ driver.getVisibilityProperties = async function (element) {
   return properties;
 };
 
-driver.getChildren = async function getChildren(element) {
+driver.getChildren = async function getChildren(page, element) {
   const listHandle = await this.page.evaluateHandle((element) => element.children, element);
   const properties = await listHandle.getProperties();
   const children = [];

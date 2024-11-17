@@ -1,0 +1,7 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+www.hcc.edu.bd/page_id=34,1,1,Viewport-Protrusion,900,958,/HTML/BODY/DIV[5]/DIV/DIV[3],/HTML/BODY,TP,TP,TP,TP,FP
+www.hcc.edu.bd/page_id=34,1,2,Viewport-Protrusion,900,1097,/HTML/BODY/DIV[2]/DIV/DIV/DIV/ARTICLE/HEADER,/HTML/BODY,TP,TP,TP,TP,FP
+www.hcc.edu.bd/page_id=34,1,3,Viewport-Protrusion,900,958,/HTML/BODY/DIV/HEADER,/HTML/BODY,TP,TP,TP,TP,FP
+www.hcc.edu.bd/page_id=34,1,4,Viewport-Protrusion,900,961,/HTML/BODY/DIV/HEADER/NAV,/HTML/BODY,TP,TP,TP,TP,FP
+www.hcc.edu.bd/page_id=34,1,5,Viewport-Protrusion,900,978,/HTML/BODY/DIV[2]/DIV/DIV,/HTML/BODY,TP,TP,TP,TP,FP
+www.hcc.edu.bd/page_id=34,1,6,Element-Protrusion,900,968,/HTML/BODY/DIV[2]/DIV/DIV/DIV,/HTML/BODY/DIV[2],TP,TP,TP,TP,FP

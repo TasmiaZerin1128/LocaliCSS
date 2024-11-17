@@ -1,0 +1,67 @@
+Type: Element-Protrusion Range:320-479 Parent:/HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV Child: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[3]
+|  |  |--[ Property: padding-top ]
+|  |  |--[ Value: 40px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[2] ]
+-----------------
+Type: Element-Protrusion Range:320-479 Parent:/HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV Child: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[3]
+|  |  |--[ Property: padding-bottom ]
+|  |  |--[ Value: 40px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[2] ]
+-----------------
+Type: Element-Protrusion Range:320-479 Parent:/HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV Child: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[3]
+|  |  |--[ Property: margin-top ]
+|  |  |--[ Value: 20px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[2] ]
+-----------------
+Type: Element-Protrusion Range:320-479 Parent:/HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV Child: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[3]
+|  |  |--[ Property: margin-bottom ]
+|  |  |--[ Value: 20px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[2] ]
+-----------------
+Type: Element-Protrusion Range:320-479 Parent:/HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV Child: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[3]
+|  |  |--[ Property: font-size ]
+|  |  |--[ Value: 13px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV/DIV/DIV/DIV[2]/DIV/DIV/DIV[2]/DIV ]
+-----------------
+---------------------------------------------
+Type: Element-Protrusion Range:842-959 Parent:/HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2] Child: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV
+|  |  |--[ Property: float ]
+|  |  |--[ Value: left ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4] ]
+-----------------
+Type: Element-Protrusion Range:842-959 Parent:/HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2] Child: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 220px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV ]
+-----------------
+Type: Element-Protrusion Range:842-959 Parent:/HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2] Child: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV
+|  |  |--[ Property: width ]
+|  |  |--[ Value: 220px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4] ]
+-----------------
+Type: Element-Protrusion Range:842-959 Parent:/HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2] Child: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV
+|  |  |--[ Property: margin-left ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4] ]
+-----------------
+Type: Element-Protrusion Range:842-959 Parent:/HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2] Child: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4]/DIV
+|  |  |--[ Property: margin-right ]
+|  |  |--[ Value: 10px ]
+|  |  |--[ Element: /HTML/BODY/DIV[4]/DIV[3]/DIV/DIV[2]/DIV[4] ]
+-----------------
+---------------------------------------------
+---------------------------------------------
+---------------------------------------------
+Type: Element-Protrusion Range:320-805 Parent:/HTML/BODY/DIV[3] Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: float ]
+|  |  |--[ Value: right ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
+-----------------
+Type: Element-Protrusion Range:320-805 Parent:/HTML/BODY/DIV[3] Child: /HTML/BODY/DIV[3]/DIV/DIV[2]
+|  |  |--[ Property: height ]
+|  |  |--[ Value: 50px ]
+|  |  |--[ Element: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
+-----------------
+---------------------------------------------
+---------------------------------------------
+---------------------------------------------

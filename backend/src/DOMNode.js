@@ -1,5 +1,6 @@
 const fs = require('fs');
 const utils = require('./utils');
+const CSSNode = require('./CSSNode');
 
 class DOMNode {
   constructor(element) {
@@ -26,6 +27,8 @@ class DOMNode {
     this.transform = undefined;
     this.overflow = undefined;
     this.clipPath = undefined;
+
+    this.cssNode = undefined;
   }
 
   setXPath(tagName, addHTML = true) {
@@ -69,8 +72,15 @@ class DOMNode {
     }
   }
 
+  async getExplicitlyDefinedStyle(driver, element) {
+    this.cssNode = new CSSNode(element, this.xpath, driver);
+    await this.cssNode.findProperties();
+    this.rectangle.cssNode = this.cssNode;
+  }
+
   setComputedStyle(computedStyles) {
     this.computedStyles = computedStyles;
+    this.cssNode.computedStyles = computedStyles;
   }
 
   getComputedStyle() {

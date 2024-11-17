@@ -1,0 +1,8 @@
+*
+|  |--[ Element-Protrusion (71): 350-671(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/DIV/HEADER ]
+|  |--[ Element-Protrusion (72): 350-420(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/FOOTER ]
+|  |--[ Element-Protrusion (73): 350-529(TP,TP,TP,TP,FP) ]
+|  |  |--[ Parent: /HTML/BODY/FOOTER ]
+73 Responsive Layout Failures Found.

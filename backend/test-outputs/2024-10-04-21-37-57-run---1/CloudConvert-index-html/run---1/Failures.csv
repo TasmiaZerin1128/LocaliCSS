@@ -1,0 +1,6 @@
+Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
+CloudConvert-index-html,1,74,Element-Protrusion,480,480,/HTML/BODY/DIV[6]/DIV[2]/DIV,/HTML/BODY/DIV[6]/DIV[2],FP,FP,FP,FP,FP
+CloudConvert-index-html,1,75,Element-Protrusion,480,480,/HTML/BODY/DIV[6]/DIV/DIV,/HTML/BODY/DIV[6]/DIV,FP,FP,FP,FP,FP
+CloudConvert-index-html,1,76,Element-Protrusion,480,480,/HTML/BODY/DIV[4]/DIV,/HTML/BODY/DIV[4],FP,FP,FP,FP,FP
+CloudConvert-index-html,1,77,Element-Protrusion,480,480,/HTML/BODY/DIV[4]/DIV/FORM,/HTML/BODY/DIV[4]/DIV,FP,FP,FP,FP,FP
+CloudConvert-index-html,1,78,Element-Protrusion,480,480,/HTML/BODY/DIV[4]/DIV/FORM,/HTML/BODY/DIV[4],FP,FP,FP,FP,FP

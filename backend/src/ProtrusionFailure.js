@@ -218,8 +218,6 @@ class ProtrusionFailure extends Failure {
     }
 
     async analysisDetachedAOC(child, parent, childRect, parentRect, driver, viewport, snapshotDirectory) {
-        console.log(this.protudingArea)
-        console.log(childRect)
         this.protudingArea.x = parentRect.x + parentRect.width + this.protudingArea.left;
         this.protudingArea.y = childRect.y + this.protudingArea.top;
         this.protudingArea.width = this.protudingArea.right - this.protudingArea.left;
@@ -227,8 +225,6 @@ class ProtrusionFailure extends Failure {
         this.protudingArea.xpath = this.node.xpath;
 
         let seperated = new Rectangle(this.protudingArea);
-        console.log("Seperated Area: ", seperated);
-        console.log("Parent Area: ", parentRect);
 
         let opacitySeperated = await driver.getOpacity(child);  // as the opacity of seperated area is the same as the child opacity
         let opacityParent = await driver.getOpacity(parent);

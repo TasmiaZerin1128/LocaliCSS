@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/InputField";
 import { useState } from "react";
+import { testLocally } from "../services/test";
 
 function Home() {
   const navigate = useNavigate();
@@ -9,6 +10,12 @@ function Home() {
 
   function goToTestPage() {
     navigate(`/test`, {state: {url:urlValue}});
+  }
+
+  function startTestLocally() {
+    testLocally().then((response) => {
+      console.log("Running locally");
+    });
   }
 
   return (
@@ -25,6 +32,10 @@ function Home() {
           <button className="w-1/3 md:w-1/4 lg:w-1/5 text-md md:text-xl lg:text-2xl font-title font-bold bg-primary hover:bg-black py-2 text-white rounded-lg"
           onClick={() => goToTestPage()}>
             Start
+          </button>
+          <br />
+          <button className="w-1/3 md:w-1/4 lg:w-1/5 text-md md:text-xl lg:text-2xl font-title font-bold bg-green-500 hover:bg-black py-2 text-white rounded-lg" onClick={() => startTestLocally()}>
+            Test Locally
           </button>
       </div>
     </>
