@@ -1,6 +1,6 @@
-# ReDeFix
+# LocaliCSS
 
-## Automated Detection and Repair of Responsive Layout Failures
+## Localize CSS Properties for Responsive Layout Failures
 
 **Tech stack:** React, TypeScript, Tailwind CSS, Node.js
 
