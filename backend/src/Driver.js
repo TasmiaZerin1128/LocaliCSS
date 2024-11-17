@@ -200,6 +200,7 @@ driver.setOpacity = async function setOpacity(elementHandle, opacityValue) {
   }, elementHandle, opacityValue);
 };
 
+
 driver.getBodyElement = async function getBodyElement(page) {
   // Get the body element from the page
   await this.page.waitForSelector('body'); 
