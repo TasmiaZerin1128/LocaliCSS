@@ -30,9 +30,3 @@
 5. Enter the URL of any webpage to test
 
 6. To change the viewport range, modify the `settings.js` file
-
-## Test Subject used in this Tool
-
-- **URL:** [https://tasmia-test-1.myshopify.com/](https://tasmia-test-1.myshopify.com/)
-- **Description:** A clone of a Shopify template currently under development by Brain Station 23
-- **Password:** `tasmia`
