@@ -20,7 +20,6 @@ class Webpage {
         this.rlg = undefined;
         this.runCounter = 0;
         this.pageRunOutputPath = undefined;
-        // add stats for repairs
 
         this.durationPage = new Date();
         this.durationDOM = undefined;
@@ -49,7 +48,6 @@ class Webpage {
 
         let cssDirectory = path.join(this.pageRunOutputPath, 'CSS');
         utils.testOutputCSS.concat(cssDirectory);
-        let cssRepairedDirectory = path.join(cssDirectory, 'Repaired');
         let cssFailedDirectory = path.join(cssDirectory, 'Failed');
 
         fs.mkdirSync(cssDirectory);
@@ -133,23 +131,6 @@ class Webpage {
         this.rlg.printFailuresCSV(path.join(this.pageRunOutputPath, 'Failures.csv'), this.name, this.runCounter);
     }
 
-    printWorkingRepairs() {
-        let file = path.join(this.pageRunOutputPath, 'repairs.csv');
-        let text =
-            "Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,XPath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider,Repair,RepairOutcome";
-        fs.appendFileSync(file, text, function (err) {
-            if (err) throw err;
-        });
-        this.rlg.printWorkingRepairs(file, this.name, this.runCounter);
-    }
-
-    async repairFailures() {
-        console.log("repair started");
-        this.durationRepair = new Date();
-        await this.rlg.repairFailures(this.driver, this.pageRunOutputPath, this.name, this.runCounter);
-        this.durationRepair = new Date() - this.durationRepair;
-        this.printWorkingRepairs();
-    }
 }
 
 module.exports = Webpage;

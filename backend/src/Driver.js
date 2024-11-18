@@ -412,22 +412,6 @@ driver.getPageHeightUsingHTMLElement = async function () {
     return Math.ceil(rect.y + rect.height);
 };
 
-// Adds CSS repair using style tag and returns an element handle.
-driver.addRepair = async function (repairCode) {
-    let elementHandle = await driver.page.addStyleTag({ content: repairCode });
-    if (settings.repairDelay != undefined && settings.repairDelay > 0) {
-      await utils.resolveAfterSeconds(settings.repairDelay);
-    }
-    return elementHandle;
-};
-
-driver.removeRepair = async function (element) {
-    if (element === undefined) {
-        throw "Error: no elementHandle passed in (removeRepair)";
-    }
-    await this.page.evaluate((element) => { element.parentNode.removeChild(element); }, element);
-};
-
 driver.close = async function close() {
   // Close the browser
   await driver.browser.close();

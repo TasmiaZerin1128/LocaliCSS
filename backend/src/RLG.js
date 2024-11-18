@@ -2,7 +2,6 @@ const RBush = require('rbush');
 const { Range } = require('./Range.js');
 const Rectangle = require('./Rectangle.js');
 const settings = require('../settings.js');
-const RepairStatistics = require('./RepairStatistics.js');
 const cliProgress = require('cli-progress');
 const utils = require('./utils.js');
 const ProgressBar = require('progress');
@@ -16,10 +15,6 @@ class RLG {
         this.root = undefined;
         this.map = new Map();
         this.nodesWithFailures = [];
-        this.collisionRepairStats = new RepairStatistics();
-        this.protrusionRepairStats = new RepairStatistics();
-        this.viewportRepairStats = new RepairStatistics();
-        this.allRepairStats = new RepairStatistics();
         this.outputDirectory = outputDir;
         this.webpage = webpage;
         this.run = run;
@@ -567,24 +562,6 @@ class RLG {
         } 
     }
 
-    async repairFailures(driver, directory, webpage, run) {
-        let bar = new ProgressBar('Repair RLFs  | [:bar] :etas Repair:         :current' + "/" + (utils.failureCount * settings.repairCombination.length) + " :token1", { complete: '█', incomplete: '░', total: (utils.failureCount * settings.repairCombination.length), width: 25 })
-        let counter = 0;
-        // sendMessage("Repair RLFs", {'counter': 0, 'total': utils.failureCount * settings.repairCombination.length});
-        for (const [xpath, node] of this.map.entries()) {
-            await node.repairFailures(driver, directory, bar, webpage, run, counter);
-            this.viewportRepairStats.addValuesFrom(node.viewportRepairStats);
-            this.protrusionRepairStats.addValuesFrom(node.protrusionRepairStats);
-            this.collisionRepairStats.addValuesFrom(node.collisionRepairStats);
-        }
-        this.allRepairStats.addValuesFrom(this.viewportRepairStats, this.protrusionRepairStats, this.collisionRepairStats);
-    }
-
-    printWorkingRepairs(file, webpage, run) {
-        for (let node of this.nodesWithFailures) {
-            node.printWorkingRepairs(file, webpage, run);
-        }
-    }
 
     printGraph(file, printAlignments = false) {
         let text = '*';

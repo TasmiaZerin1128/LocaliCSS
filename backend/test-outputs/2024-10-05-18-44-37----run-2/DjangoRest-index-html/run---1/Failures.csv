@@ -1,3 +1,0 @@
-Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
-DjangoRest-index-html,1,16,Viewport-Protrusion,767,767,/HTML/BODY/DIV/DIV/DIV/DIV/A,/HTML/BODY,FP,TP,TP,TP,FP
-DjangoRest-index-html,1,17,Element-Protrusion,350,767,/HTML/BODY/DIV/DIV[2]/DIV/DIV[2]/DIV[2]/P/IFRAME,/HTML/BODY/DIV,TP,TP,TP,TP,FP

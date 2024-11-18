@@ -1,4 +1,0 @@
-Webpage,Run,FID,Type,RangeMin,RangeMax,XPath1,Xpath2,ClassNarrower,ClassMin,ClassMid,ClassMax,ClassWider
-Bower-index-html,1,68,Element-Collision,350,680,/HTML/BODY/HEADER,/HTML/BODY/DIV,TP,TP,TP,TP,FP
-Bower-index-html,1,70,Element-Protrusion,698,707,/HTML/BODY/HEADER/DIV/DIV/H1,/HTML/BODY/HEADER/DIV/DIV,TP,TP,TP,TP,FP
-Bower-index-html,1,69,Viewport-Protrusion,681,697,/HTML/BODY/HEADER/DIV/DIV/H1,/HTML/BODY,FP,TP,TP,TP,FP

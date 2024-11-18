@@ -15,34 +15,7 @@ class utils {
         prefix: '[name()=\'',
         postfix: '\']'
     };
-    
-    static RepairStrategy = {
-        BASIC: "basic",
-        ORACLE_PARENT: "oracle-parent",
-        SHRINK_ROW_SIBLINGS: "shrink-row-siblings",
-        ANCESTOR_MAX_WIDTH_HEIGHT: "ancestor-max-width-height",
-    };
-    static RepairType = {
-        maxViewportSize: 1,
-        maxParent: 2,
-        maxAncestors: 3,
-        pushApart: 4,
-        shrinkRowSiblings: 5,
-        widerParentSize: 6,
-        computedStyle: 7,
-    };
 
-    static AdditionalRepairs = {
-        NONE: "None",
-        COMBINATIONS: "Combinations",
-        PERMUTATIONS: "Permutations"
-    };
-
-    static RepairConfirmed = {
-        DOM: "DOM",
-        RLG: "RLG",
-        DOMRLG: "DOM and RLG"
-    };
     static alignment = {
         RIGHT: "Right",
         LEFT: "Left",
