@@ -12,7 +12,6 @@ const settings = {
   loadDirectory: 'saved-doms-headless',
   webpagesDirectory: path.join(__dirname, 'subjects-minimized'),
   mainOutputFile: 'output',
-  repairDelay: 0.4,
   loadDelay: 0.4,
   autoScrollDelay: 0.4,
   scrollDelay: 0.4,
@@ -31,7 +30,6 @@ const settings = {
   detectViewportProtrusion: true,
   detectWrapping: true,
   detectSmallRange: true,
-  repairConfirmUsing: utils.RepairConfirmed.DOMRLG,
   screenshotNarrower: false,
   screenshotMin: true,
   screenshotMid: false,
@@ -42,11 +40,6 @@ const settings = {
   screenshotHighlights: true,
   skipCopyingCSSProperties: [],
   NoScalingCSSProperties: [],
-  additionalRepairs: utils.AdditionalRepairs.NONE,
-  repairCombination: [
-     'Transform-Wider',
-     'Transform-Narrower'
-],
   humanStudy: false,
 };
 

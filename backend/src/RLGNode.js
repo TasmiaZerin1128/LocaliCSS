@@ -597,60 +597,6 @@ class RLGNode {
     }
 
 
-    // Repair each 
-    async repairFailures(driver, directory, bar, webpage, run, counter) {
-        let repairCSSFile = path.join(directory, "repairs.css");
-        for (let viewportProtrusion of this.viewportProtrusions) {
-            counter++;
-            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
-            await viewportProtrusion.repair(driver, directory, bar, webpage, run, counter);
-        }
-        for (let protrusion of this.elementProtrusions) {
-            counter++;
-            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
-            await protrusion.repair(driver, directory, bar, webpage, run, counter);
-        }
-        for (let collision of this.elementCollisions) {
-            counter++;
-            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
-            await collision.repair(driver, directory, bar, webpage, run,counter);
-        }
-        for (let wrapping of this.wrappings) {
-            counter++;
-            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
-            await wrapping.repair(driver, directory, bar, webpage, run, counter);
-        }
-        for (let smallrange of this.smallranges) {
-            counter++;
-            sendMessage("Repair RLFs", {'counter': counter, 'total': utils.failureCount * settings.repairCombination.length});
-            await smallrange.repair(driver, directory, bar, webpage, run, counter);
-        }
-
-        for (let viewportProtrusion of this.viewportProtrusions) {
-            await viewportProtrusion.checkForLaterRepair(driver, directory, bar);
-            this.viewportRepairStats.addValuesFrom(viewportProtrusion.repairStats);
-            viewportProtrusion.saveRepairToFile(repairCSSFile);
-        }
-        for (let protrusion of this.elementProtrusions) {
-            await protrusion.checkForLaterRepair(driver, directory, bar);
-            this.protrusionRepairStats.addValuesFrom(protrusion.repairStats);
-            protrusion.saveRepairToFile(repairCSSFile);
-        }
-        for (let collision of this.elementCollisions) {
-            await collision.checkForLaterRepair(driver, directory, bar);
-            this.collisionRepairStats.addValuesFrom(collision.repairStats);
-            collision.saveRepairToFile(repairCSSFile);
-        }
-        for (let wrapping of this.wrappings) {
-            await wrapping.checkForLaterRepair(driver, directory, bar);
-            wrapping.saveRepairToFile(repairCSSFile);
-        }
-        for (let smallrange of this.smallranges) {
-            await smallrange.checkForLaterRepair(driver, directory, bar);
-            smallrange.saveRepairToFile(repairCSSFile);
-        }
-    }
-
     async classifyFailures(driver, classificationFile, snapshotDirectory, bar, counter) {
         for (let viewportProtrusion of this.viewportProtrusions) {
             await viewportProtrusion.classify(driver, classificationFile, snapshotDirectory, bar, counter);

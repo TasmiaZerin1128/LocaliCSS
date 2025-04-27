@@ -24,7 +24,7 @@ function Home() {
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold font-title text-center">
           Welcome To
         </h1>
-        <img className="w-3/4 lg:w-2/5 my-4 md:my-12 lg:my-12 flex-shrink-0" src="/ReDeFix-Logo.png" />
+        <img className="w-3/4 lg:w-2/5 my-4 md:my-12 lg:my-12 flex-shrink-0" src="/Tool-Logo.png" />
         <p className="font-body text-sm md:text-lg lg:text-xl text-center my-4">
           Find Your Responsive Webpage Layout Failures and Repair them instantly!
         </p>

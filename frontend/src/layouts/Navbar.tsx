@@ -19,13 +19,13 @@ export default function Navbar() {
               <div className="flex flex-shrink-0 items-center">
                 <img
                   className="block h-8 w-auto lg:hidden cursor-pointer"
-                  src="\ReDeFix-Logo-White.png"
+                  src="\Tool-Logo-White.png"
                   alt="ReDeFix"
                   onClick={() => navigate('/')}
                 />
                 <img
                   className="hidden h-8 w-auto lg:block cursor-pointer"
-                  src="\ReDeFix-Logo-White.png"
+                  src="\Tool-Logo-White.png"
                   alt="ReDeFix"
                   onClick={() => navigate('/')}
                 />
