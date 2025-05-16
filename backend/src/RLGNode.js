@@ -1,6 +1,5 @@
 const path = require('path');
 const { Ranges } = require("./Range");
-const RepairStatistics = require('./RepairStatistics.js');
 const PCEdge = require('./PCEdge.js');
 const OverlapEdge = require("./OverlapEdge");
 const AboveBelowEdge = require("./AboveBelowEdge");
