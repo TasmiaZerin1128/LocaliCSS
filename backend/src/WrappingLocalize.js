@@ -3,7 +3,7 @@ const utils = require('./utils.js');
 const path = require('path');
 
 class WrappingLocalize {
-    constructor(failure, file) {
+    constructor(failure, file, cssPropertyFile) {
         this.failure = failure;
         this.node = failure.node;
         this.immediateParent = null;
@@ -12,6 +12,8 @@ class WrappingLocalize {
         this.type = utils.FailureType.WRAPPING;
         this.visitedNodes = new Set();
         this.file = file;
+        this.cssPropertyFile = cssPropertyFile;
+        
         this.faultyCSSProperties = [];
     }
 

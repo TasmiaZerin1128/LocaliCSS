@@ -3,7 +3,7 @@ const utils = require('./utils.js');
 const path = require('path');
 
 class CollisionLocalize {
-    constructor(failure, file) {
+    constructor(failure, file, cssPropertyFile) {
         this.failure = failure;
         this.node = failure.node;
         this.sibling = failure.sibling;
@@ -14,6 +14,7 @@ class CollisionLocalize {
         this.overlapping = failure.overlapping;
         this.file = file;
         this.faultyCSSProperties = [];
+        this.cssPropertyFile = cssPropertyFile;
         this.collisionDirection = failure.horizontalOrVertical;
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }

@@ -115,7 +115,11 @@ class Webpage {
     }
 
     async localizeCSS() {
-        await this.rlg.localizeCSS(this.driver, this.pageRunOutputPath + path.sep + 'Localization.txt');
+        await this.rlg.localizeCSS(this.driver, this.pageRunOutputPath + path.sep + 'Localization.txt', this.pageRunOutputPath + path.sep + 'DeveloperDefinedCSS.txt');
+    }
+
+    async repairCSS() {
+        await this.rlg.repairCSS(this.driver, this.pageRunOutputPath + path.sep + 'LLM-Repair.txt');
     }
 
     async screenshotFailures() {

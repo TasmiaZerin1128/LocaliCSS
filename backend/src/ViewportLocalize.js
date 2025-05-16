@@ -3,7 +3,7 @@ const utils = require('./utils.js');
 const path = require('path');
 
 class ViewportLocalize {
-    constructor(failure, file) {
+    constructor(failure, file, cssPropertyFile) {
         this.failure = failure;
         this.node = failure.node;
         this.parent = failure.parent;
@@ -14,6 +14,7 @@ class ViewportLocalize {
         this.visitedNodes = new Set();
         this.file = file;
         this.faultyCSSProperties = [];
+        this.cssPropertyFile = cssPropertyFile;
         this.viewportProtrusionDirection = 'horizontal';  // it will always be horizontal
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }

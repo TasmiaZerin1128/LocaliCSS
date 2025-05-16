@@ -542,10 +542,10 @@ class RLGNode {
     }
 
     // start localization of CSS for each failure
-    async localizeCSS(bar, localizationFile) {
+    async localizeCSS(bar, localizationFile, cssPropertyFile) {
         for (let protrusion of this.elementProtrusions) {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
-                let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile);
+                let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile, cssPropertyFile);
                 protrusionCSS.searchLayer();
             } else {
                 bar.tick();
@@ -554,7 +554,7 @@ class RLGNode {
         }
         for (let collision of this.elementCollisions) {
             if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
-                let collisionCSS = new CollisionLocalize(collision, localizationFile);
+                let collisionCSS = new CollisionLocalize(collision, localizationFile, cssPropertyFile);
                 collisionCSS.searchLayer();
             } else {
                 bar.tick();
@@ -563,7 +563,7 @@ class RLGNode {
         }
         for (let viewport of this.viewportProtrusions) {
             if (viewport.range.minClassification === 'TP' || viewport.range.maxClassification === 'TP') {
-                let viewportCSS = new ViewportLocalize(viewport, localizationFile);
+                let viewportCSS = new ViewportLocalize(viewport, localizationFile, cssPropertyFile);
                 viewportCSS.searchLayer();
             } else {
                 bar.tick();
@@ -572,7 +572,7 @@ class RLGNode {
         }
         for (let wrapping of this.wrappings) {
             if (wrapping.range.minClassification === 'TP' || wrapping.range.maxClassification === 'TP') {
-                let wrappingCSS = new WrappingLocalize(wrapping, localizationFile);
+                let wrappingCSS = new WrappingLocalize(wrapping, localizationFile, cssPropertyFile);
                 wrappingCSS.searchLayer();
             } else {
                 bar.tick();
@@ -580,6 +580,10 @@ class RLGNode {
             }
         }
         console.log("I'm relaxing");
+    }
+
+    async repairCSS(bar, repairFile) {
+        
     }
 
     async findCulpritCSS() {

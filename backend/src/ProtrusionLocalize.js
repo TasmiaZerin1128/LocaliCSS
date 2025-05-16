@@ -3,7 +3,7 @@ const utils = require('./utils.js');
 const path = require('path');
 
 class ProtrusionLocalize {
-    constructor(failure, file) {
+    constructor(failure, file, cssPropertyFile) {
         this.failure = failure;
         this.node = failure.node;
         this.parent = failure.parent;
@@ -14,7 +14,9 @@ class ProtrusionLocalize {
         this.range = failure.range;
         this.type = utils.FailureType.PROTRUSION;
         this.file = file;
+        this.cssPropertyFile = cssPropertyFile;
         this.faultyCSSProperties = [];
+        this.developerDefinedProperties = [];
         this.protrusionDirection = failure.horizontalOrVertical;
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
@@ -23,6 +25,7 @@ class ProtrusionLocalize {
         try {
 
             let childDefinedStyles = node.cssNode.developerCssProperties;        // explicitly defined by developer
+            this.developerDefinedProperties.push({'element': node.xpath, 'style': childDefinedStyles});
 
             let childComputedStyles = node.cssNode.computedStyles;
             // let parentComputedStyles = parent.cssNode.computedStyles;
@@ -207,6 +210,12 @@ class ProtrusionLocalize {
         }
         let text = '---------------------------------------------';
         utils.printToFile(this.file, text);
+        text = 'Developer defined properties:--------------------';
+        utils.printToFile(this.file, text);
+        for (let property of this.developerDefinedProperties) {
+            text = '|-- Element:'
+        }
+
     }
 
     localizeIntermediateParents(parent) {
