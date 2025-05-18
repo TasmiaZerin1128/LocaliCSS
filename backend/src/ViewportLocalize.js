@@ -15,7 +15,7 @@ class ViewportLocalize {
         this.file = file;
         this.faultyCSSProperties = [];
         this.cssPropertyFile = cssPropertyFile;
-        this.viewportProtrusionDirection = 'horizontal';  // it will always be horizontal
+        this.horizontalOrVertical = 'horizontal';  // it will always be horizontal
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
@@ -84,7 +84,7 @@ class ViewportLocalize {
     }
 
     isLayoutResponsible(sibling, node) {
-        if (this.protrusionDirection == 'horizontal') {
+        if (this.horizontalOrVertical == 'horizontal') {
             if (this.directionAxis == 'right') {
                 if (node.rect.isToMyLeft(sibling.rect)) {
                     return true;

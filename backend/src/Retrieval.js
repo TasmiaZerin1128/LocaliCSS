@@ -1,13 +1,14 @@
-import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { ChromaClient } from "chromadb";
-import { MistralAIEmbeddings } from "@langchain/mistralai";
-import { EnsembleRetriever } from "langchain/retrievers/ensemble";
-import { BM25Retriever } from "@langchain/community/retrievers/bm25";
-import { Document } from "langchain/document";
-import "dotenv/config";
+const { Chroma } = require("@langchain/community/vectorstores/chroma");
+const { ChromaClient } = require("chromadb");
+const { MistralAIEmbeddings } = require("@langchain/mistralai");
+const { EnsembleRetriever } = require("langchain/retrievers/ensemble");
+const { BM25Retriever } = require("@langchain/community/retrievers/bm25");
+const { Document } = require("langchain/document");
+const path = require("path");
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Initialize environment
-const apiKey = process.env.MISTRL_API_KEY || "your_api_key";
+const apiKey = process.env.MISTRAL_API_KEY || "your_api_key";
 
 const embeddings = new MistralAIEmbeddings({
   apiKey: apiKey,
@@ -80,4 +81,4 @@ async function retrieve(collectionDBName, cssProperties) {
   }
 }
 
-export default retrieve;
+module.exports = retrieve;

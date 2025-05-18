@@ -25,35 +25,12 @@ class Failure {
         this.direction = null;
         this.durationFailureClassify = undefined;
         this.durationFailureVerify = undefined;
+        
+        this.failureMinScreenshot = '';
+        this.failureMaxScreenshot = '';
+        this.failureLowerBoundScreenshot = '';
+        this.failureUpperBoundScreenshot = '';
     }
-    /**
-     * Prepare data for human study related to this failure.
-     */
-    setupHumanStudyData() {
-        this.hsData = { //will carry anonymous data only.
-            ID: this.ID,
-            type: this.type,
-            rangeMin: this.range.min,
-            rangeMax: this.range.max,
-            rectangles: []
-        };
-        if (this.outputDirectory === undefined)
-            throw "\nError - " + this.type + " has no output directory - ID:" + this.ID + "\n";
-        this.hsKey = {
-            humanStudyDirectory: path.join(this.outputDirectory, 'human-study', 'screenshots'),
-            ID: this.ID,
-            type: this.type,
-            rangeMin: this.range.min,
-            rangeMax: this.range.max,
-            repairName: [],
-            anonymizedImageNames: [],
-            viewports: [],
-            randomIDsUsed: [],
-            rectangles: [],
-            scrollY: []
-        }
-    }
-
     /**
      * Used if an RLF can have multiple ranges. Deprecated.
      */
@@ -87,29 +64,27 @@ class Failure {
         await driver.setViewport(range.getNarrower(), settings.testingHeight);
         range.narrowerClassification = await this.isFailing(driver, range.getNarrower(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotNarrower === true)
-            await this.screenshotViewport(driver, range.getNarrower(), snapshotDirectory, true);
+           this.failureLowerBoundScreenshot = await this.screenshotViewport(driver, range.getNarrower(), snapshotDirectory, true);
 
         await driver.setViewport(range.getMinimum(), settings.testingHeight);
         range.minClassification = await this.isFailing(driver, range.getMinimum(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotMin === true)
-            await this.screenshotViewport(driver, range.getMinimum(), snapshotDirectory, true);
-        if (settings.humanStudy === true)
-            await this.screenshotForHumanStudy('Failure');
+            this.failureMinScreenshot = await this.screenshotViewport(driver, range.getMinimum(), snapshotDirectory, true);
 
         await driver.setViewport(range.getMiddle(), settings.testingHeight);
         range.midClassification = await this.isFailing(driver, range.getMiddle(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotMid === true)
-            await this.screenshotViewport(driver, range.getMiddle(), snapshotDirectory, true);
+            this.failureMaxScreenshot =await this.screenshotViewport(driver, range.getMiddle(), snapshotDirectory, true);
 
         await driver.setViewport(range.getMaximum(), settings.testingHeight);
         range.maxClassification = await this.isFailing(driver, range.getMaximum(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotMax === true)
-            await this.screenshotViewport(driver, range.getMaximum(), snapshotDirectory, true);
+           this.failureMaxScreenshot = await this.screenshotViewport(driver, range.getMaximum(), snapshotDirectory, true);
 
         await driver.setViewport(range.getWider(), settings.testingHeight);
         range.widerClassification = await this.isFailing(driver, range.getWider(), classificationFile, range) ? 'TP' : 'FP';
         if (settings.screenshotWider === true)
-            await this.screenshotViewport(driver, range.getWider(), snapshotDirectory, true);
+            this.failureUpperBoundScreenshot = await this.screenshotViewport(driver, range.getWider(), snapshotDirectory, true);
 
         await driver.close();
 
@@ -236,78 +211,6 @@ class Failure {
         return dom;
     }
 
-    
-    getRepairCSSFromComputedStyle(computedStyle, oracleViewport, cushion = 1, scale = true) {
-        let css = '';
-        for (let property in computedStyle) {
-            if (settings.skipCopyingCSSProperties.includes(property))
-                continue;
-            let widerValues = [];
-            let partsWithPX = [];
-            if (scale === true &&
-                computedStyle[property].includes('px') &&
-                !settings.NoScalingCSSProperties.includes(property)) { //Avoid scaling some properties
-                let parts = computedStyle[property].split(" ");
-
-                for (let part of parts) {
-                    if (part.includes('px')) {
-                        let hasComma = false;
-                        if (part.includes(',')) {
-                            hasComma = true
-                            part = part.trim().replace(',', '');
-                        }
-                        let num = Number(part.trim().replace('px', ''));
-                        if (num === undefined || Number.isNaN(num)) {
-                            let message = "Error - PX to Number: " + num + "\n" +
-                                "Original: " + part + "\n";
-                            throw message;
-                        }
-                        widerValues.push(num);
-                        partsWithPX.push(true);
-                        if (hasComma) {
-                            widerValues.push(',');
-                            partsWithPX.push(false);
-                        }
-                    }
-                    else {
-                        widerValues.push(part.trim());
-                        partsWithPX.push(false);
-                    }
-                }
-            }
-            if (widerValues.length > 0 && scale) {
-                let values = '';
-                for (let i = 0; i < widerValues.length; i++) {
-                    let figure = widerValues[i];
-                    let withPX = partsWithPX[i];
-                    if (withPX === true) {
-                        if (figure === 0) {
-                            values += '0px ';
-                        } else {
-                            values += "calc((100vw/" + (oracleViewport + cushion) + ")*" + figure + ") ";
-                        }
-                    } else {
-                        values += figure + ' ';
-                    }
-
-                }
-                if (values !== '') {
-                    css +=
-                        "      " + property + ": " + values + "!important; \n";
-                }
-            }
-            else {
-                css +=
-                    "      " + property + ": " + computedStyle[property] + " !important; \n";
-            }
-        }
-        return css;
-    }
-
-    /**
-     * Create media rule using range of failure. Including comments.
-     * @param {string} css CSS to put in media rule.
-     */
     makeRuleCSS(css, comments = true, min = this.range.getMinimum(), max = this.range.getMaximum()) {
         if (css === undefined)
             css = this.repairCSS;
@@ -396,36 +299,15 @@ class Failure {
         let height = await driver.getPageScrollHeight();
         height = Math.max(height, settings.testingHeight);
 
-        //Fix the all element properties if no repair is applied.
-        if (this.repairElementHandle === undefined) {
-            let htmlElement = await driver.getHTMLElement();
-            let dom = await this.getDOMFrom(driver, captureViewport, [], htmlElement);
-            let css = this.getDOMStylesAsCSS(dom);
-            this.snapshotCSSElementHandle = await driver.addRepair(css);
-        }
-
-
-
         if (settings.browserMode === utils.Mode.HEADLESS)
             await driver.setViewport(width, height);
 
         await driver.screenshot(imagePath, false, false);
-        if (this.repairElementHandle === undefined && this.snapshotCSSElementHandle !== undefined) {
-            await driver.removeRepair(this.snapshotCSSElementHandle);
-            await this.snapshotCSSElementHandle.dispose();
-        }
         if (settings.browserMode === utils.Mode.HEADLESS)
             await driver.setViewport(captureViewport, settings.testingHeight);
     }
     async setViewportHeightBeforeSnapshots(viewport = driver.currentViewport, ruleMin = undefined, ruleMax = undefined) {
         if (settings.browserMode === utils.Mode.HEADLESS) {
-            let css = undefined
-            if (this.repairElementHandle === undefined) {
-                let htmlElement = await driver.getHTMLElement();
-                let dom = await this.getDOMFrom(driver, viewport, [], htmlElement);
-                css = this.getDOMStylesAsCSS(dom);
-            }
-
 
             let pageHeight = await driver.getPageHeightUsingHTMLElement();
             if (settings.screenshotSpecial !== undefined && settings.screenshotSpecial.length > 0) {
@@ -437,17 +319,11 @@ class Failure {
             }
             pageHeight = Math.max(pageHeight, settings.testingHeight);
             await driver.setViewport(viewport, pageHeight);
-            if (this.repairElementHandle === undefined)
-                this.snapshotCSSElementHandle = await driver.addRepair(css);
         } else {
             await driver.setViewport(viewport, settings.testingHeight);
         }
     }
     async resetViewportHeightAfterSnapshots(viewport = driver.currentViewport) {
-        if (this.repairElementHandle === undefined && this.snapshotCSSElementHandle !== undefined) {
-            await driver.removeRepair(this.snapshotCSSElementHandle);
-            await this.snapshotCSSElementHandle.dispose();
-        }
         if (settings.browserMode === utils.Mode.HEADLESS)
             await driver.setViewport(viewport, settings.testingHeight);
     }
@@ -506,6 +382,7 @@ class Failure {
                 element.dispose();
         }
         await this.resetViewportHeightAfterSnapshots(driver.currentViewport);
+        return path.join(directory, imageFileName);
     }
 
     async screenshotViewportforVerification(driver, viewport, imgPath, directory, includeClassification = false) {

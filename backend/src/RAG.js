@@ -1,21 +1,11 @@
-import { ChatMistralAI } from "@langchain/mistralai";
-import "dotenv/config";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { MistralAIEmbeddings } from "@langchain/mistralai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import fs from "fs";
-import retrieve from "./retrieval.js";
-import encodeImage from "./sendImage.js";
+const path = require("path");
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
+const { Chroma } = require("@langchain/community/vectorstores/chroma");
+const { MistralAIEmbeddings } = require("@langchain/mistralai");
+const fs = require("fs");
 
-const apiKey = process.env.MISTRL_API_KEY || "your_api_key";
-console.log("API Key:", apiKey);
-
-const model = new ChatMistralAI({
-  model: "pixtral-12b",
-  apiKey: apiKey,
-});
+const apiKey = process.env.MISTRAL_API_KEY || "your_api_key";
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 1500,
@@ -30,35 +20,31 @@ const embeddings = new MistralAIEmbeddings({
 
 let collision_collection = "SO_collision";
 let protrusion_collection = "SO_protrusion";
-
-let collision_db = null;
+let wrapping_collection = "SO_wrapping";
 
 async function main() {
   try {
     const collision_threads = JSON.parse(
-      fs.readFileSync("stackoverflow_collision_threads.json", "utf-8")
+      fs.readFileSync("SODiscussions/stackoverflow_collision_threads.json", "utf-8")
     );
-    // const protrusion_threads = JSON.parse(fs.readFileSync('stackoverflow_overflow_threads.json', 'utf-8'));
-    // const viewport_protrusion_threads = JSON.parse(fs.readFileSync('stackoverflow_viewport_protrusion_threads.json', 'utf-8'));
-    // const wrapping_threads = JSON.parse(fs.readFileSync('stackoverflow_wrapping_threads.json', 'utf-8'));
+    const protrusion_threads = JSON.parse(fs.readFileSync('SODiscussions/stackoverflow_protrusion_threads.json', 'utf-8'));
+    const viewport_protrusion_threads = JSON.parse(fs.readFileSync('SODiscussions/stackoverflow_protrusion_threads.json', 'utf-8'));
+    const wrapping_threads = JSON.parse(fs.readFileSync('SODiscussions/stackoverflow_wrapping_threads.json', 'utf-8'));
 
-    collision_db = await create_knowledge_base(
+    let collision_db = await create_knowledge_base(
       collision_threads,
       collision_collection
     );
-    // protrusion_db = create_knowledge_base(protrusion_threads);
-    // viewport_protrusion_db = create_knowledge_base(viewport_protrusion_threads);
-    // wrapping_db = create_knowledge_base(wrapping_threads);
+    let protrusion_db = await create_knowledge_base(protrusion_threads, protrusion_collection);
+    let viewport_protrusion_db = await create_knowledge_base(viewport_protrusion_threads, protrusion_collection);
+    let wrapping_db = await create_knowledge_base(wrapping_threads, wrapping_collection);
+
   } catch (error) {
     console.error("Error processing JSON file:", error);
   }
 
-  const retrieveDocs = await retrieve(collision_collection, ["margin-bottom"]);
-  console.log("\n=== SEARCH RESULTS ===\n");
-  console.log(`Answer Count: ${retrieveDocs.length}`);
 
-
-    async function create_knowledge_base(threads, collectionName) {
+ async function create_knowledge_base(threads, collectionName) {
     const SO_collection = threadToDocument(threads, textSplitter);
     const documents = await processDocuments(SO_collection, textSplitter);
     const vectordb = await storeInVectorDB(documents, collectionName);
@@ -139,7 +125,7 @@ async function processDocuments(documents, textSplitter) {
 
 async function storeInVectorDB(finalDocs, collectionName) {
   // Store in ChromaDB with batching
-  console.log("Storing documents in ChromaDB...");
+  console.log(`Storing documents in ChromaDB for ${collectionName}...`);
 
   try {
     const initDocs = finalDocs.slice(0, 1);

@@ -48,11 +48,8 @@ class Webpage {
 
         let cssDirectory = path.join(this.pageRunOutputPath, 'CSS');
         utils.testOutputCSS.concat(cssDirectory);
-        let cssFailedDirectory = path.join(cssDirectory, 'Failed');
 
         fs.mkdirSync(cssDirectory);
-        fs.mkdirSync(cssRepairedDirectory);
-        fs.mkdirSync(cssFailedDirectory);
     }
 
     async navigateToPage() {

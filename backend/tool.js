@@ -49,6 +49,7 @@ runTool = async () => {
     newWebpage.printFailures();
     newWebpage.localizeCSS();
     await newWebpage.verifyFailures();
+    await newWebpage.repairCSS();
   }
 
   console.log('completed ');

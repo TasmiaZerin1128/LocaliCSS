@@ -18,6 +18,7 @@ const ProtrusionLocalize = require('./ProtrusionLocalize.js');
 const CollisionLocalize = require('./CollisionLocalize.js');
 const ViewportLocalize = require('./ViewportLocalize.js');
 const WrappingLocalize = require('./WrappingLocalize.js');
+const LLMRepair = require('./LLMRepair.js');
 
 class RLGNode {
      /**
@@ -53,11 +54,12 @@ class RLGNode {
         this.wrappings = [];
         this.viewportProtrusions = [];
 
-        this.cssNode = rectangle.cssNode;
+        this.elementCollisionsLocalized = [];
+        this.elementProtrusionsLocalized = [];
+        this.wrappingsLocalized = [];
+        this.viewportProtrusionsLocalized = [];
 
-        this.collisionRepairStats = new RepairStatistics();
-        this.protrusionRepairStats = new RepairStatistics();
-        this.viewportRepairStats = new RepairStatistics();
+        this.cssNode = rectangle.cssNode;
     }
 
     //Adds a viewport where this node is observed
@@ -546,6 +548,7 @@ class RLGNode {
             if (protrusion.range.minClassification === 'TP' || protrusion.range.maxClassification === 'TP') {
                 let protrusionCSS = new ProtrusionLocalize(protrusion, localizationFile, cssPropertyFile);
                 protrusionCSS.searchLayer();
+                this.elementProtrusionsLocalized.push(protrusionCSS);
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
@@ -555,6 +558,7 @@ class RLGNode {
             if (collision.range.minClassification === 'TP' || collision.range.maxClassification === 'TP') {
                 let collisionCSS = new CollisionLocalize(collision, localizationFile, cssPropertyFile);
                 collisionCSS.searchLayer();
+                this.elementCollisionsLocalized.push(collisionCSS);
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
@@ -564,6 +568,7 @@ class RLGNode {
             if (viewport.range.minClassification === 'TP' || viewport.range.maxClassification === 'TP') {
                 let viewportCSS = new ViewportLocalize(viewport, localizationFile, cssPropertyFile);
                 viewportCSS.searchLayer();
+                this.viewportProtrusionsLocalized.push(viewportCSS);
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
@@ -573,6 +578,7 @@ class RLGNode {
             if (wrapping.range.minClassification === 'TP' || wrapping.range.maxClassification === 'TP') {
                 let wrappingCSS = new WrappingLocalize(wrapping, localizationFile, cssPropertyFile);
                 wrappingCSS.searchLayer();
+                this.wrappingsLocalized.push(wrappingCSS);
             } else {
                 bar.tick();
                 sendMessage("Localize", {'counter': bar.curr, 'total': utils.failureCount});
@@ -582,7 +588,25 @@ class RLGNode {
     }
 
     async repairCSS(bar, repairFile) {
-        
+        for (let protlocalized of this.elementProtrusionsLocalized) {
+            let protRepair = new LLMRepair(protlocalized, repairFile);
+            console.log(protRepair);
+            await protRepair.createPrompt();
+        }
+        for (let collilocalized of this.elementCollisionsLocalized) {
+            let colliRepair = new LLMRepair(collilocalized, repairFile);
+            console.log(colliRepair);
+            await colliRepair.createPrompt();
+        }
+        for (let viewportprotlocalized of this.viewportProtrusionsLocalized) {
+            let vpRepair = new LLMRepair(viewportprotlocalized, repairFile);
+            console.log(vpRepair);
+            await vpRepair.createPrompt();
+        }
+        for (let wrappinglocalized of this.wrappingsLocalized) {
+            let wrapRepair = new LLMRepair(wrappinglocalized, repairFile);
+            await wrapRepair.createPrompt();
+        }
     }
 
     async findCulpritCSS() {

@@ -2,9 +2,9 @@ const path = require('path');
 const utils = require('./src/utils');
 
 const settings = {
-  URLs: ['http://192.168.0.108:8080/', 'http://192.168.0.108:8081/', 'http://192.168.0.108:8082/', 'http://192.168.0.108:8083/'],
-  testWidthMin: 320, //320
-  testWidthMax: 1100, //1400
+  URLs: ['http://127.0.0.1:8080/'],
+  testWidthMin: 680, //320
+  testWidthMax: 710, //1400
   testingHeight: 1000,
   repeat: 1,
   run: 'repair',

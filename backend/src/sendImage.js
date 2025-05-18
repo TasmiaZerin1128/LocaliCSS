@@ -1,4 +1,4 @@
-import fs from 'fs';
+const fs = require('fs');
 
 async function encodeImage(imagePath) {
     try {
@@ -14,4 +14,4 @@ async function encodeImage(imagePath) {
     }
 }
 
-export default encodeImage;
+module.exports = encodeImage;

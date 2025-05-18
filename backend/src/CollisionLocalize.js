@@ -15,7 +15,7 @@ class CollisionLocalize {
         this.file = file;
         this.faultyCSSProperties = [];
         this.cssPropertyFile = cssPropertyFile;
-        this.collisionDirection = failure.horizontalOrVertical;
+        this.horizontalOrVertical = failure.horizontalOrVertical;
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
@@ -25,9 +25,9 @@ class CollisionLocalize {
         let nodeComputedStyles = node.cssNode.computedStyles;
         // let parentComputedStyles = parent.cssNode.computedStyles;
 
-        if (this.collisionDirection == 'horizontal') {
+        if (this.horizontalOrVertical == 'horizontal') {
             this.localizeForHorizontal(node, nodeType, nodeDefinedStyles, nodeComputedStyles);
-        } else if (this.collisionDirection == 'vertical') {
+        } else if (this.horizontalOrVertical == 'vertical') {
             this.localizeForVertical(node, nodeType, nodeDefinedStyles, nodeComputedStyles);
         }
     }
@@ -88,13 +88,13 @@ class CollisionLocalize {
 
     searchLayer() {
         // check the affected node first
-        if (this.collisionDirection == 'horizontal') {
+        if (this.horizontalOrVertical == 'horizontal') {
             this.localizeFaultyProperties(this.node, 'left');
 
             // Now check the sibling
             this.localizeFaultyProperties(this.sibling, 'right');
         }
-        if (this.collisionDirection == 'vertical') {
+        if (this.horizontalOrVertical == 'vertical') {
             this.localizeFaultyProperties(this.node, 'top');
 
             // Now check the sibling

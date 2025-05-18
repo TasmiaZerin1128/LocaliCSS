@@ -17,7 +17,7 @@ class ProtrusionLocalize {
         this.cssPropertyFile = cssPropertyFile;
         this.faultyCSSProperties = [];
         this.developerDefinedProperties = [];
-        this.protrusionDirection = failure.horizontalOrVertical;
+        this.horizontalOrVertical = failure.horizontalOrVertical;
         this.directionAxis = failure.direction;   // left, right, top, bottom
     }
 
@@ -31,13 +31,13 @@ class ProtrusionLocalize {
             // let parentComputedStyles = parent.cssNode.computedStyles;
 
             if (!isParent) {
-                if (this.protrusionDirection == 'horizontal') {
+                if (this.horizontalOrVertical == 'horizontal') {
                     this.localizeForHorizontal(node, childDefinedStyles, childComputedStyles);
-                } else if (this.protrusionDirection == 'vertical') {
+                } else if (this.horizontalOrVertical == 'vertical') {
                     this.localizeForVertical(node, childDefinedStyles, childComputedStyles);
                 }
             } else { // do not check height or width or margin for the parent
-                if (this.protrusionDirection == 'horizontal') {
+                if (this.horizontalOrVertical == 'horizontal') {
                     for (let property in childDefinedStyles) {
                         if (property == 'padding-left' && childComputedStyles[property] != "0px" || property == 'padding-right' && childComputedStyles[property] != "0px") {
                             this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
@@ -54,7 +54,7 @@ class ProtrusionLocalize {
                         }
                     }
                 }
-                if (this.protrusionDirection == 'vertical') {
+                if (this.horizontalOrVertical == 'vertical') {
                     for (let property in childDefinedStyles) {
                         if (property == 'padding-top' && childComputedStyles[property] != "0px" || property == 'padding-bottom' && childComputedStyles[property] != "0px") {
                             this.faultyCSSProperties.push({'element': node.xpath, 'property': property, 'value': childDefinedStyles[property]});
@@ -125,7 +125,7 @@ class ProtrusionLocalize {
     }
 
     isLayoutResponsible(sibling, node) {
-        if (this.protrusionDirection == 'horizontal') {
+        if (this.horizontalOrVertical == 'horizontal') {
             if (this.directionAxis == 'right') {
                 if (node.rect.isToMyLeft(sibling.rect)) {
                     return true;
@@ -139,7 +139,7 @@ class ProtrusionLocalize {
                 return false;
             }
         }
-        if (this.protrusionDirection == 'vertical') {
+        if (this.horizontalOrVertical == 'vertical') {
             if (this.directionAxis == 'bottom') {
                 if (node.rect.isAboveMe(sibling.rect)) {
                     return true;
@@ -209,11 +209,12 @@ class ProtrusionLocalize {
             this.printLocalization(faulty);
         }
         let text = '---------------------------------------------';
-        utils.printToFile(this.file, text);
+        utils.printToFile(this.cssPropertyFile, text);
         text = 'Developer defined properties:--------------------';
-        utils.printToFile(this.file, text);
+        utils.printToFile(this.cssPropertyFile, text);
         for (let property of this.developerDefinedProperties) {
-            text = '|-- Element:'
+            text = '|-- Element: ' + property.element + ' Property: ' + property.property + ' Value: ' + property.value;
+            utils.printToFile(this.cssPropertyFile, text);
         }
 
     }
