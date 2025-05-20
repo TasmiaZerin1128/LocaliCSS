@@ -587,25 +587,25 @@ class RLGNode {
         console.log("I'm relaxing");
     }
 
-    async repairCSS(bar, repairFile) {
+    async repairCSS(bar, repairFile, promptElementsFile) {
         for (let protlocalized of this.elementProtrusionsLocalized) {
-            let protRepair = new LLMRepair(protlocalized, repairFile);
+            let protRepair = new LLMRepair(protlocalized, repairFile, promptElementsFile);
             console.log(protRepair);
-            await protRepair.createPrompt();
+            // await protRepair.createPrompt();
         }
         for (let collilocalized of this.elementCollisionsLocalized) {
-            let colliRepair = new LLMRepair(collilocalized, repairFile);
+            let colliRepair = new LLMRepair(collilocalized, repairFile, promptElementsFile);
             console.log(colliRepair);
-            await colliRepair.createPrompt();
+            // await colliRepair.createPrompt();
         }
         for (let viewportprotlocalized of this.viewportProtrusionsLocalized) {
-            let vpRepair = new LLMRepair(viewportprotlocalized, repairFile);
+            let vpRepair = new LLMRepair(viewportprotlocalized, repairFile, promptElementsFile);
             console.log(vpRepair);
-            await vpRepair.createPrompt();
+            // await vpRepair.createPrompt();
         }
         for (let wrappinglocalized of this.wrappingsLocalized) {
-            let wrapRepair = new LLMRepair(wrappinglocalized, repairFile);
-            await wrapRepair.createPrompt();
+            let wrapRepair = new LLMRepair(wrappinglocalized, repairFile, promptElementsFile);
+            // await wrapRepair.createPrompt();
         }
     }
 

@@ -41,7 +41,7 @@ async function retrieve(collectionDBName, cssProperties) {
 
     console.log("Number of documents in collection:", docs.length);
 
-    const k_retriever = 10;
+    const k_retriever = 5;
 
     const bm25Retriever = new BM25Retriever({
       docs: docs.filter((d) => d.metadata.type === "question"),

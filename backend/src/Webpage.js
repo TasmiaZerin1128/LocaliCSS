@@ -116,7 +116,7 @@ class Webpage {
     }
 
     async repairCSS() {
-        await this.rlg.repairCSS(this.driver, this.pageRunOutputPath + path.sep + 'LLM-Repair.txt');
+        await this.rlg.repairCSS(this.driver, this.pageRunOutputPath + path.sep + 'LLM-Repair.txt', this.pageRunOutputPath + path.sep + 'prompt-elements.txt');
     }
 
     async screenshotFailures() {

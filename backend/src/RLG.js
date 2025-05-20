@@ -555,13 +555,13 @@ class RLG {
         }
     }
 
-    async repairCSS(driver, repairFile) {
+    async repairCSS(driver, repairFile, promptElementsFile) {
         let bar = new ProgressBar('Repair RLFs  | [:bar] | :percent :etas | Repair Completed :current/' + utils.failureCount, { complete: '█', incomplete: '░', total: utils.failureCount, width: 25});
         console.log("CSS Repair going on");
         sendMessage("Repair", {'counter': 0, 'total': utils.failureCount});
         let counter = 0;
         for (const node of this.nodesWithFailures) {
-            await node.repairCSS(bar, repairFile, counter);
+            await node.repairCSS(bar, repairFile, promptElementsFile, counter);
         }
     }
 

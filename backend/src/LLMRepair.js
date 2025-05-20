@@ -2,8 +2,9 @@ require('dotenv').config()
 const { ChatPromptTemplate } = require("@langchain/core/prompts");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const encodeImage = require("./sendImage.js");
-const retrieve = require("./retrieval");
+const retrieve = require("./Retrieval");
 const { ChatMistralAI } = require("@langchain/mistralai");
+const utils = require('./utils.js');
 
 
 const DEFINITIONS = {
@@ -34,8 +35,9 @@ const model = new ChatMistralAI({
 
 class LLMRepair {
     
-    constructor(localizedNode, repairFile) {
+    constructor(localizedNode, repairFile, promptElementsFile) {
         this.repairFile = repairFile;
+        this.promptElementsFile = promptElementsFile;
         this.failureRange = localizedNode.failure.range.min + " - " + localizedNode.failure.range.max;
         this.failureType = localizedNode.failure.type;
         this.failureDirection = localizedNode.failure.horizontalOrVertical;
@@ -58,6 +60,9 @@ class LLMRepair {
         this.failureOuterLowerSS = localizedNode.failure.failureLowerBoundScreenshot;
         this.failureOuterUpperSS = localizedNode.failure.failureUpperBoundScreenshot;
         this.faultyProperties = localizedNode.faultyCSSProperties;
+
+        utils.printToFile(this.promptElementsFile, this);
+        utils.printToFile(this.promptElementsFile, "\n\n");
     }
 
     async createPrompt() {
@@ -110,6 +115,9 @@ class LLMRepair {
         });
 
         console.log(response);
+        utils.printToFile(this.repairFile, response);
+        let text = "======================\n";
+        utils.printToFile(this.repairFile, text);
     }
 }
 
