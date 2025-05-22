@@ -49,8 +49,10 @@ class LLMRepair {
             this.failureSiblingRect = "minX: " + localizedNode.sibling.rect.minX + ", minY: " + localizedNode.sibling.rect.minY + ", maxX: " + localizedNode.sibling.rect.maxX + ", maxY: " + localizedNode.sibling.rect.maxY;
             this.failureSiblingCSS = localizedNode.sibling.rect.cssNode.developerCssProperties;
         }
-        this.failureParent = localizedNode.parent.xpath;
-        this.failureParentRect = "minX: " + localizedNode.parent.rect.minX + ", minY: " + localizedNode.parent.rect.minY + ", maxX: " + localizedNode.parent.rect.maxX + ", maxY: " + localizedNode.parent.rect.maxY;
+        if (localizedNode.parent) {
+            this.failureParent = localizedNode.parent.xpath;
+            this.failureParentRect = "minX: " + localizedNode.parent.rect.minX + ", minY: " + localizedNode.parent.rect.minY + ", maxX: " + localizedNode.parent.rect.maxX + ", maxY: " + localizedNode.parent.rect.maxY;
+        }
 
         this.failureNodeCSS = localizedNode.node.rect.cssNode.developerCssProperties;
         this.failureParentCSS = localizedNode.parent.rect.cssNode.developerCssProperties;
@@ -100,8 +102,8 @@ class LLMRepair {
         const response = await chain.invoke({
             RLF_type: this.failureType,
             Type_definition: DEFINITIONS[this.failureType],
-            Failure_element_XPaths: `Node 1:${this.failureNode}, Node 2: ${this.failureParent}, ${this.failureSibling ? this.failureSibling : ""}`,
-            Failure_element_rect: `Node 1:${this.failureNodeRect}, Node 2: ${this.failureParentRect}, ${this.failureSibling ? this.failureSiblingRect : ""}`,
+            Failure_element_XPaths: `Node 1:${this.failureNode}, Node 2: ${this.failureParent ? this.failureParent : ""}, ${this.failureSibling ? this.failureSibling : ""}`,
+            Failure_element_rect: `Node 1:${this.failureNodeRect}, Node 2: ${this.failureParentRect ? this.failureParentRect : ""}, ${this.failureSibling ? this.failureSiblingRect : ""}`,
             viewport_range: this.failureRange,
             localized_property: this.faultyProperties,
             screenshot_failure: encodeImage(

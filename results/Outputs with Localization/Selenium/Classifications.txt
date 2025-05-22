@@ -49,7 +49,7 @@ ID: 2 Type: Element-Collision Range:320-380 Viewport:320 Classification: TP
 |--[ Node: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
 |  |--[ minX: 164 maxX: 284 minY: 4033 maxY: 4109.265625 ]
 |--[ Sibling: /HTML/BODY/DIV[3]/DIV/DIV/A/IMG ]
-|  |--[ minX: 44 maxX: 168 minY: 4041 maxY: 4101.265625 ]
+|  |--[ minX: 164 maxX: 284 minY: 4033 maxY: 4109.265625 ]
 ID: 2 Type: Element-Collision Range:320-380 Viewport:350 Classification: TP
 |  |--[ Overlap-X: 3 Overlap-Y: 73.921875 ]
 |--[ Node: /HTML/BODY/DIV[3]/DIV/DIV[2] ]
